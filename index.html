@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Mini-RPG de Texto interativo em homenagem ao casamento do nosso querido professor de programação.">
+    <title>casamento.exe // Mini-RPG do Professor</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Favicon com símbolo de código -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💍</text></svg>">
+</head>
+<body>
+
+    <!-- Canvas de Confetes da Vitória -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Container Principal estilo IDE / VS Code -->
+    <main class="ide-container" id="ide-app">
+
+        <!-- Barra Superior da Janela (Title Bar) -->
+        <header class="ide-title-bar">
+            <div class="window-controls">
+                <span class="control-dot close" title="Fechar"></span>
+                <span class="control-dot minimize" title="Minimizar"></span>
+                <span class="control-dot maximize" title="Maximizar"></span>
+            </div>
+            <div class="window-title" id="window-title">
+                <span class="folder-icon">📂</span>
+                <span class="project-name">projeto_casamento</span>
+                <span class="separator">—</span>
+                <span class="current-file" id="title-file-name">casamento.js</span>
+            </div>
+            <div class="window-actions">
+                <button id="btn-sound-toggle" class="icon-btn" title="Alternar Efeitos Sonoros Retro (Web Audio API)">
+                    <span id="sound-icon">🔊</span> <span class="btn-text">Som: ON</span>
+                </button>
+                <button id="btn-restart-game" class="icon-btn" title="Reiniciar do Início">
+                    <span>↺</span> <span class="btn-text">Reiniciar</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Barra de Abas do Editor -->
+        <nav class="ide-tab-bar" aria-label="Abas do Editor">
+            <div class="editor-tab active" id="active-tab">
+                <span class="tab-lang-icon" id="tab-lang-icon">JS</span>
+                <span class="tab-name" id="tab-file-name">main.c</span>
+                <span class="tab-close">×</span>
+            </div>
+            <div class="editor-tab tab-secondary">
+                <span class="tab-lang-icon">JSON</span>
+                <span class="tab-name">package.json</span>
+            </div>
+            <div class="editor-tab tab-secondary">
+                <span class="tab-lang-icon">MD</span>
+                <span class="tab-name">VOTOS_NUPCIAIS.md</span>
+            </div>
+        </nav>
+
+        <!-- Breadcrumbs (Caminho do Arquivo) -->
+        <div class="ide-breadcrumbs" id="breadcrumbs">
+            <span>projeto_casamento</span>
+            <span class="bc-sep">›</span>
+            <span>src</span>
+            <span class="bc-sep">›</span>
+            <span id="bc-stage">Compilador Inicial</span>
+            <span class="bc-sep">›</span>
+            <span class="bc-current" id="bc-file">main.c</span>
+        </div>
+
+        <!-- Área de Conteúdo / Terminal do Jogo -->
+        <section class="ide-content-area" id="terminal-screen" tabindex="0">
+            <!-- Barra Lateral com Numeração de Linhas -->
+            <aside class="line-numbers" id="line-numbers" aria-hidden="true">
+                <span>01</span><span>02</span><span>03</span><span>04</span><span>05</span>
+                <span>06</span><span>07</span><span>08</span><span>09</span><span>10</span>
+                <span>11</span><span>12</span><span>13</span><span>14</span><span>15</span>
+                <span>16</span><span>17</span><span>18</span><span>19</span><span>20</span>
+                <span>21</span><span>22</span><span>23</span><span>24</span><span>25</span>
+            </aside>
+
+            <!-- Painel de Execução do Jogo -->
+            <div class="game-viewport">
+                
+                <!-- Badge da Fase Atual -->
+                <div class="stage-badge-container">
+                    <span class="stage-badge" id="stage-badge">FASE 1: COMPILAÇÃO INICIAL</span>
+                    <span class="skip-tip" id="skip-tip" title="Clique no texto para pular animação">⚡ [Pressione Enter ou Clique para Acelerar]</span>
+                </div>
+
+                <!-- Título da Cena -->
+                <h1 class="scene-title" id="scene-title">PROJETO: CASAMENTO_V1.0.EXE</h1>
+
+                <!-- Bloco de Texto com Efeito Máquina de Escrever -->
+                <div class="terminal-narrative" id="narrative-box">
+                    <div class="typewriter-content" id="typewriter-text"></div>
+                    <span class="terminal-cursor" id="terminal-cursor">█</span>
+                </div>
+
+                <!-- Bloco de Código Opcional (Snippet do Desafio) -->
+                <div class="code-editor-box" id="code-snippet-container" style="display: none;">
+                    <div class="code-box-header">
+                        <span class="code-box-dot dot-red"></span>
+                        <span class="code-box-dot dot-yellow"></span>
+                        <span class="code-box-dot dot-green"></span>
+                        <span class="code-box-title" id="code-snippet-title">snippet.js</span>
+                    </div>
+                    <pre class="code-snippet"><code id="code-snippet-content"></code></pre>
+                </div>
+
+                <!-- Alerta ou Mensagem de Erro Interativa (Para Boss do Altar / Bugs) -->
+                <div class="interactive-alert-box" id="interactive-alert" style="display: none;">
+                    <div class="alert-icon">⚠️</div>
+                    <div class="alert-content">
+                        <strong id="alert-title">ALERTA NO EVENT LOOP:</strong>
+                        <p id="alert-desc">Erro detectado.</p>
+                    </div>
+                </div>
+
+                <!-- Container Dinâmico de Opções / Botões de Escolha -->
+                <nav class="choices-container" id="choices-container" aria-label="Opções de Decisão">
+                    <!-- Botões injetados dinamicamente via engine.js -->
+                </nav>
+
+            </div>
+        </section>
+
+        <!-- Barra de Status Inferior (Status Bar) -->
+        <footer class="ide-status-bar">
+            <div class="status-left">
+                <span class="status-item git-branch"><span class="status-symbol">⎇</span> main*</span>
+                <span class="status-item diagnostics-error"><span class="status-symbol">⊗</span> 0</span>
+                <span class="status-item diagnostics-warning"><span class="status-symbol">⚠</span> 0</span>
+                <span class="status-item sync-status">↻ Em sincronia</span>
+            </div>
+            <div class="status-right">
+                <span class="status-item" id="status-position">Ln 42, Col 1</span>
+                <span class="status-item">Espaços: 4</span>
+                <span class="status-item">UTF-8</span>
+                <span class="status-item status-lang" id="status-language">JavaScript</span>
+                <span class="status-item status-heart" title="Nível de Amor do Casal">♥ 100% AMOR</span>
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- ============================================================ -->
+    <!-- OVERLAY: TELA AZUL DA MORTE (BSOD)                           -->
+    <!-- ============================================================ -->
+    <div class="bsod-overlay" id="bsod-screen" style="display: none;" role="alertdialog" aria-modal="true">
+        <div class="bsod-content">
+            <div class="bsod-emoticon">:(</div>
+            <h2 class="bsod-title">Ocorreu um problema no seu código matrimonial e ele precisa ser reiniciado.</h2>
+            <p class="bsod-text">
+                Estamos apenas coletando algumas informações sobre o bug de noivo e, em seguida, você poderá reiniciar a depuração.
+            </p>
+            <div class="bsod-progress">
+                <span id="bsod-percentage">100%</span> concluído.
+            </div>
+
+            <div class="bsod-details">
+                <div class="bsod-qr-code" aria-label="Código QR simulado">
+                    <div class="qr-matrix"></div>
+                </div>
+                <div class="bsod-info-block">
+                    <p>Para saber mais sobre o erro, consulte a documentação da vida a dois:</p>
+                    <p class="bsod-stopcode" id="bsod-stopcode">CÓDIGO DE PARADA: STUDENT_SYNTAX_ERROR_AT_3AM</p>
+                    <p class="bsod-crash-desc" id="bsod-crash-desc">Descrição do erro detalhada aqui...</p>
+                </div>
+            </div>
+
+            <div class="bsod-actions">
+                <button class="bsod-btn" id="bsod-restart-btn">
+                    <span>🔄 Reiniciar Depuração (Reboot Sistema)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MODAL: LISTA DE PRESENTES / DEPLOY EM PRODUÇÃO               -->
+    <!-- ============================================================ -->
+    <div class="modal-overlay" id="gift-modal" style="display: none;" role="dialog" aria-modal="true">
+        <div class="modal-window">
+            <header class="modal-header">
+                <span class="modal-title">🎁 DEPLOY EM PRODUÇÃO: LISTA DE PRESENTES</span>
+                <button class="modal-close-btn" id="modal-close-btn" title="Fechar">×</button>
+            </header>
+            <div class="modal-body">
+                <div class="gift-banner">
+                    <span class="gift-icon">💍</span>
+                    <h3>Parabéns pelo Casamento, Professor!</h3>
+                    <p>A turma preparou este projeto com muito carinho para celebrar essa união inesquecível!</p>
+                </div>
+
+                <div class="gift-instructions">
+                    <p>Para presentear o novo casal e abençoar a lua de mel com muitos gigabytes de alegria:</p>
+                </div>
+
+                <!-- Chave PIX ou Link Customizável -->
+                <div class="gift-box">
+                    <label for="pix-key-input">Chave PIX dos Noivos (ou Lista de Casamento):</label>
+                    <div class="gift-input-group">
+                        <input type="text" id="pix-key-input" value="presente-professor@casamento.dev.br" readonly>
+                        <button class="copy-btn" id="btn-copy-pix">
+                            <span id="copy-text">Copiar</span>
+                        </button>
+                    </div>
+                    <small class="tip-text">💡 Dica: Você pode alterar essa chave no arquivo <code>engine.js</code>.</small>
+                </div>
+
+                <!-- Botão de Acesso Externo à Lista -->
+                <div class="modal-actions">
+                    <a href="https://www.icasei.com.br" target="_blank" rel="noopener noreferrer" class="btn-external-gift" id="gift-link-btn">
+                        🌐 Abrir Site Oficial dos Noivos
+                    </a>
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <span class="footer-note">Feito com &lt;3 por alunos que prestam atenção na aula (às vezes)!</span>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Scripts do Jogo -->
+    <script src="js/story.js"></script>
+    <script src="js/engine.js"></script>
+</body>
+</html>
+
