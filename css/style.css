@@ -299,7 +299,7 @@ body::before {
     flex-direction: column;
     gap: 16px;
     overflow-y: auto;
-    max-height: 650px;
+    min-height: 520px;
 }
 
 /* Badge de Fase */
@@ -416,12 +416,15 @@ body::before {
 }
 
 .code-snippet {
-    padding: 18px 20px;
+    margin: 0;
+    padding: 20px 24px;
     overflow-x: auto;
     font-size: 1.05rem; /* Aumentado para maior legibilidade */
     line-height: 1.7;    /* Espaçamento melhor entre as linhas */
     color: #e0e0e0;
     font-family: var(--font-mono);
+    border: none;
+    box-sizing: border-box;
 }
 
 .code-snippet code {
