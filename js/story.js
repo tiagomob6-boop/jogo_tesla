@@ -20,12 +20,25 @@ const STORY_DATA = {
             "",
             "Prepare sua IDE mental, respire fundo e clique abaixo para compilar sua jornada!"
         ],
-        code: `// Meta do Dia:
+        code: `// ==========================================
+// PROJETO: Matrimonio.c
+// Meta do Dia: Compilar o Amor Eterno
+// ==========================================
+#include <AmorEterno.h>
+#include <PacienciaInfinita.h>
+
 struct Matrimonio {
-    char status[] = "Pronto para o 'Sim'";
-    int nivel_felicidade = 999999;
+    char noivo[] = "Professor de Programação";
+    char status[] = "Pronto para o 'Sim' no Altar";
+    long int nivel_felicidade = 999999999;
+    int cafeina_no_sangue = 100;
     bool amor_eterno = true;
-};`,
+    bool bugs_no_casamento = false;
+};
+
+void celebrarCasamento() {
+    printf("União compilada com 0 erros e 0 warnings!\n");
+}`,
         options: [
             {
                 text: "▶️ Iniciar Depuração da Vida (Compilar Casamento)",
