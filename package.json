@@ -1,0 +1,25 @@
+{
+  "name": "roadster-dash-backend",
+  "version": "1.0.0",
+  "description": "Roadster Dash 3D Runner - Backend com Leaderboard Global, Neon Postgres e Loja de Carros",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "threejs",
+    "game",
+    "neon",
+    "postgres",
+    "render"
+  ],
+  "author": "tiagomob6-boop",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "pg": "^8.13.1"
+  }
+}

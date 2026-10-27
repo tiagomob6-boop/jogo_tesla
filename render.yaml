@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: roadster-dash
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false # Cole a string de conexão do Neon PostgreSQL no painel do Render

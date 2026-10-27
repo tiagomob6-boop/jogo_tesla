@@ -506,6 +506,338 @@
             margin-top: 3px;
         }
 
+        /* Speed Meta (Level & Timer a cada 30 segundos) */
+        .speed-meta {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #38bdf8;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-shadow: 0 0 8px rgba(56, 189, 248, 0.7);
+        }
+
+        /* Marcador de Moedas no HUD */
+        .hud-coins-display {
+            font-size: 0.95rem;
+            font-weight: 900;
+            color: #fbbf24;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
+            margin-top: 2px;
+        }
+
+        /* Badge do Piloto / Usuário */
+        .user-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #e2e8f0;
+            background: rgba(255, 255, 255, 0.12);
+            padding: 3px 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(6px);
+            margin-top: 4px;
+            display: inline-block;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: all 0.2s;
+        }
+
+        .user-badge:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: #22d3ee;
+        }
+
+        /* Grade de Botões do Menu */
+        .menu-btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 14px;
+            width: 100%;
+        }
+
+        .secondary-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 14px;
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            padding: 12px 10px;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: all 0.2s;
+            text-transform: uppercase;
+            touch-action: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #38bdf8;
+            transform: translateY(-2px);
+        }
+
+        .secondary-btn:active {
+            transform: scale(0.96);
+        }
+
+        /* Modais Específicos: Garagem, Ranking e Perfil */
+        .modal-large-box {
+            max-width: 680px;
+            max-height: 88vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .modal-large-box::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .modal-large-box::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 4px;
+        }
+
+        /* Cards da Garagem / Loja de Carros */
+        .garage-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-top: 10px;
+            text-align: left;
+        }
+
+        .car-card {
+            background: rgba(18, 12, 28, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .car-card.selected {
+            border-color: #22d3ee;
+            box-shadow: 0 0 16px rgba(34, 211, 238, 0.4);
+            background: rgba(34, 211, 238, 0.1);
+        }
+
+        .car-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .car-title {
+            font-size: 1.05rem;
+            font-weight: 900;
+            color: #ffffff;
+        }
+
+        .car-badge {
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .car-badge.owned {
+            background: rgba(34, 197, 94, 0.25);
+            color: #4ade80;
+            border: 1px solid #4ade80;
+        }
+
+        .car-badge.selected-tag {
+            background: rgba(34, 211, 238, 0.3);
+            color: #22d3ee;
+            border: 1px solid #22d3ee;
+        }
+
+        .car-desc {
+            font-size: 0.75rem;
+            color: #cbd5e1;
+            margin: 6px 0 10px 0;
+            line-height: 1.4;
+        }
+
+        .car-bonus {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #fde047;
+            margin-bottom: 12px;
+        }
+
+        .car-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            gap: 8px;
+        }
+
+        .car-price-tag {
+            font-size: 0.95rem;
+            font-weight: 900;
+            color: #fbbf24;
+        }
+
+        .car-action-btn {
+            flex: 1;
+            padding: 9px 12px;
+            border-radius: 10px;
+            border: none;
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-transform: uppercase;
+        }
+
+        .car-action-btn.btn-equip {
+            background: linear-gradient(135deg, #22d3ee, #0284c7);
+            color: #ffffff;
+        }
+
+        .car-action-btn.btn-buy {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+        }
+
+        .car-action-btn.btn-disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        /* Leaderboard Table */
+        .leaderboard-box {
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 380px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .leaderboard-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            transition: transform 0.15s;
+        }
+
+        .leaderboard-row.top-1 {
+            background: linear-gradient(90deg, rgba(234, 179, 8, 0.25), rgba(0, 0, 0, 0.4));
+            border-color: #eab308;
+        }
+        .leaderboard-row.top-2 {
+            background: linear-gradient(90deg, rgba(203, 213, 225, 0.2), rgba(0, 0, 0, 0.4));
+            border-color: #cbd5e1;
+        }
+        .leaderboard-row.top-3 {
+            background: linear-gradient(90deg, rgba(217, 119, 6, 0.2), rgba(0, 0, 0, 0.4));
+            border-color: #d97706;
+        }
+
+        .rank-pos {
+            font-size: 1.1rem;
+            font-weight: 900;
+            width: 32px;
+            color: #94a3b8;
+        }
+
+        .top-1 .rank-pos { color: #fde047; }
+        .top-2 .rank-pos { color: #f1f5f9; }
+        .top-3 .rank-pos { color: #fb923c; }
+
+        .rank-user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            flex: 1;
+            margin-left: 10px;
+        }
+
+        .rank-username {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .rank-car-tag {
+            font-size: 0.65rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+        }
+
+        .rank-score-val {
+            font-size: 1.25rem;
+            font-weight: 900;
+            color: #22d3ee;
+            letter-spacing: -0.5px;
+        }
+
+        /* Input Estilizado do Usuário */
+        .styled-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-family: inherit;
+            font-size: 1.1rem;
+            color: #ffffff;
+            outline: none;
+            transition: all 0.2s;
+            margin: 12px 0;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .styled-input:focus {
+            border-color: #22d3ee;
+            box-shadow: 0 0 14px rgba(34, 211, 238, 0.5);
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .status-msg {
+            font-size: 0.8rem;
+            min-height: 20px;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .status-msg.error { color: #f87171; }
+        .status-msg.success { color: #4ade80; }
+
         /* Ajustes específicos para Celular */
         @media (max-width: 600px) {
             #hud { padding: 14px 14px 12px 14px; }
@@ -515,6 +847,8 @@
             .mobile-slam-btn { width: 48px; height: 48px; }
             .glass-box { padding: 26px 18px; }
             .game-title { font-size: 1.9rem; }
+            .garage-grid { grid-template-columns: 1fr; }
+            .menu-btn-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -537,6 +871,9 @@
                 </div>
                 <div class="distance-display" id="hud-distance">0 m</div>
                 <div class="speed-display" id="hud-speed">125 KM/H</div>
+                <div class="speed-meta"><span id="hud-level">NÍVEL 1</span> • <span id="hud-speed-timer">30s</span></div>
+                <div class="hud-coins-display" id="hud-coins-box">🪙 <span id="hud-coins">0</span></div>
+                <div class="user-badge" id="hud-user-badge" title="Clique para alterar seu Nickname">👤 <span id="hud-username">Piloto</span></div>
                 <div class="hearts-box">
                     <span class="heart-badge" id="heart-1">❤️</span>
                     <span class="heart-badge empty" id="heart-2">❤️</span>
@@ -604,15 +941,30 @@
             <h1 class="game-title">ROADSTER DASH</h1>
             <div class="game-subtitle">SUNSET COASTAL HIGHWAY // 2077</div>
 
+            <!-- Identificação do Usuário e Saldo de Moedas no Menu -->
+            <div style="margin-bottom: 14px; display: flex; justify-content: center; gap: 12px; align-items: center; flex-wrap: wrap;">
+                <div class="hud-coins-display" style="font-size: 1.15rem; background: rgba(0,0,0,0.3); padding: 5px 12px; border-radius: 10px; border: 1px solid rgba(251,191,36,0.3);">
+                    🪙 <span id="menu-coins">0</span>
+                </div>
+                <div class="user-badge" id="menu-user-badge" style="font-size: 0.85rem; padding: 6px 14px;" title="Clique para alterar seu Nickname">
+                    👤 <span id="menu-username">Piloto</span> ✏️
+                </div>
+            </div>
+
             <div class="controls-guide">
                 <div>📱 <strong>No Celular:</strong> Use os botões ◀ ▶ para virar, ⇪ BOOST para voar e ⬇ para descer rápido (ou arraste os dedos)!</div>
                 <div>💻 <strong>No PC:</strong> Setas / A D para virar, ESPAÇO / W para voar e S para descer.</div>
-                <div>🛹 <strong>Rampas de Salto:</strong> Suba nas rampas para saltar alto, fazer manobras (Barrel Roll) e pular sobre o trânsito!</div>
-                <div>⚡ <strong>Velocidade Intensa:</strong> Aceleração rápida com velocímetro e tráfego veloz para testar seus reflexos!</div>
-                <div>🦅 <strong>Céu com Desafios:</strong> Desvie de Pássaros, Aviões e Cabos Elétricos ao saltar ou voar!</div>
+                <div>⏱️ <strong>Velocidade Contínua:</strong> A cada 30 segundos de corrida, a velocidade aumenta para o próximo nível!</div>
+                <div>🛹 <strong>Rampas de Salto:</strong> Pule sobre o trânsito com acrobacias (Barrel Roll) para ganhar bônus de ar e moedas!</div>
+                <div>🚗 <strong>Garagem & Ranking:</strong> Compre novos carros com suas moedas e dispute o Top 10 mundial!</div>
             </div>
 
-            <button class="action-btn" id="start-btn">INICIAR CORRIDA</button>
+            <button class="action-btn" id="start-btn" style="width: 100%;">INICIAR CORRIDA</button>
+
+            <div class="menu-btn-grid">
+                <button class="secondary-btn" id="open-garage-btn">🚗 Garagem / Loja</button>
+                <button class="secondary-btn" id="open-leaderboard-btn">🏆 Ranking Global</button>
+            </div>
         </div>
     </div>
 
@@ -631,13 +983,78 @@
                     <div class="stat-label">Distância</div>
                     <div class="stat-val" style="color: #22d3ee;" id="go-dist">0 m</div>
                 </div>
-                <div class="gameover-stat-item" style="grid-column: span 2; border-color: #f97316;">
+                <div class="gameover-stat-item" style="border-color: #fbbf24; background: rgba(251, 191, 36, 0.08);">
+                    <div class="stat-label" style="color: #fbbf24;">Moedas Ganhas</div>
+                    <div class="stat-val" style="color: #fde047;" id="go-coins">+0 🪙</div>
+                </div>
+                <div class="gameover-stat-item" style="border-color: #f97316;">
                     <div class="stat-label">RECORDE MÁXIMO</div>
                     <div class="stat-val" style="color: #fde047;" id="go-best">0</div>
                 </div>
             </div>
 
-            <button class="action-btn" id="restart-btn">JOGAR NOVAMENTE</button>
+            <button class="action-btn" id="restart-btn" style="width: 100%;">JOGAR NOVAMENTE</button>
+
+            <div class="menu-btn-grid">
+                <button class="secondary-btn" id="go-garage-btn">🚗 Garagem / Loja</button>
+                <button class="secondary-btn" id="go-leaderboard-btn">🏆 Ranking Global</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE IDENTIFICAÇÃO / NICKNAME ÚNICO -->
+    <div class="modal-screen" id="user-modal">
+        <div class="glass-box">
+            <h2 class="game-title" style="font-size: 1.8rem;">PERFIL DO PILOTO</h2>
+            <div class="game-subtitle">CADASTRE SEU NICKNAME ÚNICO</div>
+            <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5; margin-bottom: 8px;">
+                Digite seu nome exclusivo para salvar seus recordes mundiais no Neon Database e acumular suas moedas!
+            </p>
+
+            <input type="text" class="styled-input" id="username-input" placeholder="Ex: CyberRacer2077" maxlength="18" autocomplete="off" />
+            <div class="status-msg" id="username-status"></div>
+
+            <button class="action-btn" id="save-username-btn" style="width: 100%;">CONFIRMAR NOME</button>
+            <button class="secondary-btn" id="close-user-modal-btn" style="margin-top: 10px; width: 100%;">VOLTAR</button>
+        </div>
+    </div>
+
+    <!-- MODAL DA GARAGEM / LOJA DE CARROS -->
+    <div class="modal-screen" id="garage-modal">
+        <div class="glass-box modal-large-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.15); padding-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                <div>
+                    <h2 class="game-title" style="font-size: 1.7rem; margin-bottom: 2px;">GARAGEM CYBERPUNK</h2>
+                    <div class="game-subtitle" style="margin-bottom: 0;">DESBLOQUEIE VEÍCULOS COM SUAS MOEDAS</div>
+                </div>
+                <div class="hud-coins-display" style="font-size: 1.2rem; background: rgba(0,0,0,0.3); padding: 5px 12px; border-radius: 10px; border: 1px solid rgba(251,191,36,0.3);">
+                    🪙 <span id="garage-coins-val">0</span>
+                </div>
+            </div>
+
+            <div class="garage-grid" id="garage-cards-container">
+                <!-- Cards renderizados dinamicamente pelo JS -->
+            </div>
+
+            <button class="action-btn" id="close-garage-btn" style="width: 100%; margin-top: 10px;">FECHAR GARAGEM</button>
+        </div>
+    </div>
+
+    <!-- MODAL DO RANKING GLOBAL -->
+    <div class="modal-screen" id="leaderboard-modal">
+        <div class="glass-box modal-large-box">
+            <div style="border-bottom: 1px solid rgba(255, 255, 255, 0.15); padding-bottom: 10px;">
+                <h2 class="game-title" style="font-size: 1.7rem; margin-bottom: 2px;">RANKING MUNDIAL</h2>
+                <div class="game-subtitle" style="margin-bottom: 0;">TOP PILOTOS DO BANCO DE DADOS NEON</div>
+            </div>
+
+            <div class="leaderboard-box">
+                <div class="leaderboard-list" id="leaderboard-list-container">
+                    <div style="text-align: center; color: #94a3b8; padding: 25px;">Carregando recordes do servidor...</div>
+                </div>
+            </div>
+
+            <button class="action-btn" id="close-leaderboard-btn" style="width: 100%; margin-top: 10px;">FECHAR RANKING</button>
         </div>
     </div>
 
@@ -816,7 +1233,66 @@
                     setTimeout(() => this.playTone(f, "sine", 0.08, 0.06), i * 55);
                 });
             }
+
+            playSpeedUp() {
+                if (!this.enabled || !this.ctx) return;
+                const notes = [440, 554.37, 659.25, 880];
+                notes.forEach((f, i) => {
+                    setTimeout(() => this.playTone(f, "sawtooth", 0.12, 0.08), i * 65);
+                });
+            }
+
+            playBuyCar() {
+                if (!this.enabled || !this.ctx) return;
+                const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+                notes.forEach((f, i) => {
+                    setTimeout(() => this.playTone(f, "sine", 0.12, 0.08), i * 60);
+                });
+            }
         }
+
+        // =====================================================================
+        // CATÁLOGO OFICIAL DE CARROS
+        // =====================================================================
+        const CAR_CATALOG = {
+            roadster: {
+                id: 'roadster',
+                name: 'Tesla Roadster 2077',
+                price: 0,
+                tag: 'Balanceado',
+                desc: 'Esportivo lendário aerodinâmico em branco pérola com LED linear.',
+                bonus: 'Agilidade clássica e dirigibilidade suave'
+            },
+            cybertruck: {
+                id: 'cybertruck',
+                name: 'Cybertruck Apex',
+                price: 250,
+                tag: 'Blindado (+1 Vida)',
+                desc: 'Carroceria angular em aço escovado e farol horizontal contínuo.',
+                bonus: 'Começa cada corrida com +1 Coração de Vida!'
+            },
+            phantom: {
+                id: 'phantom',
+                name: 'Neon Phantom',
+                price: 600,
+                tag: 'Voo Prolongado (+25% Ar)',
+                desc: 'Supercarro roxo espacial com difusores luminosos em neon ciano.',
+                bonus: 'Tanque ampliado para 225 L de Ar!'
+            },
+            solaris: {
+                id: 'solaris',
+                name: 'Solaris Hypercar',
+                price: 1200,
+                tag: 'Hipervelocidade (+Score)',
+                desc: 'Hipercarro dourado reluzente com escapamento quádruplo.',
+                bonus: '+15% de Velocidade e +35% de Pontuação!'
+            }
+        };
+
+        // Rota base da API REST (compatível com Render e Local)
+        const API_URL = (window.location.hostname === "localhost" || window.location.port === "3000" || window.location.hostname.includes("onrender.com"))
+            ? ""
+            : (localStorage.getItem("roadster_api_url") || "");
 
         // =====================================================================
         // CONSTANTES DA RODOVIA
@@ -838,14 +1314,20 @@
                 // HUD
                 this.hudDistance = document.getElementById("hud-distance");
                 this.hudSpeed = document.getElementById("hud-speed");
+                this.hudLevel = document.getElementById("hud-level");
+                this.hudSpeedTimer = document.getElementById("hud-speed-timer");
+                this.hudCoins = document.getElementById("hud-coins");
+                this.hudUsername = document.getElementById("hud-username");
+                this.hudUserBadge = document.getElementById("hud-user-badge");
                 this.hudScore = document.getElementById("hud-score");
                 this.actionPopup = document.getElementById("action-popup");
                 this.rocketSubFill = document.getElementById("rocket-sub-fill");
                 this.heartIcons = [
                     document.getElementById("heart-1"),
                     document.getElementById("heart-2"),
-                    document.getElementById("heart-3")
-                ];
+                    document.getElementById("heart-3"),
+                    document.getElementById("heart-4") // Suporte para 4 vidas
+                ].filter(Boolean);
                 
                 // Segmentos de Ar (10 blocos)
                 this.airSegments = document.querySelectorAll(".air-segment");
@@ -861,15 +1343,39 @@
                 this.soundBtn = document.getElementById("sound-btn");
                 this.pauseBtn = document.getElementById("pause-btn");
 
-                // Telas
+                // Telas e Menus
                 this.startScreen = document.getElementById("start-screen");
                 this.gameoverScreen = document.getElementById("gameover-screen");
                 this.startBtn = document.getElementById("start-btn");
                 this.restartBtn = document.getElementById("restart-btn");
+                this.menuCoins = document.getElementById("menu-coins");
+                this.menuUsername = document.getElementById("menu-username");
+                this.menuUserBadge = document.getElementById("menu-user-badge");
+                this.openGarageBtn = document.getElementById("open-garage-btn");
+                this.openLeaderboardBtn = document.getElementById("open-leaderboard-btn");
+                this.goGarageBtn = document.getElementById("go-garage-btn");
+                this.goLeaderboardBtn = document.getElementById("go-leaderboard-btn");
                 this.goScore = document.getElementById("go-score");
                 this.goDist = document.getElementById("go-dist");
+                this.goCoins = document.getElementById("go-coins");
                 this.goBest = document.getElementById("go-best");
                 this.goReason = document.getElementById("go-reason");
+
+                // Modais
+                this.userModal = document.getElementById("user-modal");
+                this.usernameInput = document.getElementById("username-input");
+                this.usernameStatus = document.getElementById("username-status");
+                this.saveUsernameBtn = document.getElementById("save-username-btn");
+                this.closeUserModalBtn = document.getElementById("close-user-modal-btn");
+
+                this.garageModal = document.getElementById("garage-modal");
+                this.garageCoinsVal = document.getElementById("garage-coins-val");
+                this.garageCardsContainer = document.getElementById("garage-cards-container");
+                this.closeGarageBtn = document.getElementById("close-garage-btn");
+
+                this.leaderboardModal = document.getElementById("leaderboard-modal");
+                this.leaderboardListContainer = document.getElementById("leaderboard-list-container");
+                this.closeLeaderboardBtn = document.getElementById("close-leaderboard-btn");
 
                 // Estado do Jogo
                 this.isRunning = false;
@@ -877,11 +1383,28 @@
                 this.scoreDistance = 0;
                 this.scorePoints = 0;
                 this.coinsCollected = 0;
+                this.coinsEarnedThisRun = 0;
                 this.lives = 1;
                 this.maxLives = 3;
                 this.invulnerableTimer = 0;
 
-                // SISTEMA DE AR (180 L MAX - 10 SEGMENTOS)
+                // Sistema de Velocidade a Cada 30 Segundos
+                this.speedIntervalDuration = 30.0;
+                this.speedIntervalTimer = 30.0;
+                this.speedLevel = 1;
+
+                // Perfil do Usuário e Economia
+                this.currentUser = localStorage.getItem("roadster_user") || "Piloto";
+                this.totalCoins = parseInt(localStorage.getItem("roadster_coins") || "0", 10);
+                this.selectedCar = localStorage.getItem("roadster_selected_car") || "roadster";
+                let savedUnlocked = ['roadster'];
+                try {
+                    const parsed = JSON.parse(localStorage.getItem("roadster_unlocked_cars") || "['roadster']");
+                    if (Array.isArray(parsed)) savedUnlocked = parsed;
+                } catch(e) {}
+                this.unlockedCars = savedUnlocked;
+
+                // SISTEMA DE AR (180 L BASE - 10 SEGMENTOS)
                 this.maxAirLiters = 180;
                 this.airLiters = 180;
                 this.airDrainRate = 32.0;
@@ -922,9 +1445,10 @@
 
                 this.initThree();
                 this.buildAtmosphericWorld();
-                this.buildRoadsterVehicle();
+                this.buildPlayerVehicle(this.selectedCar);
                 this.initControls();
                 this.initEventListeners();
+                this.initUserData();
             }
 
             // =================================================================
@@ -1179,82 +1703,293 @@
             }
 
             // =================================================================
-            // CARRO DO JOGADOR: TESLA ROADSTER BRANCO METÁLICO
+            // VEÍCULOS 3D CUSTOMIZADOS: ROADSTER, CYBERTRUCK, PHANTOM E SOLARIS
             // =================================================================
-            buildRoadsterVehicle() {
+            buildPlayerVehicle(carId = 'roadster') {
+                if (this.truckGroup) {
+                    this.scene.remove(this.truckGroup);
+                }
+
+                this.selectedCar = carId;
                 this.truckGroup = new THREE.Group();
-
-                const carPaintMat = new THREE.MeshStandardMaterial({
-                    color: 0xf1f3f7,
-                    roughness: 0.18,
-                    metalness: 0.92,
-                    flatShading: true
-                });
-
-                const darkRoofMat = new THREE.MeshStandardMaterial({ color: 0x0f1118, roughness: 0.05, metalness: 0.95 });
-                const rearLedMat = new THREE.MeshBasicMaterial({ color: 0xff0033 });
-                const wheelMat = new THREE.MeshStandardMaterial({ color: 0x16171d, roughness: 0.7 });
-                const rimMat = new THREE.MeshStandardMaterial({ color: 0x3b3e4f, roughness: 0.3, metalness: 0.8 });
-
-                // 1. Chassi esportivo
-                const baseGeo = new THREE.BoxGeometry(2.0, 0.44, 4.2);
-                const baseMesh = new THREE.Mesh(baseGeo, carPaintMat);
-                baseMesh.position.y = 0.42;
-                baseMesh.castShadow = true;
-                this.truckGroup.add(baseMesh);
-
-                // 2. Cabine aerodinâmica com teto escuro
-                const cabinGeo = new THREE.BoxGeometry(1.65, 0.52, 2.3);
-                const cabin = new THREE.Mesh(cabinGeo, darkRoofMat);
-                cabin.position.set(0, 0.88, -0.15);
-                cabin.rotation.x = -0.12;
-                this.truckGroup.add(cabin);
-
-                // 3. Spoiler traseiro com LED vermelho linear
-                const spoilerGeo = new THREE.BoxGeometry(1.85, 0.08, 0.35);
-                const spoiler = new THREE.Mesh(spoilerGeo, carPaintMat);
-                spoiler.position.set(0, 0.78, 2.05);
-                this.truckGroup.add(spoiler);
-
-                const rearLed = new THREE.Mesh(new THREE.BoxGeometry(1.85, 0.06, 0.08), rearLedMat);
-                rearLed.position.set(0, 0.74, 2.18);
-                this.truckGroup.add(rearLed);
-
-                const rearGlow = new THREE.PointLight(0xff0033, 1.2, 5);
-                rearGlow.position.set(0, 0.74, 2.25);
-                this.truckGroup.add(rearGlow);
-
-                // 4. Rodas
                 this.wheels = [];
-                const wheelGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.32, 16).rotateZ(Math.PI / 2);
-                const wheelPositions = [
-                    [-1.0, 0.42, -1.3],
-                    [ 1.0, 0.42, -1.3],
-                    [-1.0, 0.42,  1.3],
-                    [ 1.0, 0.42,  1.3]
-                ];
 
-                wheelPositions.forEach(pos => {
-                    const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-                    wheel.position.set(...pos);
-                    wheel.castShadow = true;
-                    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.34, 6).rotateZ(Math.PI / 2), rimMat);
-                    wheel.add(cap);
-                    this.truckGroup.add(wheel);
-                    this.wheels.push(wheel);
-                });
+                if (carId === 'cybertruck') {
+                    // -------------------------------------------------------------
+                    // 1. TESLA CYBERTRUCK APEX (AÇO ESCOVADO, ANGULAR, FAROL LED)
+                    // -------------------------------------------------------------
+                    const steelMat = new THREE.MeshStandardMaterial({
+                        color: 0xcdd3de,
+                        roughness: 0.28,
+                        metalness: 0.95,
+                        flatShading: true
+                    });
+                    const armorGlassMat = new THREE.MeshStandardMaterial({
+                        color: 0x090b10,
+                        roughness: 0.05,
+                        metalness: 0.95
+                    });
+                    const cyberWheelMat = new THREE.MeshStandardMaterial({ color: 0x14151a, roughness: 0.8 });
+                    const cyberCapMat = new THREE.MeshStandardMaterial({ color: 0x484b57, metalness: 0.85, roughness: 0.25 });
+
+                    // Casco Angular Inferior
+                    const bodyGeo = new THREE.BoxGeometry(2.15, 0.52, 4.6);
+                    const bodyMesh = new THREE.Mesh(bodyGeo, steelMat);
+                    bodyMesh.position.y = 0.46;
+                    bodyMesh.castShadow = true;
+                    this.truckGroup.add(bodyMesh);
+
+                    // Teto em Ápice Piramidal Angular Característico
+                    const cabinGeo = new THREE.BoxGeometry(1.82, 0.65, 2.3);
+                    const cabinMesh = new THREE.Mesh(cabinGeo, armorGlassMat);
+                    cabinMesh.position.set(0, 0.95, -0.15);
+                    cabinMesh.rotation.x = -0.14;
+                    this.truckGroup.add(cabinMesh);
+
+                    // Caçamba Angular
+                    const bedGeo = new THREE.BoxGeometry(1.9, 0.2, 1.8);
+                    const bedMesh = new THREE.Mesh(bedGeo, steelMat);
+                    bedMesh.position.set(0, 0.72, 1.25);
+                    bedMesh.rotation.x = 0.12;
+                    this.truckGroup.add(bedMesh);
+
+                    // Barra Dianteira Contínua de LED Linear Branco
+                    const frontLightbar = new THREE.Mesh(
+                        new THREE.BoxGeometry(2.0, 0.08, 0.12),
+                        new THREE.MeshBasicMaterial({ color: 0xffffff })
+                    );
+                    frontLightbar.position.set(0, 0.62, -2.26);
+                    this.truckGroup.add(frontLightbar);
+
+                    const frontLight = new THREE.PointLight(0xffffff, 1.5, 9);
+                    frontLight.position.set(0, 0.65, -2.35);
+                    this.truckGroup.add(frontLight);
+
+                    // Barra Traseira Contínua de LED Vermelho
+                    const rearLightbar = new THREE.Mesh(
+                        new THREE.BoxGeometry(2.0, 0.08, 0.12),
+                        new THREE.MeshBasicMaterial({ color: 0xff0033 })
+                    );
+                    rearLightbar.position.set(0, 0.65, 2.26);
+                    this.truckGroup.add(rearLightbar);
+
+                    const rearGlow = new THREE.PointLight(0xff0033, 1.3, 6);
+                    rearGlow.position.set(0, 0.65, 2.32);
+                    this.truckGroup.add(rearGlow);
+
+                    // 4 Rodas Poligonais All-Terrain
+                    const wheelGeo = new THREE.CylinderGeometry(0.46, 0.46, 0.38, 12).rotateZ(Math.PI / 2);
+                    const wheelPositions = [
+                        [-1.08, 0.44, -1.45],
+                        [ 1.08, 0.44, -1.45],
+                        [-1.08, 0.44,  1.45],
+                        [ 1.08, 0.44,  1.45]
+                    ];
+
+                    wheelPositions.forEach(pos => {
+                        const wheel = new THREE.Mesh(wheelGeo, cyberWheelMat);
+                        wheel.position.set(...pos);
+                        wheel.castShadow = true;
+                        const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.4, 6).rotateZ(Math.PI / 2), cyberCapMat);
+                        wheel.add(cap);
+                        this.truckGroup.add(wheel);
+                        this.wheels.push(wheel);
+                    });
+
+                } else if (carId === 'phantom') {
+                    // -------------------------------------------------------------
+                    // 2. NEON PHANTOM (ROXO CÓSMICO, NEON CIANO, AEROFÓLIO DUPLO)
+                    // -------------------------------------------------------------
+                    const phantomPaint = new THREE.MeshStandardMaterial({
+                        color: 0x1d0a2d,
+                        roughness: 0.12,
+                        metalness: 0.92,
+                        flatShading: true
+                    });
+                    const cyanNeonMat = new THREE.MeshBasicMaterial({ color: 0x00f5ff });
+                    const darkGlass = new THREE.MeshStandardMaterial({ color: 0x06080e, roughness: 0.05, metalness: 0.98 });
+                    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111216, roughness: 0.6 });
+                    const cyanRimMat = new THREE.MeshBasicMaterial({ color: 0x00f5ff });
+
+                    // Chassi Rebaixado Aerodinâmico
+                    const baseMesh = new THREE.Mesh(new THREE.BoxGeometry(2.05, 0.38, 4.3), phantomPaint);
+                    baseMesh.position.y = 0.38;
+                    baseMesh.castShadow = true;
+                    this.truckGroup.add(baseMesh);
+
+                    // Cockpit Esportivo
+                    const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.48, 2.2), darkGlass);
+                    cabin.position.set(0, 0.78, -0.1);
+                    cabin.rotation.x = -0.15;
+                    this.truckGroup.add(cabin);
+
+                    // Saias Laterais em Neon Ciano
+                    [-1.05, 1.05].forEach(xSide => {
+                        const neonSide = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 3.8), cyanNeonMat);
+                        neonSide.position.set(xSide, 0.26, 0);
+                        this.truckGroup.add(neonSide);
+                    });
+
+                    // Faixas de Neon no Capô
+                    [-0.5, 0.5].forEach(xPos => {
+                        const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.04, 1.8), cyanNeonMat);
+                        stripe.position.set(xPos, 0.58, -1.0);
+                        this.truckGroup.add(stripe);
+                    });
+
+                    // Aerofólio Duplo Traseiro GT
+                    const wing1 = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.06, 0.3), phantomPaint);
+                    wing1.position.set(0, 0.75, 1.95);
+                    const wing2 = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.06, 0.28), cyanNeonMat);
+                    wing2.position.set(0, 0.9, 2.05);
+                    this.truckGroup.add(wing1);
+                    this.truckGroup.add(wing2);
+
+                    const cyanFrontGlow = new THREE.PointLight(0x00f5ff, 1.6, 8);
+                    cyanFrontGlow.position.set(0, 0.5, -2.1);
+                    this.truckGroup.add(cyanFrontGlow);
+
+                    // Rodas com anel Neon
+                    const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 16).rotateZ(Math.PI / 2);
+                    [[-1.0, 0.4, -1.3], [1.0, 0.4, -1.3], [-1.0, 0.4, 1.3], [1.0, 0.4, 1.3]].forEach(pos => {
+                        const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                        wheel.position.set(...pos);
+                        const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.32, 14).rotateZ(Math.PI / 2), cyanRimMat);
+                        wheel.add(ring);
+                        this.truckGroup.add(wheel);
+                        this.wheels.push(wheel);
+                    });
+
+                } else if (carId === 'solaris') {
+                    // -------------------------------------------------------------
+                    // 3. SOLARIS HYPERCAR (DOURADO METÁLICO, CARBONO, ESCAPE QUÁDRUPLO)
+                    // -------------------------------------------------------------
+                    const goldPaint = new THREE.MeshStandardMaterial({
+                        color: 0xffb703,
+                        roughness: 0.1,
+                        metalness: 0.98,
+                        flatShading: true
+                    });
+                    const carbonMat = new THREE.MeshStandardMaterial({ color: 0x111216, roughness: 0.75, metalness: 0.2 });
+                    const darkGlass = new THREE.MeshStandardMaterial({ color: 0x050508, roughness: 0.05, metalness: 0.98 });
+                    const orangeGlowMat = new THREE.MeshBasicMaterial({ color: 0xff6600 });
+
+                    // Casco Hypercar
+                    const baseMesh = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.4, 4.4), goldPaint);
+                    baseMesh.position.y = 0.4;
+                    baseMesh.castShadow = true;
+                    this.truckGroup.add(baseMesh);
+
+                    // Splitters Dianteiro e Traseiro em Carbono
+                    const frontSplitter = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.06, 0.6), carbonMat);
+                    frontSplitter.position.set(0, 0.24, -2.1);
+                    this.truckGroup.add(frontSplitter);
+
+                    // Cockpit em Gota
+                    const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.5, 2.4), darkGlass);
+                    cabin.position.set(0, 0.82, -0.1);
+                    cabin.rotation.x = -0.12;
+                    this.truckGroup.add(cabin);
+
+                    // Aleta Dorsal Central de Estabilidade
+                    const dorsalFin = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.35, 1.8), carbonMat);
+                    dorsalFin.position.set(0, 0.92, 0.9);
+                    this.truckGroup.add(dorsalFin);
+
+                    // Quatro Saídas de Escape Douradas com Chama Interior
+                    [-0.5, -0.18, 0.18, 0.5].forEach(xExhaust => {
+                        const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.25, 8).rotateX(Math.PI / 2), carbonMat);
+                        pipe.position.set(xExhaust, 0.45, 2.22);
+                        const flame = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.28, 8).rotateX(Math.PI / 2), orangeGlowMat);
+                        pipe.add(flame);
+                        this.truckGroup.add(pipe);
+                    });
+
+                    const flameLight = new THREE.PointLight(0xff5500, 1.8, 6);
+                    flameLight.position.set(0, 0.45, 2.35);
+                    this.truckGroup.add(flameLight);
+
+                    // Rodas de Ouro e Carbono
+                    const wheelGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.32, 16).rotateZ(Math.PI / 2);
+                    [[-1.02, 0.42, -1.35], [1.02, 0.42, -1.35], [-1.02, 0.42, 1.35], [1.02, 0.42, 1.35]].forEach(pos => {
+                        const wheel = new THREE.Mesh(wheelGeo, carbonMat);
+                        wheel.position.set(...pos);
+                        const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.34, 8).rotateZ(Math.PI / 2), goldPaint);
+                        wheel.add(rim);
+                        this.truckGroup.add(wheel);
+                        this.wheels.push(wheel);
+                    });
+
+                } else {
+                    // -------------------------------------------------------------
+                    // 4. TESLA ROADSTER 2077 (BRANCO PÉROLA METÁLICO - PADRÃO)
+                    // -------------------------------------------------------------
+                    const carPaintMat = new THREE.MeshStandardMaterial({
+                        color: 0xf1f3f7,
+                        roughness: 0.18,
+                        metalness: 0.92,
+                        flatShading: true
+                    });
+                    const darkRoofMat = new THREE.MeshStandardMaterial({ color: 0x0f1118, roughness: 0.05, metalness: 0.95 });
+                    const rearLedMat = new THREE.MeshBasicMaterial({ color: 0xff0033 });
+                    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x16171d, roughness: 0.7 });
+                    const rimMat = new THREE.MeshStandardMaterial({ color: 0x3b3e4f, roughness: 0.3, metalness: 0.8 });
+
+                    const baseMesh = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.44, 4.2), carPaintMat);
+                    baseMesh.position.y = 0.42;
+                    baseMesh.castShadow = true;
+                    this.truckGroup.add(baseMesh);
+
+                    const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.52, 2.3), darkRoofMat);
+                    cabin.position.set(0, 0.88, -0.15);
+                    cabin.rotation.x = -0.12;
+                    this.truckGroup.add(cabin);
+
+                    const spoiler = new THREE.Mesh(new THREE.BoxGeometry(1.85, 0.08, 0.35), carPaintMat);
+                    spoiler.position.set(0, 0.78, 2.05);
+                    this.truckGroup.add(spoiler);
+
+                    const rearLed = new THREE.Mesh(new THREE.BoxGeometry(1.85, 0.06, 0.08), rearLedMat);
+                    rearLed.position.set(0, 0.74, 2.18);
+                    this.truckGroup.add(rearLed);
+
+                    const rearGlow = new THREE.PointLight(0xff0033, 1.2, 5);
+                    rearGlow.position.set(0, 0.74, 2.25);
+                    this.truckGroup.add(rearGlow);
+
+                    const wheelGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.32, 16).rotateZ(Math.PI / 2);
+                    [[-1.0, 0.42, -1.3], [1.0, 0.42, -1.3], [-1.0, 0.42, 1.3], [1.0, 0.42, 1.3]].forEach(pos => {
+                        const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                        wheel.position.set(...pos);
+                        const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.34, 6).rotateZ(Math.PI / 2), rimMat);
+                        wheel.add(cap);
+                        this.truckGroup.add(wheel);
+                        this.wheels.push(wheel);
+                    });
+                }
 
                 this.scene.add(this.truckGroup);
                 this.truckGroup.position.set(this.playerX, this.playerY, 0);
             }
 
-            // Nuvem cônica de fumaça na traseira
+            // Nuvem cônica de fumaça na traseira personalizada por veículo
             emitRearSmokeCloud() {
                 const count = this.isFlying ? 3 : 2;
+                let particleColor = 0xffffff;
+                if (this.isFlying) {
+                    particleColor = 0x22d3ee;
+                } else if (this.selectedCar === 'phantom') {
+                    particleColor = 0xa855f7;
+                } else if (this.selectedCar === 'solaris') {
+                    particleColor = 0xf59e0b;
+                } else if (this.selectedCar === 'cybertruck') {
+                    particleColor = 0xd1d5db;
+                }
+
                 for (let i = 0; i < count; i++) {
                     const pGeo = new THREE.SphereGeometry(0.22 + Math.random() * 0.15, 6, 6);
                     const pMat = new THREE.MeshBasicMaterial({
-                        color: this.isFlying ? 0xe2f8ff : 0xffffff,
+                        color: particleColor,
                         transparent: true,
                         opacity: 0.7
                     });
@@ -1770,7 +2505,7 @@
             }
 
             // =================================================================
-            // EVENTOS DE INTERFACE
+            // EVENTOS DE INTERFACE E MODAIS
             // =================================================================
             initEventListeners() {
                 this.startBtn.addEventListener("click", () => {
@@ -1799,26 +2534,105 @@
                         requestAnimationFrame((t) => this.gameLoop(t));
                     }
                 });
+
+                // Botões de Garagem
+                const openGarage = () => {
+                    this.sound.init();
+                    this.renderGarageCards();
+                    this.garageModal.classList.add("active");
+                };
+                if (this.openGarageBtn) this.openGarageBtn.addEventListener("click", openGarage);
+                if (this.goGarageBtn) this.goGarageBtn.addEventListener("click", openGarage);
+                if (this.closeGarageBtn) this.closeGarageBtn.addEventListener("click", () => {
+                    this.garageModal.classList.remove("active");
+                });
+
+                // Botões de Ranking Global
+                const openLeaderboard = () => {
+                    this.sound.init();
+                    this.fetchLeaderboard();
+                    this.leaderboardModal.classList.add("active");
+                };
+                if (this.openLeaderboardBtn) this.openLeaderboardBtn.addEventListener("click", openLeaderboard);
+                if (this.goLeaderboardBtn) this.goLeaderboardBtn.addEventListener("click", openLeaderboard);
+                if (this.closeLeaderboardBtn) this.closeLeaderboardBtn.addEventListener("click", () => {
+                    this.leaderboardModal.classList.remove("active");
+                });
+
+                // Botões de Perfil / Nickname
+                const openUserModal = () => {
+                    this.sound.init();
+                    this.usernameInput.value = this.currentUser === "Piloto" ? "" : this.currentUser;
+                    this.usernameStatus.textContent = "";
+                    this.userModal.classList.add("active");
+                    setTimeout(() => this.usernameInput.focus(), 200);
+                };
+                if (this.hudUserBadge) this.hudUserBadge.addEventListener("click", openUserModal);
+                if (this.menuUserBadge) this.menuUserBadge.addEventListener("click", openUserModal);
+                if (this.closeUserModalBtn) this.closeUserModalBtn.addEventListener("click", () => {
+                    this.userModal.classList.remove("active");
+                });
+
+                if (this.saveUsernameBtn) {
+                    this.saveUsernameBtn.addEventListener("click", () => {
+                        const val = this.usernameInput.value.trim();
+                        if (val.length < 3) {
+                            this.usernameStatus.className = "status-msg error";
+                            this.usernameStatus.textContent = "O nome precisa ter pelo menos 3 letras!";
+                            return;
+                        }
+                        this.registerUser(val);
+                    });
+                }
             }
 
             startGame() {
                 this.startScreen.classList.remove("active");
                 this.gameoverScreen.classList.remove("active");
+                this.garageModal.classList.remove("active");
+                this.leaderboardModal.classList.remove("active");
+                this.userModal.classList.remove("active");
 
                 this.isRunning = true;
                 this.isPaused = false;
                 this.scoreDistance = 0;
                 this.scorePoints = 0;
                 this.coinsCollected = 0;
-                this.lives = 1;
+                this.coinsEarnedThisRun = 0;
                 this.invulnerableTimer = 0;
+
+                // Atributos específicos do veículo equipado
+                if (this.selectedCar === 'cybertruck') {
+                    this.maxLives = 4;
+                    this.lives = 2; // Começa com 2 corações
+                } else {
+                    this.maxLives = 3;
+                    this.lives = 1;
+                }
+
+                if (this.selectedCar === 'phantom') {
+                    this.maxAirLiters = 225;
+                    this.airLiters = 225;
+                } else {
+                    this.maxAirLiters = 180;
+                    this.airLiters = 180;
+                }
+
+                // Reset de Velocidade e Intervalo de 30 Segundos
+                this.speedIntervalDuration = 30.0;
+                this.speedIntervalTimer = this.speedIntervalDuration;
+                this.speedLevel = 1;
+
+                this.baseSpeed = (this.selectedCar === 'solaris') ? 88.0 : 78.0;
                 this.currentSpeed = this.baseSpeed;
+                this.maxSpeed = 175.0;
+
                 this.currentLane = 1;
                 this.playerX = LANES[1];
                 this.playerY = GROUND_Y;
                 this.velocityY = 0;
                 this.isFlying = false;
-                this.airLiters = this.maxAirLiters;
+
                 this.isRampJumping = false;
                 this.rampSpinProgress = 0;
                 this.trickAwarded = false;
@@ -1852,19 +2666,290 @@
 
                 this.flashDamage();
 
-                const savedBest = parseInt(localStorage.getItem("roadster_dash_best") || "0", 10);
                 const finalScore = Math.floor(this.scorePoints);
+                const finalDistance = Math.floor(this.scoreDistance);
+                const earnedCoins = this.coinsEarnedThisRun;
+
+                // Atualiza Moedas Locais
+                this.totalCoins += earnedCoins;
+                localStorage.setItem("roadster_coins", this.totalCoins.toString());
+
+                const savedBest = parseInt(localStorage.getItem("roadster_dash_best") || "0", 10);
                 const newBest = Math.max(savedBest, finalScore);
                 localStorage.setItem("roadster_dash_best", newBest.toString());
 
                 this.goReason.textContent = reason;
                 this.goScore.textContent = finalScore.toLocaleString();
-                this.goDist.textContent = `${Math.floor(this.scoreDistance)} m`;
+                this.goDist.textContent = `${finalDistance} m`;
                 this.goBest.textContent = newBest.toLocaleString();
+                if (this.goCoins) this.goCoins.textContent = `+${earnedCoins} 🪙`;
+
+                const totalDisplay = document.getElementById("go-total-coins");
+                if (totalDisplay) totalDisplay.textContent = this.totalCoins.toLocaleString();
+
+                // Envia para o banco de dados (Neon DB via API REST)
+                this.submitRunScore(finalScore, finalDistance, earnedCoins);
 
                 setTimeout(() => {
                     this.gameoverScreen.classList.add("active");
                 }, 400);
+            }
+
+            // =================================================================
+            // MÉTODOS DE INTEGRAÇÃO COM BACKEND / BANCO DE DADOS NEON
+            // =================================================================
+            async apiCall(endpoint, method = "GET", body = null) {
+                try {
+                    const options = {
+                        method,
+                        headers: { "Content-Type": "application/json" }
+                    };
+                    if (body) options.body = JSON.stringify(body);
+                    const res = await fetch(`${API_URL}${endpoint}`, options);
+                    if (!res.ok) throw new Error("HTTP " + res.status);
+                    return await res.json();
+                } catch (err) {
+                    return null;
+                }
+            }
+
+            async initUserData() {
+                this.updateUserUI();
+                if (!this.currentUser || this.currentUser === "Piloto") return;
+
+                const data = await this.apiCall(`/api/user/${encodeURIComponent(this.currentUser)}`);
+                if (data && data.success && data.user) {
+                    this.totalCoins = data.user.coins;
+                    this.selectedCar = data.user.selected_car || this.selectedCar;
+                    this.unlockedCars = data.user.unlocked_cars || this.unlockedCars;
+
+                    localStorage.setItem("roadster_coins", this.totalCoins.toString());
+                    localStorage.setItem("roadster_selected_car", this.selectedCar);
+                    localStorage.setItem("roadster_unlocked_cars", JSON.stringify(this.unlockedCars));
+                    
+                    this.buildPlayerVehicle(this.selectedCar);
+                    this.updateUserUI();
+                }
+            }
+
+            updateUserUI() {
+                if (this.hudUsername) this.hudUsername.textContent = this.currentUser;
+                if (this.menuUsername) this.menuUsername.textContent = this.currentUser;
+                if (this.hudCoins) this.hudCoins.textContent = this.totalCoins.toLocaleString();
+                if (this.menuCoins) this.menuCoins.textContent = this.totalCoins.toLocaleString();
+                if (this.garageCoinsVal) this.garageCoinsVal.textContent = this.totalCoins.toLocaleString();
+            }
+
+            async registerUser(newUsername) {
+                this.usernameStatus.className = "status-msg";
+                this.usernameStatus.textContent = "Verificando disponibilidade...";
+
+                const res = await this.apiCall('/api/user/register', 'POST', { username: newUsername });
+                if (res && res.success && res.user) {
+                    this.currentUser = res.user.username;
+                    this.totalCoins = res.user.coins;
+                    this.selectedCar = res.user.selected_car;
+                    this.unlockedCars = res.user.unlocked_cars;
+
+                    localStorage.setItem("roadster_user", this.currentUser);
+                    localStorage.setItem("roadster_coins", this.totalCoins.toString());
+                    localStorage.setItem("roadster_selected_car", this.selectedCar);
+                    localStorage.setItem("roadster_unlocked_cars", JSON.stringify(this.unlockedCars));
+
+                    this.usernameStatus.className = "status-msg success";
+                    this.usernameStatus.textContent = res.isNew ? "Piloto registrado com sucesso no Neon DB!" : "Perfil sincronizado!";
+                    
+                    this.buildPlayerVehicle(this.selectedCar);
+                    this.updateUserUI();
+
+                    setTimeout(() => {
+                        this.userModal.classList.remove("active");
+                    }, 800);
+                } else {
+                    // Fallback Local se o servidor estiver temporariamente desconectado
+                    this.currentUser = newUsername;
+                    localStorage.setItem("roadster_user", this.currentUser);
+                    this.usernameStatus.className = "status-msg success";
+                    this.usernameStatus.textContent = "Nome salvo localmente!";
+                    this.updateUserUI();
+                    setTimeout(() => {
+                        this.userModal.classList.remove("active");
+                    }, 800);
+                }
+            }
+
+            async submitRunScore(score, distance, coinsEarned) {
+                if (!this.currentUser || this.currentUser === "Piloto") return;
+                const res = await this.apiCall('/api/score/submit', 'POST', {
+                    username: this.currentUser,
+                    score,
+                    distance,
+                    coinsEarned,
+                    carUsed: this.selectedCar
+                });
+                if (res && res.success) {
+                    this.totalCoins = res.coins;
+                    localStorage.setItem("roadster_coins", this.totalCoins.toString());
+                    this.updateUserUI();
+                }
+            }
+
+            async fetchLeaderboard() {
+                const container = this.leaderboardListContainer;
+                container.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 25px;">Consultando banco de dados Neon...</div>';
+
+                const res = await this.apiCall('/api/leaderboard');
+                if (res && res.success && res.leaderboard && res.leaderboard.length > 0) {
+                    this.renderLeaderboard(res.leaderboard);
+                } else {
+                    // Fallback com recorde local
+                    const localBest = parseInt(localStorage.getItem("roadster_dash_best") || "0", 10);
+                    const mockData = [
+                        { username: this.currentUser, best_score: localBest, selected_car: this.selectedCar },
+                        { username: "CyberRacer", best_score: 18450, selected_car: "solaris" },
+                        { username: "NeonGhost", best_score: 14200, selected_car: "phantom" },
+                        { username: "TeslaPilot", best_score: 9800, selected_car: "cybertruck" }
+                    ].sort((a, b) => b.best_score - a.best_score);
+                    this.renderLeaderboard(mockData);
+                }
+            }
+
+            renderLeaderboard(list) {
+                const container = this.leaderboardListContainer;
+                container.innerHTML = "";
+
+                list.forEach((item, index) => {
+                    const row = document.createElement("div");
+                    const pos = index + 1;
+                    const topClass = pos === 1 ? "top-1" : pos === 2 ? "top-2" : pos === 3 ? "top-3" : "";
+                    row.className = `leaderboard-row ${topClass}`;
+
+                    const medal = pos === 1 ? "🥇" : pos === 2 ? "🥈" : pos === 3 ? "🥉" : `#${pos}`;
+                    const carInfo = CAR_CATALOG[item.selected_car] || { name: item.selected_car };
+
+                    row.innerHTML = `
+                        <div class="rank-pos">${medal}</div>
+                        <div class="rank-user-info">
+                            <span class="rank-username">${item.username}</span>
+                            <span class="rank-car-tag">${carInfo.name}</span>
+                        </div>
+                        <div class="rank-score-val">${item.best_score.toLocaleString()}</div>
+                    `;
+                    container.appendChild(row);
+                });
+            }
+
+            renderGarageCards() {
+                const container = this.garageCardsContainer;
+                container.innerHTML = "";
+                if (this.garageCoinsVal) this.garageCoinsVal.textContent = this.totalCoins.toLocaleString();
+
+                Object.values(CAR_CATALOG).forEach(car => {
+                    const card = document.createElement("div");
+                    const isSelected = this.selectedCar === car.id;
+                    const isOwned = this.unlockedCars.includes(car.id);
+
+                    card.className = `car-card ${isSelected ? 'selected' : ''}`;
+
+                    let badgeHTML = '';
+                    if (isSelected) {
+                        badgeHTML = '<span class="car-badge selected-tag">EQUIPADO</span>';
+                    } else if (isOwned) {
+                        badgeHTML = '<span class="car-badge owned">ADQUIRIDO</span>';
+                    } else {
+                        badgeHTML = `<span class="car-badge" style="background: rgba(255,255,255,0.1); color: #cbd5e1;">${car.tag}</span>`;
+                    }
+
+                    let btnHTML = '';
+                    if (isSelected) {
+                        btnHTML = '<button class="car-action-btn btn-disabled">EM USO</button>';
+                    } else if (isOwned) {
+                        btnHTML = `<button class="car-action-btn btn-equip" data-car="${car.id}">SELECIONAR</button>`;
+                    } else {
+                        if (this.totalCoins >= car.price) {
+                            btnHTML = `<button class="car-action-btn btn-buy" data-car="${car.id}">COMPRAR (🪙 ${car.price})</button>`;
+                        } else {
+                            btnHTML = `<button class="car-action-btn btn-disabled">FALTAM 🪙 ${car.price - this.totalCoins}</button>`;
+                        }
+                    }
+
+                    const priceText = car.price === 0 ? "GRÁTIS" : `🪙 ${car.price}`;
+
+                    card.innerHTML = `
+                        <div>
+                            <div class="car-card-header">
+                                <span class="car-title">${car.name}</span>
+                                ${badgeHTML}
+                            </div>
+                            <div class="car-desc">${car.desc}</div>
+                            <div class="car-bonus">⚡ ${car.bonus}</div>
+                        </div>
+                        <div class="car-footer">
+                            <span class="car-price-tag">${priceText}</span>
+                            ${btnHTML}
+                        </div>
+                    `;
+
+                    // Listeners dos botões
+                    const equipBtn = card.querySelector(".btn-equip");
+                    if (equipBtn) {
+                        equipBtn.addEventListener("click", () => this.selectCar(car.id));
+                    }
+                    const buyBtn = card.querySelector(".btn-buy");
+                    if (buyBtn) {
+                        buyBtn.addEventListener("click", () => this.buyCar(car.id));
+                    }
+
+                    container.appendChild(card);
+                });
+            }
+
+            async buyCar(carId) {
+                const car = CAR_CATALOG[carId];
+                if (!car || this.totalCoins < car.price) return;
+
+                // Tenta comprar via API
+                const res = await this.apiCall('/api/user/buy-car', 'POST', {
+                    username: this.currentUser,
+                    carId: carId
+                });
+
+                if (res && res.success) {
+                    this.totalCoins = res.user.coins;
+                    this.unlockedCars = res.user.unlocked_cars;
+                    this.selectedCar = carId;
+                } else {
+                    // Fallback Local
+                    this.totalCoins -= car.price;
+                    this.unlockedCars.push(carId);
+                    this.selectedCar = carId;
+                }
+
+                localStorage.setItem("roadster_coins", this.totalCoins.toString());
+                localStorage.setItem("roadster_selected_car", this.selectedCar);
+                localStorage.setItem("roadster_unlocked_cars", JSON.stringify(this.unlockedCars));
+
+                this.sound.playBuyCar();
+                this.buildPlayerVehicle(this.selectedCar);
+                this.updateUserUI();
+                this.renderGarageCards();
+                this.triggerActionPopup(`NOVO CARRO: ${car.name}!`);
+            }
+
+            async selectCar(carId) {
+                if (!this.unlockedCars.includes(carId)) return;
+                this.selectedCar = carId;
+                localStorage.setItem("roadster_selected_car", this.selectedCar);
+
+                await this.apiCall('/api/user/select-car', 'POST', {
+                    username: this.currentUser,
+                    carId: carId
+                });
+
+                this.sound.playLaneChange();
+                this.buildPlayerVehicle(this.selectedCar);
+                this.renderGarageCards();
+                this.triggerActionPopup(`EQUIPADO: ${CAR_CATALOG[carId].name}!`);
             }
 
             flashDamage() {
@@ -1924,10 +3009,24 @@
             }
 
             update(delta) {
+                // Sistema de Aumento de Velocidade a Cada 30 Segundos
+                this.speedIntervalTimer -= delta;
+                if (this.speedIntervalTimer <= 0) {
+                    this.speedLevel++;
+                    this.speedIntervalTimer = this.speedIntervalDuration;
+                    this.baseSpeed += 12.0;
+                    this.currentSpeed += 12.0;
+                    this.maxSpeed += 15.0;
+                    this.sound.playSpeedUp();
+                    this.triggerActionPopup(`⚡ SPEED UP! NÍVEL ${this.speedLevel}`);
+                }
+
                 // Progressão de Velocidade Acelerada e Intensa
-                this.currentSpeed = Math.min(this.maxSpeed, this.baseSpeed + (this.scoreDistance * 0.032));
+                this.currentSpeed = Math.min(this.maxSpeed, this.baseSpeed + (this.scoreDistance * 0.024));
                 this.scoreDistance += this.currentSpeed * delta;
-                this.scorePoints += (this.currentSpeed * 1.8) * delta;
+
+                const scoreMult = (this.selectedCar === 'solaris') ? 2.4 : 1.8;
+                this.scorePoints += (this.currentSpeed * scoreMult) * delta;
 
                 this.sound.updateEngine(this.currentSpeed, this.isFlying);
 
@@ -2200,6 +3299,7 @@
                     if (dist < 2.2) {
                         if (item.itemType === "coin") {
                             this.coinsCollected++;
+                            this.coinsEarnedThisRun++;
                             this.scorePoints += 150;
                             this.sound.playCoin();
                         } else if (item.itemType === "heart") {
@@ -2267,6 +3367,15 @@
                 if (this.hudSpeed) {
                     const speedKmH = Math.floor(this.currentSpeed * 1.6);
                     this.hudSpeed.textContent = `${speedKmH} KM/H`;
+                }
+                if (this.hudSpeedTimer) {
+                    this.hudSpeedTimer.textContent = `${Math.max(1, Math.ceil(this.speedIntervalTimer))}s`;
+                }
+                if (this.hudLevel) {
+                    this.hudLevel.textContent = `NÍVEL ${this.speedLevel}`;
+                }
+                if (this.hudCoins) {
+                    this.hudCoins.textContent = (this.totalCoins + this.coinsEarnedThisRun).toLocaleString();
                 }
                 
                 const rocketProgress = (this.airLiters / this.maxAirLiters) * 100;
