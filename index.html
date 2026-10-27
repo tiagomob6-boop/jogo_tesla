@@ -1799,18 +1799,25 @@
             // CENÁRIO: PONTE COM CHÃO SÓLIDO / CALÇADA PARA OS COQUEIROS
             // =================================================================
             buildAtmosphericWorld() {
-                // 1. Sol Poente Difuso e Suave (camadas de halo em degradê)
+                // 1. Sol Poente Difuso e Suave (camadas de halo com blend aditivo e núcleo quente)
                 const sunGroup = new THREE.Group();
                 const sunLayers = [
-                    { r: 22, color: 0xffd1a1, opacity: 0.9, z: -310 },
-                    { r: 34, color: 0xffa877, opacity: 0.28, z: -311 },
-                    { r: 55, color: 0xff8a7a, opacity: 0.14, z: -312 },
-                    { r: 90, color: 0xf07a9a, opacity: 0.07, z: -313 }
+                    { r: 20, color: 0xfffbe8, opacity: 1.0, blend: THREE.NormalBlending, z: -308 },
+                    { r: 32, color: 0xffba70, opacity: 0.6, blend: THREE.AdditiveBlending, z: -309 },
+                    { r: 52, color: 0xff7050, opacity: 0.35, blend: THREE.AdditiveBlending, z: -310 },
+                    { r: 85, color: 0xe04575, opacity: 0.18, blend: THREE.AdditiveBlending, z: -311 }
                 ];
                 sunLayers.forEach(l => {
                     const m = new THREE.Mesh(
                         new THREE.CircleGeometry(l.r, 48),
-                        new THREE.MeshBasicMaterial({ color: l.color, transparent: true, opacity: l.opacity, fog: false, depthWrite: false })
+                        new THREE.MeshBasicMaterial({
+                            color: l.color,
+                            transparent: l.opacity < 1.0,
+                            opacity: l.opacity,
+                            blending: l.blend,
+                            fog: false,
+                            depthWrite: false
+                        })
                     );
                     m.position.set(-55, 18, l.z);
                     sunGroup.add(m);
@@ -1858,7 +1865,7 @@
                 this.buildings = [];
                 for (let b = 0; b < 24; b++) {
                     const building = this.createSkylineBuilding();
-                    const bx = 28 + (b % 4) * 13 + (Math.random() - 0.5) * 5;
+                    const bx = 48 + (b % 4) * 16 + (Math.random() - 0.5) * 6;
                     const bz = -460 + b * 22 + (Math.random() - 0.5) * 6;
                     building.position.set(bx, -3.8, bz);
                     this.scene.add(building);
@@ -2014,13 +2021,13 @@
                     }
                 });
 
-                // Pilares sobre o mar
-                const pillarGeo = new THREE.CylinderGeometry(0.8, 0.8, 4.2, 10);
+                // Pilares sobre o mar (abaixo do piso para não vazar círculos cinzas no asfalto)
+                const pillarGeo = new THREE.CylinderGeometry(0.8, 0.8, 3.8, 10);
                 const pillarMat = new THREE.MeshStandardMaterial({ color: 0x828796, roughness: 0.6 });
                 [-width / 2 + 1, width / 2 - 1].forEach(px => {
                     const pillar = new THREE.Mesh(pillarGeo, pillarMat);
                     pillar.rotation.x = Math.PI / 2;
-                    pillar.position.set(px, 0, -2.1);
+                    pillar.position.set(px, 0, -2.4);
                     parentMesh.add(pillar);
                 });
             }
@@ -2430,6 +2437,22 @@
 
                 this.scene.add(this.truckGroup);
                 this.truckGroup.position.set(this.playerX, this.playerY, 0);
+
+                // Sombra de contato escura projetada sob o chassi do carro
+                if (!this.playerShadow) {
+                    const shadowGeo = new THREE.PlaneGeometry(2.3, 4.6);
+                    const shadowMat = new THREE.MeshBasicMaterial({
+                        map: this.getSoftTexture(),
+                        color: 0x080612,
+                        transparent: true,
+                        opacity: 0.58,
+                        depthWrite: false
+                    });
+                    this.playerShadow = new THREE.Mesh(shadowGeo, shadowMat);
+                    this.playerShadow.rotation.x = -Math.PI / 2;
+                    this.playerShadow.position.set(this.playerX, GROUND_Y + 0.02, 0);
+                    this.scene.add(this.playerShadow);
+                }
             }
 
             // Rastro de fumaça branca suave e transparente (sprites com textura radial)
@@ -2800,29 +2823,33 @@
                     const count = 4;
                     const coinY = this.isFlying ? FLIGHT_Y : 1.25;
 
-                    // Aro externo dourado polido
-                    const rimGeo = new THREE.CylinderGeometry(0.46, 0.46, 0.1, 24).rotateX(Math.PI / 2);
+                    // Aro externo dourado metálico nítido (sem ofuscar)
+                    const rimGeo = new THREE.CylinderGeometry(0.44, 0.44, 0.09, 24).rotateX(Math.PI / 2);
                     const rimMat = new THREE.MeshStandardMaterial({
-                        color: 0xffb703,
-                        emissive: 0xf59e0b,
-                        emissiveIntensity: 0.35,
-                        metalness: 0.85,
-                        roughness: 0.22
+                        color: 0xed9a0c,
+                        emissive: 0x78350f,
+                        emissiveIntensity: 0.12,
+                        metalness: 0.88,
+                        roughness: 0.28
                     });
 
-                    // Centro dourado reflexivo em relevo
-                    const coreGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.12, 18).rotateX(Math.PI / 2);
+                    // Centro dourado polido com relevo elegante
+                    const coreGeo = new THREE.CylinderGeometry(0.34, 0.34, 0.11, 18).rotateX(Math.PI / 2);
                     const coreMat = new THREE.MeshStandardMaterial({
-                        color: 0xfff08a,
-                        emissive: 0xfbbf24,
-                        emissiveIntensity: 0.55,
-                        metalness: 0.9,
-                        roughness: 0.18
+                        color: 0xf5b731,
+                        emissive: 0x451a03,
+                        emissiveIntensity: 0.08,
+                        metalness: 0.85,
+                        roughness: 0.32
                     });
 
-                    // Emblema geométrico central brilhante
-                    const emblemGeo = new THREE.BoxGeometry(0.18, 0.18, 0.14);
-                    const emblemMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                    // Emblema central contrastante (losango dourado escurecido, não branco estourado)
+                    const emblemGeo = new THREE.BoxGeometry(0.16, 0.16, 0.13);
+                    const emblemMat = new THREE.MeshStandardMaterial({
+                        color: 0xa16207,
+                        metalness: 0.6,
+                        roughness: 0.4
+                    });
 
                     for (let c = 0; c < count; c++) {
                         const coinGroup = new THREE.Group();
@@ -2837,8 +2864,8 @@
                         emblem.rotation.z = Math.PI / 4;
                         coinGroup.add(emblem);
 
-                        // Halo de brilho dourado (glow sprite)
-                        const glow = this.makeGlow(0xffb703, 1.8, 0.65);
+                        // Halo de brilho suave e discreto (sem ofuscar a visão)
+                        const glow = this.makeGlow(0xfbbf24, 0.85, 0.18);
                         coinGroup.add(glow);
                         coinGroup.glowSprite = glow;
 
@@ -4021,6 +4048,17 @@
                     this.truckGroup.position.y = this.playerY;
                 }
 
+                // Atualiza posição e intensidade da sombra de contato do carro
+                if (this.playerShadow) {
+                    this.playerShadow.position.x = this.truckGroup.position.x;
+                    this.playerShadow.position.z = this.truckGroup.position.z;
+                    const heightAboveGround = Math.max(0, this.playerY - GROUND_Y);
+                    const altitudeFactor = Math.max(0, 1.0 - heightAboveGround / 4.5);
+                    this.playerShadow.material.opacity = 0.58 * altitudeFactor;
+                    const shadowScale = Math.max(0.4, 1.0 - heightAboveGround * 0.12);
+                    this.playerShadow.scale.set(shadowScale, shadowScale, 1);
+                }
+
                 // Rotação das rodas proporcional à alta velocidade
                 const wheelRotation = (this.currentSpeed * delta) / 0.42;
                 this.wheels.forEach(w => w.rotation.x -= wheelRotation);
@@ -4046,9 +4084,12 @@
 
                 if (this.invulnerableTimer > 0) {
                     this.invulnerableTimer -= delta;
-                    this.truckGroup.visible = Math.floor(performance.now() / 80) % 2 === 0;
+                    const isVis = Math.floor(performance.now() / 80) % 2 === 0;
+                    this.truckGroup.visible = isVis;
+                    if (this.playerShadow) this.playerShadow.visible = isVis;
                 } else {
                     this.truckGroup.visible = true;
+                    if (this.playerShadow) this.playerShadow.visible = true;
                 }
 
                 // 7. SPAWNERS DINÂMICOS COM DIFICULDADE CRESCENTE
