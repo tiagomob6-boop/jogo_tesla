@@ -833,6 +833,80 @@
             cursor: not-allowed;
         }
 
+        /* Upgrades dos Carros na Garagem */
+        .upgrade-section {
+            margin-top: 8px;
+            margin-bottom: 8px;
+            padding: 8px 10px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .upgrade-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.72rem;
+            color: #cbd5e1;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .upgrade-badge {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 800;
+        }
+
+        .btn-upgrade {
+            width: 100%;
+            padding: 7px 10px;
+            border-radius: 8px;
+            border: none;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 0.75rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-transform: uppercase;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-upgrade:disabled, .btn-upgrade.btn-disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Chips de Seleção Rápida de Contas */
+        .account-chip {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #f1f5f9;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+
+        .account-chip:hover, .account-chip.active {
+            background: rgba(34, 211, 238, 0.2);
+            border-color: #22d3ee;
+            color: #38bdf8;
+        }
+
         /* Leaderboard Table */
         .leaderboard-box {
             width: 100%;
@@ -984,6 +1058,8 @@
                         <span class="heart-badge" id="heart-1">❤️</span>
                         <span class="heart-badge empty" id="heart-2">❤️</span>
                         <span class="heart-badge empty" id="heart-3">❤️</span>
+                        <span class="heart-badge empty" id="heart-4" style="display: none;">❤️</span>
+                        <span class="heart-badge empty" id="heart-5" style="display: none;">❤️</span>
                     </div>
                 </div>
             </div>
@@ -1116,18 +1192,30 @@
 
     <!-- MODAL DE IDENTIFICAÇÃO / NICKNAME ÚNICO -->
     <div class="modal-screen" id="user-modal">
-        <div class="glass-box">
+        <div class="glass-box" style="max-width: 440px;">
             <h2 class="game-title" style="font-size: 1.8rem;">PERFIL DO PILOTO</h2>
-            <div class="game-subtitle">CADASTRE SEU NICKNAME ÚNICO</div>
+            <div class="game-subtitle">ACESSE OU CADASTRE SEU NICKNAME</div>
             <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5; margin-bottom: 8px;">
-                Digite seu nome exclusivo para salvar seus recordes mundiais no Neon Database e acumular suas moedas!
+                Acesse seu piloto para carregar suas moedas, carros e recordes mundiais salvos!
             </p>
 
-            <input type="text" class="styled-input" id="username-input" placeholder="Ex: CyberRacer2077" maxlength="18" autocomplete="off" />
+            <input type="text" class="styled-input" id="username-input" placeholder="Digite seu Nickname" maxlength="18" autocomplete="off" />
             <div class="status-msg" id="username-status"></div>
 
-            <button class="action-btn" id="save-username-btn" style="width: 100%;">CONFIRMAR NOME</button>
-            <button class="secondary-btn" id="close-user-modal-btn" style="margin-top: 10px; width: 100%;">VOLTAR</button>
+            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                <button class="action-btn" id="login-username-btn" style="flex: 1; font-size: 0.82rem; padding: 12px 6px;">ENTRAR COM MEU NICK</button>
+                <button class="secondary-btn" id="save-username-btn" style="flex: 1; font-size: 0.82rem; padding: 12px 6px;">CRIAR NOVO PILOTO</button>
+            </div>
+
+            <!-- Contas salvas neste aparelho -->
+            <div id="saved-accounts-section" style="margin-top: 14px; text-align: left; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">
+                    👤 Pilotos neste aparelho (Clique para alternar):
+                </div>
+                <div id="saved-accounts-list" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+            </div>
+
+            <button class="secondary-btn" id="close-user-modal-btn" style="margin-top: 12px; width: 100%;">VOLTAR AO JOGO</button>
         </div>
     </div>
 
@@ -1375,13 +1463,21 @@
                 desc: 'Esportivo lendário aerodinâmico em branco pérola com LED linear.',
                 bonus: 'Agilidade clássica e dirigibilidade suave'
             },
+            rusty: {
+                id: 'rusty',
+                name: 'Rusty Rod 1984',
+                price: 50,
+                tag: 'Clássico Enferrujado',
+                desc: 'Carro veterano enferrujado estilo rat-rod com manchas de ferrugem, para-choque de ferro e escape lateral.',
+                bonus: 'Preço popular (🪙 50) e lataria resistente a impactos!'
+            },
             cybertruck: {
                 id: 'cybertruck',
                 name: 'Cybertruck Apex',
                 price: 250,
                 tag: 'Blindado (+1 Vida)',
                 desc: 'Carroceria angular em aço escovado e farol horizontal contínuo.',
-                bonus: 'Começa cada corrida com +1 Coração de Vida!'
+                bonus: 'Começa cada corrida com +1 Coração de Vida (Melhorável com Moedas)!'
             },
             phantom: {
                 id: 'phantom',
@@ -1389,7 +1485,7 @@
                 price: 600,
                 tag: 'Voo Prolongado (+25% Ar)',
                 desc: 'Supercarro roxo espacial com difusores luminosos em neon ciano.',
-                bonus: 'Tanque ampliado para 225 L de Ar!'
+                bonus: 'Tanque ampliado para 225 L de Ar (Melhorável com Moedas)!'
             },
             solaris: {
                 id: 'solaris',
@@ -1404,7 +1500,7 @@
         // Rota base da API REST (compatível com Render e Local)
         const API_URL = (window.location.hostname === "localhost" || window.location.port === "3000" || window.location.hostname.includes("onrender.com"))
             ? ""
-            : (localStorage.getItem("roadster_api_url") || "");
+            : (localStorage.getItem("roadster_api_url") || "https://jogo-tesla.onrender.com");
 
         // =====================================================================
         // CONSTANTES DA RODOVIA
@@ -1442,7 +1538,8 @@
                     document.getElementById("heart-1"),
                     document.getElementById("heart-2"),
                     document.getElementById("heart-3"),
-                    document.getElementById("heart-4") // Suporte para 4 vidas
+                    document.getElementById("heart-4"),
+                    document.getElementById("heart-5")
                 ].filter(Boolean);
                 
                 // Segmentos de Ar (10 blocos)
@@ -1482,6 +1579,7 @@
                 this.usernameInput = document.getElementById("username-input");
                 this.usernameStatus = document.getElementById("username-status");
                 this.saveUsernameBtn = document.getElementById("save-username-btn");
+                this.loginUsernameBtn = document.getElementById("login-username-btn");
                 this.closeUserModalBtn = document.getElementById("close-user-modal-btn");
 
                 this.garageModal = document.getElementById("garage-modal");
@@ -1511,14 +1609,16 @@
 
                 // Perfil do Usuário e Economia
                 this.currentUser = localStorage.getItem("roadster_user") || "Piloto";
-                this.totalCoins = parseInt(localStorage.getItem("roadster_coins") || "0", 10);
-                this.selectedCar = localStorage.getItem("roadster_selected_car") || "roadster";
+                const savedAcc = this.loadAccountData(this.currentUser);
+                this.totalCoins = savedAcc && typeof savedAcc.coins === 'number' ? savedAcc.coins : parseInt(localStorage.getItem("roadster_coins") || "0", 10);
+                this.selectedCar = savedAcc && savedAcc.selectedCar ? savedAcc.selectedCar : (localStorage.getItem("roadster_selected_car") || "roadster");
                 let savedUnlocked = ['roadster'];
                 try {
-                    const parsed = JSON.parse(localStorage.getItem("roadster_unlocked_cars") || "['roadster']");
+                    const parsed = savedAcc && savedAcc.unlockedCars ? savedAcc.unlockedCars : JSON.parse(localStorage.getItem("roadster_unlocked_cars") || "[\"roadster\"]");
                     if (Array.isArray(parsed)) savedUnlocked = parsed;
                 } catch(e) {}
                 this.unlockedCars = savedUnlocked;
+                this.upgrades = savedAcc && savedAcc.upgrades ? savedAcc.upgrades : { phantom_air: 0, cybertruck_armor: 0 };
 
                 // SISTEMA DE AR (180 L BASE - 10 SEGMENTOS)
                 this.maxAirLiters = 180;
@@ -2230,6 +2330,65 @@
                         0.42, 0.34, carbon, gold, 5
                     );
 
+                } else if (carId === 'rusty') {
+                    // -------------------------------------------------------------
+                    // RUSTY ROD 1984: clássico enferrujado, para-choque de ferro fundido e escape lateral
+                    // -------------------------------------------------------------
+                    const rustPaint = new THREE.MeshStandardMaterial({
+                        color: 0x824424, // Marrom avermelhado de ferrugem oxidada
+                        roughness: 0.95,
+                        metalness: 0.15,
+                        flatShading: true
+                    });
+                    const ironBumper = new THREE.MeshStandardMaterial({ color: 0x221f1d, roughness: 0.85, metalness: 0.4 });
+                    const patchMat = new THREE.MeshStandardMaterial({ color: 0x543220, roughness: 0.9 });
+                    const dirtyGlass = new THREE.MeshStandardMaterial({ color: 0x1f1f1a, roughness: 0.4, opacity: 0.88, transparent: true });
+                    const dimYellow = new THREE.MeshBasicMaterial({ color: 0xffd152 });
+                    const brokenHeadlight = new THREE.MeshStandardMaterial({ color: 0x332211, roughness: 0.9 });
+                    const oldRed = new THREE.MeshBasicMaterial({ color: 0xcc2222 });
+
+                    // Casco angular estilo clássico muscle/sedan anos 80
+                    G.add(this.makeProfile([[-2.2, 0.32], [2.15, 0.32], [2.25, 0.48], [2.1, 0.68], [0.8, 0.72], [-1.3, 0.72], [-2.15, 0.65], [-2.2, 0.48]], 2.05, rustPaint, 0.04));
+                    // Cabine quadrada clássica
+                    G.add(this.makeProfile([[0.75, 0.72], [0.35, 1.18], [-0.95, 1.18], [-1.4, 0.72]], 1.55, dirtyGlass, 0.03));
+                    // Teto em metal enferrujado
+                    G.add(this.makeBox(1.6, 0.05, 1.45, rustPaint, 0, 1.2, -0.3));
+
+                    // Para-choques pesados de ferro fundido
+                    G.add(this.makeBox(2.15, 0.18, 0.18, ironBumper, 0, 0.42, -2.25));
+                    G.add(this.makeBox(2.15, 0.18, 0.18, ironBumper, 0, 0.42, 2.2));
+
+                    // Remendos de chapa de ferro na lataria
+                    G.add(this.makeBox(0.8, 0.25, 0.03, patchMat, 0.5, 0.56, -1.0));
+                    G.add(this.makeBox(0.6, 0.3, 0.03, patchMat, -0.6, 0.52, 0.8));
+
+                    // Grade dianteira exposta com aletas de ferro
+                    G.add(this.makeBox(1.3, 0.22, 0.06, ironBumper, 0, 0.55, -2.22));
+
+                    // Faróis assimétricos (um amarelo vintage e outro quebrado)
+                    G.add(this.makeBox(0.24, 0.18, 0.06, dimYellow, -0.7, 0.55, -2.22));
+                    G.add(this.makeBox(0.24, 0.18, 0.06, brokenHeadlight, 0.7, 0.55, -2.22));
+
+                    // Escapamento lateral saindo pela lateral direita do carro
+                    const sidePipe = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.2, 8).rotateX(Math.PI / 2), ironBumper);
+                    sidePipe.position.set(1.08, 0.32, 1.2);
+                    G.add(sidePipe);
+
+                    // Lanternas traseiras retangulares vintage
+                    [-0.7, 0.7].forEach(x => {
+                        G.add(this.makeBox(0.4, 0.12, 0.05, oldRed, x, 0.56, 2.22));
+                        const g = this.makeGlow(0xff3322, 0.6, 0.5);
+                        g.position.set(x, 0.56, 2.28);
+                        G.add(g);
+                    });
+
+                    // Rodas de ferro antigas com aros oxidados e calotas escuras
+                    const oldRim = new THREE.MeshStandardMaterial({ color: 0x4a2a1a, roughness: 0.85, metalness: 0.3 });
+                    this.addWheels(
+                        [[-1.02, 0.4, -1.3], [1.02, 0.4, -1.3], [-1.02, 0.4, 1.35], [1.02, 0.4, 1.35]],
+                        0.41, 0.34, tireMat, oldRim, 4
+                    );
+
                 } else {
                     // -------------------------------------------------------------
                     // TESLA ROADSTER 2077: branco pérola, cunha baixa e LED vermelho
@@ -2279,6 +2438,7 @@
                 if (this.isFlying) color = 0xdff7ff;
                 else if (this.selectedCar === 'phantom') color = 0xeadfff;
                 else if (this.selectedCar === 'solaris') color = 0xfff0e0;
+                else if (this.selectedCar === 'rusty') color = 0x8c7865;
 
                 const tex = this.getSoftTexture();
                 const rearZ = this.truckGroup.position.z + 2.5;
@@ -2950,6 +3110,7 @@
                     this.sound.init();
                     this.usernameInput.value = this.currentUser === "Piloto" ? "" : this.currentUser;
                     this.usernameStatus.textContent = "";
+                    this.renderSavedAccounts();
                     this.userModal.classList.add("active");
                     setTimeout(() => this.usernameInput.focus(), 200);
                 };
@@ -2958,6 +3119,20 @@
                 if (this.closeUserModalBtn) this.closeUserModalBtn.addEventListener("click", () => {
                     this.userModal.classList.remove("active");
                 });
+
+                if (this.loginUsernameBtn) {
+                    this.loginUsernameBtn.addEventListener("click", () => {
+                        this.loginUser(this.usernameInput.value.trim());
+                    });
+                }
+
+                if (this.usernameInput) {
+                    this.usernameInput.addEventListener("keydown", (e) => {
+                        if (e.key === "Enter") {
+                            this.loginUser(this.usernameInput.value.trim());
+                        }
+                    });
+                }
 
                 if (this.saveUsernameBtn) {
                     this.saveUsernameBtn.addEventListener("click", () => {
@@ -2988,18 +3163,21 @@
                 this.invulnerableTimer = 0;
                 this.resetStreak();
                 if (this.comboFeed) this.comboFeed.querySelectorAll(".combo-item").forEach(el => el.remove());
-                // Atributos específicos do veículo equipado
+                
+                // Atributos específicos do veículo equipado e Upgrades Comprados
+                const armorLvl = (this.upgrades && this.upgrades.cybertruck_armor) || 0;
                 if (this.selectedCar === 'cybertruck') {
-                    this.maxLives = 4;
-                    this.lives = 2; // Começa com 2 corações
+                    this.maxLives = 3 + armorLvl; // Base 2 + 1 (+ níveis extras de blindagem)
+                    this.lives = 2 + armorLvl; // Começa com 2 corações + blindagem
                 } else {
                     this.maxLives = 3;
                     this.lives = 1;
                 }
 
+                const airLvl = (this.upgrades && this.upgrades.phantom_air) || 0;
                 if (this.selectedCar === 'phantom') {
-                    this.maxAirLiters = 225;
-                    this.airLiters = 225;
+                    this.maxAirLiters = 225 + (airLvl * 25);
+                    this.airLiters = this.maxAirLiters;
                 } else {
                     this.maxAirLiters = 180;
                     this.airLiters = 180;
@@ -3087,17 +3265,172 @@
             // =================================================================
             async apiCall(endpoint, method = "GET", body = null) {
                 try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 6000);
                     const options = {
                         method,
-                        headers: { "Content-Type": "application/json" }
+                        headers: { "Content-Type": "application/json" },
+                        signal: controller.signal
                     };
                     if (body) options.body = JSON.stringify(body);
                     const res = await fetch(`${API_URL}${endpoint}`, options);
+                    clearTimeout(timeoutId);
                     if (!res.ok) throw new Error("HTTP " + res.status);
                     return await res.json();
                 } catch (err) {
                     return null;
                 }
+            }
+
+            loadAccountData(username) {
+                if (!username || username === "Piloto") return null;
+                const raw = localStorage.getItem(`roadster_acc_${username.toLowerCase()}`);
+                if (raw) {
+                    try { return JSON.parse(raw); } catch(e) {}
+                }
+                return null;
+            }
+
+            saveAccountData(username) {
+                if (!username || username === "Piloto") return;
+                const accData = {
+                    username: this.currentUser,
+                    coins: this.totalCoins,
+                    selectedCar: this.selectedCar,
+                    unlockedCars: this.unlockedCars,
+                    upgrades: this.upgrades || {}
+                };
+                localStorage.setItem(`roadster_acc_${username.toLowerCase()}`, JSON.stringify(accData));
+
+                localStorage.setItem("roadster_user", this.currentUser);
+                localStorage.setItem("roadster_coins", this.totalCoins.toString());
+                localStorage.setItem("roadster_selected_car", this.selectedCar);
+                localStorage.setItem("roadster_unlocked_cars", JSON.stringify(this.unlockedCars));
+
+                let accounts = [];
+                try {
+                    accounts = JSON.parse(localStorage.getItem("roadster_saved_accounts") || "[]");
+                } catch(e) {}
+                if (!accounts.map(a => a.toLowerCase()).includes(username.toLowerCase())) {
+                    accounts.push(username);
+                    localStorage.setItem("roadster_saved_accounts", JSON.stringify(accounts));
+                }
+            }
+
+            switchUser(username) {
+                if (!username) return;
+                const local = this.loadAccountData(username);
+                this.currentUser = username;
+                if (local) {
+                    this.totalCoins = typeof local.coins === 'number' ? local.coins : 0;
+                    this.selectedCar = local.selectedCar || 'roadster';
+                    this.unlockedCars = local.unlockedCars || ['roadster'];
+                    this.upgrades = local.upgrades || { phantom_air: 0, cybertruck_armor: 0 };
+                }
+                this.saveAccountData(username);
+                this.buildPlayerVehicle(this.selectedCar);
+                this.updateUserUI();
+                this.renderGarageCards();
+                this.sound.playHeart();
+                this.triggerActionPopup(`BEM-VINDO, ${username}!`);
+
+                // Sincroniza dados mais recentes com o banco de dados em background
+                this.apiCall(`/api/user/${encodeURIComponent(username)}`).then(data => {
+                    if (data && data.success && data.user) {
+                        this.totalCoins = Math.max(this.totalCoins, data.user.coins || 0);
+                        if (data.user.unlocked_cars && Array.isArray(data.user.unlocked_cars)) {
+                            this.unlockedCars = Array.from(new Set([...this.unlockedCars, ...data.user.unlocked_cars]));
+                        }
+                        if (data.user.upgrades) {
+                            this.upgrades = { ...this.upgrades, ...data.user.upgrades };
+                        }
+                        this.saveAccountData(username);
+                        this.updateUserUI();
+                        this.renderGarageCards();
+                    }
+                }).catch(() => {});
+            }
+
+            renderSavedAccounts() {
+                const container = document.getElementById("saved-accounts-list");
+                if (!container) return;
+                container.innerHTML = "";
+
+                let accounts = [];
+                try {
+                    accounts = JSON.parse(localStorage.getItem("roadster_saved_accounts") || "[]");
+                } catch(e) {}
+
+                if (!accounts.map(a => a.toLowerCase()).includes(this.currentUser.toLowerCase()) && this.currentUser !== "Piloto") {
+                    accounts.push(this.currentUser);
+                }
+
+                if (accounts.length === 0) {
+                    container.innerHTML = '<span style="font-size:0.75rem; color:#64748b;">Nenhum piloto registrado neste aparelho.</span>';
+                    return;
+                }
+
+                accounts.forEach(acc => {
+                    const data = this.loadAccountData(acc);
+                    const coins = data ? data.coins : 0;
+                    const chip = document.createElement("button");
+                    chip.type = "button";
+                    chip.className = `account-chip ${acc.toLowerCase() === this.currentUser.toLowerCase() ? 'active' : ''}`;
+                    chip.innerHTML = `👤 ${acc} <span style="color:#fbbf24; font-size:0.72rem;">(🪙 ${coins})</span>`;
+                    chip.addEventListener("click", () => {
+                        this.switchUser(acc);
+                        this.userModal.classList.remove("active");
+                    });
+                    container.appendChild(chip);
+                });
+            }
+
+            async loginUser(targetUsername) {
+                const name = (targetUsername || '').trim();
+                if (!name) {
+                    this.usernameStatus.className = "status-msg error";
+                    this.usernameStatus.textContent = "Digite o nome do piloto!";
+                    return;
+                }
+
+                this.usernameStatus.className = "status-msg";
+                this.usernameStatus.textContent = "Buscando piloto...";
+
+                const res = await this.apiCall('/api/user/login', 'POST', { username: name });
+                if (res && res.success && res.user) {
+                    this.currentUser = res.user.username;
+                    this.totalCoins = res.user.coins;
+                    this.selectedCar = res.user.selected_car || 'roadster';
+                    this.unlockedCars = res.user.unlocked_cars || ['roadster'];
+                    this.upgrades = res.user.upgrades || {};
+                    this.saveAccountData(this.currentUser);
+
+                    this.usernameStatus.className = "status-msg success";
+                    this.usernameStatus.textContent = `Piloto ${this.currentUser} conectado!`;
+                    this.buildPlayerVehicle(this.selectedCar);
+                    this.updateUserUI();
+                    this.renderGarageCards();
+                    this.sound.playHeart();
+
+                    setTimeout(() => {
+                        this.userModal.classList.remove("active");
+                    }, 650);
+                    return;
+                }
+
+                const local = this.loadAccountData(name);
+                if (local) {
+                    this.switchUser(name);
+                    this.usernameStatus.className = "status-msg success";
+                    this.usernameStatus.textContent = `Acesso local liberado para ${name}!`;
+                    setTimeout(() => {
+                        this.userModal.classList.remove("active");
+                    }, 650);
+                    return;
+                }
+
+                this.usernameStatus.className = "status-msg error";
+                this.usernameStatus.textContent = "Piloto não encontrado. Se for seu 1º acesso, clique em CRIAR NOVO PILOTO.";
             }
 
             async initUserData() {
@@ -3106,14 +3439,16 @@
 
                 const data = await this.apiCall(`/api/user/${encodeURIComponent(this.currentUser)}`);
                 if (data && data.success && data.user) {
-                    this.totalCoins = data.user.coins;
+                    this.totalCoins = Math.max(this.totalCoins, data.user.coins || 0);
                     this.selectedCar = data.user.selected_car || this.selectedCar;
-                    this.unlockedCars = data.user.unlocked_cars || this.unlockedCars;
+                    if (data.user.unlocked_cars && Array.isArray(data.user.unlocked_cars)) {
+                        this.unlockedCars = Array.from(new Set([...this.unlockedCars, ...data.user.unlocked_cars]));
+                    }
+                    if (data.user.upgrades) {
+                        this.upgrades = { ...this.upgrades, ...data.user.upgrades };
+                    }
 
-                    localStorage.setItem("roadster_coins", this.totalCoins.toString());
-                    localStorage.setItem("roadster_selected_car", this.selectedCar);
-                    localStorage.setItem("roadster_unlocked_cars", JSON.stringify(this.unlockedCars));
-                    
+                    this.saveAccountData(this.currentUser);
                     this.buildPlayerVehicle(this.selectedCar);
                     this.updateUserUI();
                 }
@@ -3128,40 +3463,53 @@
             }
 
             async registerUser(newUsername) {
-                this.usernameStatus.className = "status-msg";
-                this.usernameStatus.textContent = "Verificando disponibilidade...";
+                const name = (newUsername || '').trim();
+                if (!name || name.length < 3) {
+                    this.usernameStatus.className = "status-msg error";
+                    this.usernameStatus.textContent = "O nome precisa ter pelo menos 3 caracteres.";
+                    return;
+                }
 
-                const res = await this.apiCall('/api/user/register', 'POST', { username: newUsername });
+                this.usernameStatus.className = "status-msg";
+                this.usernameStatus.textContent = "Registrando piloto...";
+
+                const res = await this.apiCall('/api/user/register', 'POST', { username: name });
                 if (res && res.success && res.user) {
                     this.currentUser = res.user.username;
                     this.totalCoins = res.user.coins;
-                    this.selectedCar = res.user.selected_car;
-                    this.unlockedCars = res.user.unlocked_cars;
-
-                    localStorage.setItem("roadster_user", this.currentUser);
-                    localStorage.setItem("roadster_coins", this.totalCoins.toString());
-                    localStorage.setItem("roadster_selected_car", this.selectedCar);
-                    localStorage.setItem("roadster_unlocked_cars", JSON.stringify(this.unlockedCars));
+                    this.selectedCar = res.user.selected_car || 'roadster';
+                    this.unlockedCars = res.user.unlocked_cars || ['roadster'];
+                    this.upgrades = res.user.upgrades || {};
+                    this.saveAccountData(this.currentUser);
 
                     this.usernameStatus.className = "status-msg success";
                     this.usernameStatus.textContent = res.isNew ? "Piloto registrado com sucesso no Neon DB!" : "Perfil sincronizado!";
                     
                     this.buildPlayerVehicle(this.selectedCar);
                     this.updateUserUI();
+                    this.renderGarageCards();
+                    this.sound.playHeart();
 
                     setTimeout(() => {
                         this.userModal.classList.remove("active");
-                    }, 800);
+                    }, 650);
                 } else {
-                    // Fallback Local se o servidor estiver temporariamente desconectado
-                    this.currentUser = newUsername;
-                    localStorage.setItem("roadster_user", this.currentUser);
+                    this.currentUser = name;
+                    this.totalCoins = 0;
+                    this.selectedCar = 'roadster';
+                    this.unlockedCars = ['roadster'];
+                    this.upgrades = { phantom_air: 0, cybertruck_armor: 0 };
+                    this.saveAccountData(name);
+
                     this.usernameStatus.className = "status-msg success";
-                    this.usernameStatus.textContent = "Nome salvo localmente!";
+                    this.usernameStatus.textContent = "Piloto salvo localmente!";
+                    this.buildPlayerVehicle(this.selectedCar);
                     this.updateUserUI();
+                    this.renderGarageCards();
+
                     setTimeout(() => {
                         this.userModal.classList.remove("active");
-                    }, 800);
+                    }, 650);
                 }
             }
 
@@ -3176,7 +3524,7 @@
                 });
                 if (res && res.success) {
                     this.totalCoins = res.coins;
-                    localStorage.setItem("roadster_coins", this.totalCoins.toString());
+                    this.saveAccountData(this.currentUser);
                     this.updateUserUI();
                 }
             }
@@ -3189,7 +3537,6 @@
                 if (res && res.success && res.leaderboard && res.leaderboard.length > 0) {
                     this.renderLeaderboard(res.leaderboard);
                 } else {
-                    // Fallback com recorde local
                     const localBest = parseInt(localStorage.getItem("roadster_dash_best") || "0", 10);
                     const mockData = [
                         { username: this.currentUser, best_score: localBest, selected_car: this.selectedCar },
@@ -3260,6 +3607,53 @@
                         }
                     }
 
+                    // Seção de Melhoria (Upgrades) para Cybertruck (Blindagem) e Neon Phantom (Ar)
+                    let upgradeHTML = '';
+                    if (isOwned && car.id === 'cybertruck') {
+                        const armorLvl = (this.upgrades && this.upgrades.cybertruck_armor) || 0;
+                        const armorCost = 150;
+                        const canBuyArmor = this.totalCoins >= armorCost && armorLvl < 3;
+                        const armorBtnText = armorLvl >= 3 
+                            ? 'BLINDAGEM MÁXIMA (★ MAX)' 
+                            : canBuyArmor 
+                                ? `+1 CORAÇÃO EXTRA (🪙 ${armorCost})` 
+                                : `FALTAM 🪙 ${armorCost - this.totalCoins} P/ BLINDAGEM`;
+                        
+                        upgradeHTML = `
+                            <div class="upgrade-section">
+                                <div class="upgrade-header">
+                                    <span>🛡️ BLINDAGEM REFORÇADA</span>
+                                    <span class="upgrade-badge">NÍVEL ${armorLvl} (${2 + armorLvl} ❤️)</span>
+                                </div>
+                                <button class="btn-upgrade ${canBuyArmor ? '' : 'btn-disabled'}" data-upgrade="cybertruck_armor" ${canBuyArmor ? '' : 'disabled'}>
+                                    ${armorBtnText}
+                                </button>
+                            </div>
+                        `;
+                    } else if (isOwned && car.id === 'phantom') {
+                        const airLvl = (this.upgrades && this.upgrades.phantom_air) || 0;
+                        const airCost = 100;
+                        const canBuyAir = this.totalCoins >= airCost && airLvl < 5;
+                        const totalAir = 225 + (airLvl * 25);
+                        const airBtnText = airLvl >= 5
+                            ? 'TANQUE MÁXIMO (★ MAX)'
+                            : canBuyAir
+                                ? `EXPANDIR +25L AR (🪙 ${airCost})`
+                                : `FALTAM 🪙 ${airCost - this.totalCoins} P/ EXPANSÃO`;
+
+                        upgradeHTML = `
+                            <div class="upgrade-section">
+                                <div class="upgrade-header">
+                                    <span>💨 EXPANSÃO DE AR</span>
+                                    <span class="upgrade-badge">NÍVEL ${airLvl} (${totalAir} L)</span>
+                                </div>
+                                <button class="btn-upgrade ${canBuyAir ? '' : 'btn-disabled'}" data-upgrade="phantom_air" ${canBuyAir ? '' : 'disabled'}>
+                                    ${airBtnText}
+                                </button>
+                            </div>
+                        `;
+                    }
+
                     const priceText = car.price === 0 ? "GRÁTIS" : `🪙 ${car.price}`;
 
                     card.innerHTML = `
@@ -3270,6 +3664,7 @@
                             </div>
                             <div class="car-desc">${car.desc}</div>
                             <div class="car-bonus">⚡ ${car.bonus}</div>
+                            ${upgradeHTML}
                         </div>
                         <div class="car-footer">
                             <span class="car-price-tag">${priceText}</span>
@@ -3277,7 +3672,7 @@
                         </div>
                     `;
 
-                    // Listeners dos botões
+                    // Listeners dos botões de selecionar e comprar
                     const equipBtn = card.querySelector(".btn-equip");
                     if (equipBtn) {
                         equipBtn.addEventListener("click", () => this.selectCar(car.id));
@@ -3286,57 +3681,85 @@
                     if (buyBtn) {
                         buyBtn.addEventListener("click", () => this.buyCar(car.id));
                     }
+                    const upgradeBtn = card.querySelector(".btn-upgrade:not(.btn-disabled)");
+                    if (upgradeBtn) {
+                        upgradeBtn.addEventListener("click", (e) => {
+                            e.stopPropagation();
+                            const uType = upgradeBtn.getAttribute("data-upgrade");
+                            this.buyUpgrade(uType);
+                        });
+                    }
 
                     container.appendChild(card);
                 });
             }
 
-            async buyCar(carId) {
+            buyUpgrade(upgradeType) {
+                const costs = { phantom_air: 100, cybertruck_armor: 150 };
+                const cost = costs[upgradeType];
+                if (!cost || this.totalCoins < cost) return;
+
+                // Atualização Otimista Imediata (Zero delay)
+                this.totalCoins -= cost;
+                this.upgrades = this.upgrades || {};
+                this.upgrades[upgradeType] = (this.upgrades[upgradeType] || 0) + 1;
+
+                this.saveAccountData(this.currentUser);
+                this.sound.playBuyCar();
+                this.updateUserUI();
+                this.renderGarageCards();
+
+                const upgradeName = upgradeType === 'phantom_air' ? 'Tanque de Ar (+25L)' : 'Blindagem (+1 Vida)';
+                this.triggerActionPopup(`UPGRADE: ${upgradeName}!`);
+
+                // Sincroniza em segundo plano com a API
+                this.apiCall('/api/user/upgrade', 'POST', {
+                    username: this.currentUser,
+                    upgradeType: upgradeType
+                }).catch(() => {});
+            }
+
+            buyCar(carId) {
                 const car = CAR_CATALOG[carId];
                 if (!car || this.totalCoins < car.price) return;
 
-                // Tenta comprar via API
-                const res = await this.apiCall('/api/user/buy-car', 'POST', {
-                    username: this.currentUser,
-                    carId: carId
-                });
-
-                if (res && res.success) {
-                    this.totalCoins = res.user.coins;
-                    this.unlockedCars = res.user.unlocked_cars;
-                    this.selectedCar = carId;
-                } else {
-                    // Fallback Local
-                    this.totalCoins -= car.price;
+                // Atualização Otimista Imediata
+                this.totalCoins -= car.price;
+                if (!this.unlockedCars.includes(carId)) {
                     this.unlockedCars.push(carId);
-                    this.selectedCar = carId;
                 }
+                this.selectedCar = carId;
 
-                localStorage.setItem("roadster_coins", this.totalCoins.toString());
-                localStorage.setItem("roadster_selected_car", this.selectedCar);
-                localStorage.setItem("roadster_unlocked_cars", JSON.stringify(this.unlockedCars));
-
+                this.saveAccountData(this.currentUser);
                 this.sound.playBuyCar();
                 this.buildPlayerVehicle(this.selectedCar);
                 this.updateUserUI();
                 this.renderGarageCards();
                 this.triggerActionPopup(`NOVO CARRO: ${car.name}!`);
-            }
 
-            async selectCar(carId) {
-                if (!this.unlockedCars.includes(carId)) return;
-                this.selectedCar = carId;
-                localStorage.setItem("roadster_selected_car", this.selectedCar);
-
-                await this.apiCall('/api/user/select-car', 'POST', {
+                // Sincroniza em segundo plano com a API
+                this.apiCall('/api/user/buy-car', 'POST', {
                     username: this.currentUser,
                     carId: carId
-                });
+                }).catch(() => {});
+            }
 
+            selectCar(carId) {
+                if (!this.unlockedCars.includes(carId)) return;
+                this.selectedCar = carId;
+
+                // Atualização Otimista Imediata
+                this.saveAccountData(this.currentUser);
                 this.sound.playLaneChange();
                 this.buildPlayerVehicle(this.selectedCar);
                 this.renderGarageCards();
                 this.triggerActionPopup(`EQUIPADO: ${CAR_CATALOG[carId].name}!`);
+
+                // Sincroniza em segundo plano com a API
+                this.apiCall('/api/user/select-car', 'POST', {
+                    username: this.currentUser,
+                    carId: carId
+                }).catch(() => {});
             }
 
             flashDamage() {
@@ -3373,6 +3796,11 @@
 
             updateHeartsUI() {
                 this.heartIcons.forEach((icon, index) => {
+                    if (index < this.maxLives) {
+                        icon.style.display = "inline-block";
+                    } else {
+                        icon.style.display = "none";
+                    }
                     if (index < this.lives) {
                         icon.classList.remove("empty");
                     } else {

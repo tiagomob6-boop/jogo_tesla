@@ -15,6 +15,7 @@ app.use(express.json());
 // =============================================================================
 const CAR_CATALOG = {
     roadster: { name: 'Roadster 2077', price: 0, bonus: 'Balanceado' },
+    rusty: { name: 'Rusty Rod 1984', price: 50, bonus: 'Lataria de Ferro' },
     cybertruck: { name: 'Cybertruck Apex', price: 250, bonus: '+1 Vida Inicial' },
     phantom: { name: 'Neon Phantom', price: 600, bonus: '+25% Tanque de Ar' },
     solaris: { name: 'Solaris Hypercar', price: 1200, bonus: '+15% Velocidade & Score' }
@@ -100,6 +101,8 @@ async function initDatabase() {
 
                 CREATE INDEX IF NOT EXISTS idx_users_best_score ON users(best_score DESC);
                 CREATE INDEX IF NOT EXISTS idx_scores_score ON scores(score DESC);
+
+                ALTER TABLE users ADD COLUMN IF NOT EXISTS upgrades JSONB DEFAULT '{}'::jsonb;
             `);
             console.log('✅ Banco de Dados Neon Postgres inicializado com sucesso (tabelas users e scores prontas).');
         } finally {
@@ -128,6 +131,35 @@ app.get('/api/health', (req, res) => {
 });
 
 // 2. Registro ou Login por Nickname Único
+app.post('/api/user/login', async (req, res) => {
+    const rawUsername = (req.body.username || '').trim();
+    if (!rawUsername) {
+        return res.status(400).json({ error: 'Informe seu Nickname para entrar.' });
+    }
+
+    if (useDb && pool) {
+        try {
+            const findRes = await pool.query('SELECT username, coins, best_score, selected_car, unlocked_cars, COALESCE(upgrades, \'{}\'::jsonb) as upgrades FROM users WHERE LOWER(username) = LOWER($1)', [rawUsername]);
+            if (findRes.rows.length === 0) {
+                return res.status(404).json({ error: 'Piloto não encontrado. Verifique o nome ou cadastre um novo piloto.' });
+            }
+            const user = findRes.rows[0];
+            await pool.query('UPDATE users SET last_seen = CURRENT_TIMESTAMP WHERE LOWER(username) = LOWER($1)', [rawUsername]);
+            return res.json({ success: true, user });
+        } catch (err) {
+            return res.status(500).json({ error: err.message });
+        }
+    } else {
+        for (const [_, u] of memoryStore.users.entries()) {
+            if (u.username.toLowerCase() === rawUsername.toLowerCase()) {
+                return res.json({ success: true, user: u });
+            }
+        }
+        return res.status(404).json({ error: 'Piloto não encontrado.' });
+    }
+});
+
+// 2. Registro ou Login por Nickname Único
 app.post('/api/user/register', async (req, res) => {
     const rawUsername = (req.body.username || '').trim();
     if (!rawUsername || rawUsername.length < 3 || rawUsername.length > 20) {
@@ -153,14 +185,15 @@ app.post('/api/user/register', async (req, res) => {
                         coins: user.coins,
                         best_score: user.best_score,
                         selected_car: user.selected_car,
-                        unlocked_cars: user.unlocked_cars
+                        unlocked_cars: user.unlocked_cars,
+                        upgrades: user.upgrades || {}
                     }
                 });
             }
 
             const insertRes = await pool.query(`
-                INSERT INTO users (username, coins, best_score, selected_car, unlocked_cars)
-                VALUES ($1, 0, 0, 'roadster', ARRAY['roadster'])
+                INSERT INTO users (username, coins, best_score, selected_car, unlocked_cars, upgrades)
+                VALUES ($1, 0, 0, 'roadster', ARRAY['roadster'], '{}'::jsonb)
                 RETURNING *
             `, [cleanUsername]);
 
@@ -173,7 +206,8 @@ app.post('/api/user/register', async (req, res) => {
                     coins: newUser.coins,
                     best_score: newUser.best_score,
                     selected_car: newUser.selected_car,
-                    unlocked_cars: newUser.unlocked_cars
+                    unlocked_cars: newUser.unlocked_cars,
+                    upgrades: newUser.upgrades || {}
                 }
             });
         } catch (err) {
@@ -210,7 +244,7 @@ app.get('/api/user/:username', async (req, res) => {
     const username = req.params.username;
     if (useDb && pool) {
         try {
-            const result = await pool.query('SELECT username, coins, best_score, selected_car, unlocked_cars FROM users WHERE LOWER(username) = LOWER($1)', [username]);
+            const result = await pool.query('SELECT username, coins, best_score, selected_car, unlocked_cars, COALESCE(upgrades, \'{}\'::jsonb) as upgrades FROM users WHERE LOWER(username) = LOWER($1)', [username]);
             if (result.rows.length === 0) {
                 return res.status(404).json({ error: 'Usuário não encontrado.' });
             }
@@ -310,6 +344,53 @@ app.post('/api/user/select-car', async (req, res) => {
         }
         user.selected_car = carId;
         return res.json({ success: true, selected_car: carId });
+    }
+});
+
+// 5.1 Comprar Upgrade de Veículo (Tanque de Ar ou Blindagem de Vida)
+app.post('/api/user/upgrade', async (req, res) => {
+    const { username, upgradeType } = req.body;
+    const UPGRADE_COSTS = {
+        phantom_air: 100,
+        cybertruck_armor: 150
+    };
+
+    const cost = UPGRADE_COSTS[upgradeType];
+    if (!cost) return res.status(400).json({ error: 'Tipo de upgrade inválido.' });
+
+    if (useDb && pool) {
+        try {
+            const findRes = await pool.query('SELECT * FROM users WHERE LOWER(username) = LOWER($1)', [username]);
+            if (findRes.rows.length === 0) return res.status(404).json({ error: 'Usuário não encontrado.' });
+
+            const user = findRes.rows[0];
+            if (user.coins < cost) return res.status(400).json({ error: 'Moedas insuficientes para este upgrade.' });
+
+            const currentUpgrades = user.upgrades || {};
+            const currentLevel = parseInt(currentUpgrades[upgradeType] || 0, 10);
+            const newUpgrades = { ...currentUpgrades, [upgradeType]: currentLevel + 1 };
+            const updatedCoins = user.coins - cost;
+
+            const updateRes = await pool.query(`
+                UPDATE users
+                SET coins = $1, upgrades = $2
+                WHERE id = $3
+                RETURNING username, coins, best_score, selected_car, unlocked_cars, upgrades
+            `, [updatedCoins, newUpgrades, user.id]);
+
+            return res.json({ success: true, user: updateRes.rows[0], message: 'Upgrade realizado com sucesso!' });
+        } catch (err) {
+            return res.status(500).json({ error: err.message });
+        }
+    } else {
+        const user = memoryStore.users.get(username);
+        if (!user) return res.status(404).json({ error: 'Usuário não encontrado.' });
+        if (user.coins < cost) return res.status(400).json({ error: 'Moedas insuficientes.' });
+
+        user.upgrades = user.upgrades || {};
+        user.upgrades[upgradeType] = (user.upgrades[upgradeType] || 0) + 1;
+        user.coins -= cost;
+        return res.json({ success: true, user, message: 'Upgrade realizado com sucesso!' });
     }
 });
 
