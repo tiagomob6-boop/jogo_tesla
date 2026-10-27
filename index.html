@@ -160,6 +160,80 @@
             margin-top: 4px;
         }
 
+        /* ===== FEED DE COMBOS / STREAK (estilo Roadster Dash) ===== */
+        .combo-feed {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 3px;
+            margin-top: 10px;
+            min-height: 20px;
+            pointer-events: none;
+        }
+
+        .streak-line {
+            font-size: 0.8rem;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            color: #ffd166;
+            text-shadow: 0 0 10px rgba(255, 140, 60, 0.9), 0 2px 4px rgba(0, 0, 0, 0.7);
+            opacity: 0;
+            transition: opacity 0.25s, transform 0.25s;
+            transform: translateX(10px);
+        }
+
+        .streak-line.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .streak-line.bump {
+            animation: streakBump 0.28s ease-out;
+        }
+
+        @keyframes streakBump {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        .combo-item {
+            display: flex;
+            gap: 8px;
+            align-items: baseline;
+            font-size: 0.82rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #ffffff;
+            text-transform: uppercase;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75);
+            animation: comboIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), comboOut 0.45s ease-in 1.55s forwards;
+        }
+
+        .combo-item .pts {
+            color: #ffb347;
+            font-weight: 900;
+            text-shadow: 0 0 8px rgba(255, 140, 60, 0.85), 0 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        .combo-item.big {
+            font-size: 1rem;
+        }
+
+        .combo-item.big .pts {
+            color: #5eead4;
+            text-shadow: 0 0 10px rgba(45, 212, 191, 0.9), 0 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        @keyframes comboIn {
+            from { opacity: 0; transform: translateX(30px) scale(0.85); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+
+        @keyframes comboOut {
+            to { opacity: 0; transform: translateY(-8px); }
+        }
+
         .hearts-box {
             display: flex;
             gap: 6px;
@@ -888,6 +962,9 @@
                     <div class="rocket-sub-fill" id="rocket-sub-fill"></div>
                 </div>
                 <div class="rocket-label">ROCKET</div>
+                <div class="combo-feed" id="combo-feed">
+                    <div class="streak-line" id="streak-line">STREAK x0</div>
+                </div>
             </div>
         </header>
 
@@ -1321,6 +1398,10 @@
                 this.hudUserBadge = document.getElementById("hud-user-badge");
                 this.hudScore = document.getElementById("hud-score");
                 this.actionPopup = document.getElementById("action-popup");
+                this.comboFeed = document.getElementById("combo-feed");
+                this.streakLine = document.getElementById("streak-line");
+                this.streak = 0;
+                this.streakTimer = 0;
                 this.rocketSubFill = document.getElementById("rocket-sub-fill");
                 this.heartIcons = [
                     document.getElementById("heart-1"),
@@ -1457,9 +1538,10 @@
             initThree() {
                 this.scene = new THREE.Scene();
                 
-                const sunsetFogColor = new THREE.Color(0xf69578);
-                this.scene.background = sunsetFogColor;
-                this.scene.fog = new THREE.FogExp2(0xf69578, 0.0075);
+                // Cor da névoa = cor do horizonte do céu (transição suave)
+                const HORIZON_COLOR = 0xf2a07e;
+                this.scene.background = new THREE.Color(HORIZON_COLOR);
+                this.scene.fog = new THREE.FogExp2(HORIZON_COLOR, 0.0052);
 
                 this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 650);
                 this.updateCameraLayout();
@@ -1474,20 +1556,78 @@
                 this.renderer.shadowMap.enabled = true;
                 this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
                 this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-                this.renderer.toneMappingExposure = 1.05;
+                this.renderer.toneMappingExposure = 1.0;
 
-                // Luz solar poente difusa suave
-                const sunLight = new THREE.DirectionalLight(0xffbe88, 2.0);
+                // ---------------------------------------------------------
+                // CÉU EM DEGRADÊ: roxo no topo -> rosa -> laranja no horizonte
+                // ---------------------------------------------------------
+                this.skyMaterial = new THREE.ShaderMaterial({
+                    side: THREE.BackSide,
+                    depthWrite: false,
+                    fog: false,
+                    uniforms: {
+                        topColor: { value: new THREE.Color(0x3a2a6e) },
+                        midColor: { value: new THREE.Color(0xc76a9c) },
+                        horizonColor: { value: new THREE.Color(HORIZON_COLOR) },
+                        sunDir: { value: new THREE.Vector3(-55, 18, -310).normalize() }
+                    },
+                    vertexShader: `
+                        varying vec3 vDir;
+                        void main() {
+                            vDir = normalize(position);
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform vec3 topColor;
+                        uniform vec3 midColor;
+                        uniform vec3 horizonColor;
+                        uniform vec3 sunDir;
+                        varying vec3 vDir;
+                        void main() {
+                            float h = clamp(vDir.y, -0.2, 1.0);
+                            vec3 col = mix(horizonColor, midColor, smoothstep(0.02, 0.22, h));
+                            col = mix(col, topColor, smoothstep(0.22, 0.65, h));
+                            // brilho quente em volta do sol
+                            float s = max(dot(normalize(vDir), sunDir), 0.0);
+                            col += vec3(1.0, 0.55, 0.3) * pow(s, 18.0) * 0.35;
+                            gl_FragColor = vec4(col, 1.0);
+                        }
+                    `
+                });
+                const sky = new THREE.Mesh(new THREE.SphereGeometry(600, 32, 16), this.skyMaterial);
+                sky.renderOrder = -10;
+                sky.frustumCulled = false;
+                this.scene.add(sky);
+
+                // Obs.: não usamos environment map (PMREM) porque em várias GPUs de
+                // celular ele deixa todos os materiais pretos. A iluminação do carro
+                // vem da luz de preenchimento + contorno abaixo.
+
+                // Luz solar poente (vinda da frente, cria contorno nas bordas)
+                const sunLight = new THREE.DirectionalLight(0xffb98a, 1.5);
                 sunLight.position.set(-35, 24, -120);
                 sunLight.castShadow = true;
                 sunLight.shadow.mapSize.width = 1024;
                 sunLight.shadow.mapSize.height = 1024;
                 this.scene.add(sunLight);
 
-                const ambientLight = new THREE.AmbientLight(0xc96d85, 1.35);
+                // LUZ DE PREENCHIMENTO atrás da câmera: ilumina a traseira do carro
+                const fillLight = new THREE.DirectionalLight(0xffe4ee, 1.3);
+                fillLight.position.set(3, 4.5, 22);
+                fillLight.target.position.set(0, 0.5, 0);
+                this.scene.add(fillLight);
+                this.scene.add(fillLight.target);
+
+                // Luz de contorno lateral (rim light rosa/lilás)
+                const rimLight = new THREE.DirectionalLight(0xd59cff, 0.6);
+                rimLight.position.set(18, 6, 4);
+                this.scene.add(rimLight);
+
+                const ambientLight = new THREE.AmbientLight(0xc98a9a, 0.55);
                 this.scene.add(ambientLight);
 
-                const hemiLight = new THREE.HemisphereLight(0xf28b9f, 0x242848, 0.85);
+                const hemiLight = new THREE.HemisphereLight(0xf6a3b8, 0x2a2848, 0.7);
                 this.scene.add(hemiLight);
 
                 window.addEventListener("resize", () => {
@@ -1524,19 +1664,22 @@
             // CENÁRIO: PONTE COM CHÃO SÓLIDO / CALÇADA PARA OS COQUEIROS
             // =================================================================
             buildAtmosphericWorld() {
-                // 1. Sol Poente Difuso e Suave
+                // 1. Sol Poente Difuso e Suave (camadas de halo em degradê)
                 const sunGroup = new THREE.Group();
-                const softSunGeo = new THREE.CircleGeometry(32, 32);
-                const softSunMat = new THREE.MeshBasicMaterial({ color: 0xffa366, transparent: true, opacity: 0.55, fog: false });
-                const softSun = new THREE.Mesh(softSunGeo, softSunMat);
-                softSun.position.set(-55, 18, -310);
-                sunGroup.add(softSun);
-
-                const haloGeo = new THREE.CircleGeometry(65, 32);
-                const haloMat = new THREE.MeshBasicMaterial({ color: 0xeb6b47, transparent: true, opacity: 0.25, fog: false });
-                const halo = new THREE.Mesh(haloGeo, haloMat);
-                halo.position.set(-55, 18, -311);
-                sunGroup.add(halo);
+                const sunLayers = [
+                    { r: 22, color: 0xffd1a1, opacity: 0.9, z: -310 },
+                    { r: 34, color: 0xffa877, opacity: 0.28, z: -311 },
+                    { r: 55, color: 0xff8a7a, opacity: 0.14, z: -312 },
+                    { r: 90, color: 0xf07a9a, opacity: 0.07, z: -313 }
+                ];
+                sunLayers.forEach(l => {
+                    const m = new THREE.Mesh(
+                        new THREE.CircleGeometry(l.r, 48),
+                        new THREE.MeshBasicMaterial({ color: l.color, transparent: true, opacity: l.opacity, fog: false, depthWrite: false })
+                    );
+                    m.position.set(-55, 18, l.z);
+                    sunGroup.add(m);
+                });
                 this.scene.add(sunGroup);
 
                 // 2. Oceano com reflexo suave
@@ -1553,7 +1696,8 @@
                 const roadWidth = 14.5;
 
                 const roadGeo = new THREE.PlaneGeometry(roadWidth, segmentLength);
-                const roadMat = new THREE.MeshStandardMaterial({ color: 0x48464f, roughness: 0.35, metalness: 0.35 });
+                // Asfalto fosco: rugoso e pouco metálico para evitar o brilho branco estourado
+                const roadMat = new THREE.MeshStandardMaterial({ color: 0x3c3945, roughness: 0.82, metalness: 0.05 });
 
                 for (let i = 0; i < totalSegments; i++) {
                     const roadMesh = new THREE.Mesh(roadGeo, roadMat);
@@ -1703,8 +1847,92 @@
             }
 
             // =================================================================
-            // VEÍCULOS 3D CUSTOMIZADOS: ROADSTER, CYBERTRUCK, PHANTOM E SOLARIS
+            // VEÍCULOS 3D CUSTOMIZADOS: CADA CARRO COM SILHUETA PRÓPRIA
             // =================================================================
+
+            // Textura radial suave (usada em brilhos de faróis, chamas e fumaça)
+            getSoftTexture() {
+                if (this.softTexture) return this.softTexture;
+                const c = document.createElement("canvas");
+                c.width = c.height = 64;
+                const g = c.getContext("2d");
+                const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+                grad.addColorStop(0, "rgba(255,255,255,1)");
+                grad.addColorStop(0.35, "rgba(255,255,255,0.6)");
+                grad.addColorStop(1, "rgba(255,255,255,0)");
+                g.fillStyle = grad;
+                g.fillRect(0, 0, 64, 64);
+                this.softTexture = new THREE.CanvasTexture(c);
+                return this.softTexture;
+            }
+
+            // Brilho aditivo (bloom falso) para luzes do carro
+            makeGlow(color, size, opacity = 0.9) {
+                const mat = new THREE.SpriteMaterial({
+                    map: this.getSoftTexture(),
+                    color,
+                    transparent: true,
+                    opacity,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false
+                });
+                const s = new THREE.Sprite(mat);
+                s.scale.set(size, size, 1);
+                s.userData.base = size;
+                return s;
+            }
+
+            // Carroceria a partir de um perfil lateral: [x = comprimento, y = altura]
+            // A frente do perfil (x positivo) aponta para -Z (sentido da pista)
+            makeProfile(points, width, material, bevel = 0.05) {
+                const shape = new THREE.Shape();
+                shape.moveTo(points[0][0], points[0][1]);
+                for (let i = 1; i < points.length; i++) shape.lineTo(points[i][0], points[i][1]);
+                shape.closePath();
+                const depth = Math.max(0.01, width - bevel * 2);
+                const geo = new THREE.ExtrudeGeometry(shape, {
+                    depth,
+                    bevelEnabled: bevel > 0,
+                    bevelThickness: bevel,
+                    bevelSize: bevel,
+                    bevelSegments: 2,
+                    curveSegments: 4
+                });
+                geo.translate(0, 0, -depth / 2);
+                geo.rotateY(Math.PI / 2);
+                geo.computeVertexNormals();
+                const mesh = new THREE.Mesh(geo, material);
+                mesh.castShadow = true;
+                return mesh;
+            }
+
+            makeBox(w, h, d, mat, x, y, z) {
+                const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+                m.position.set(x, y, z);
+                return m;
+            }
+
+            // Roda com pneu, aro e raios (os raios deixam a rotação visível)
+            addWheels(positions, radius, width, tireMat, rimMat, spokes = 5) {
+                positions.forEach(pos => {
+                    const wheel = new THREE.Group();
+                    const tire = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, width, 20).rotateZ(Math.PI / 2), tireMat);
+                    tire.castShadow = true;
+                    wheel.add(tire);
+                    const rim = new THREE.Mesh(new THREE.CylinderGeometry(radius * 0.64, radius * 0.64, width + 0.02, 18).rotateZ(Math.PI / 2), rimMat);
+                    wheel.add(rim);
+                    const spokeGeo = new THREE.BoxGeometry(width + 0.05, radius * 1.2, 0.06);
+                    for (let s = 0; s < spokes; s++) {
+                        const sp = new THREE.Mesh(spokeGeo, tireMat);
+                        sp.rotation.x = (s / spokes) * Math.PI;
+                        wheel.add(sp);
+                    }
+                    wheel.position.set(pos[0], pos[1], pos[2]);
+                    this.truckGroup.add(wheel);
+                    this.wheels.push(wheel);
+                });
+            }
+
             buildPlayerVehicle(carId = 'roadster') {
                 if (this.truckGroup) {
                     this.scene.remove(this.truckGroup);
@@ -1713,305 +1941,211 @@
                 this.selectedCar = carId;
                 this.truckGroup = new THREE.Group();
                 this.wheels = [];
+                this.exhaustFlames = null;
+                this.underglow = null;
+
+                const G = this.truckGroup;
+                const tireMat = new THREE.MeshStandardMaterial({ color: 0x15161b, roughness: 0.85, metalness: 0.1 });
+                const glassMat = new THREE.MeshStandardMaterial({ color: 0x1a1d27, roughness: 0.12, metalness: 0.3 });
 
                 if (carId === 'cybertruck') {
                     // -------------------------------------------------------------
-                    // 1. TESLA CYBERTRUCK APEX (AÇO ESCOVADO, ANGULAR, FAROL LED)
+                    // CYBERTRUCK APEX: perfil triangular em aço inox escovado
                     // -------------------------------------------------------------
-                    const steelMat = new THREE.MeshStandardMaterial({
-                        color: 0xcdd3de,
-                        roughness: 0.28,
-                        metalness: 0.95,
-                        flatShading: true
+                    const steel = new THREE.MeshStandardMaterial({
+                        color: 0xc3cad5, roughness: 0.38, metalness: 0.45, flatShading: true
                     });
-                    const armorGlassMat = new THREE.MeshStandardMaterial({
-                        color: 0x090b10,
-                        roughness: 0.05,
-                        metalness: 0.95
+                    const cladding = new THREE.MeshStandardMaterial({ color: 0x2a2c33, roughness: 0.9, metalness: 0.1 });
+                    const white = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                    const red = new THREE.MeshBasicMaterial({ color: 0xff1a3c });
+
+                    // Casco em cunha (nariz baixo, ápice no teto, caçamba reta)
+                    G.add(this.makeProfile([[-2.4, 0.4], [2.35, 0.4], [2.45, 0.62], [2.4, 0.86], [-0.15, 1.52], [-2.4, 1.02]], 2.1, steel, 0.03));
+                    // Faixa de vidro escuro lateral/para-brisa
+                    G.add(this.makeProfile([[1.7, 1.0], [-0.12, 1.5], [-1.3, 1.24], [-1.3, 1.0]], 2.14, glassMat, 0));
+                    // Proteção inferior (saia) em plástico escuro
+                    G.add(this.makeProfile([[-2.43, 0.3], [2.38, 0.3], [2.43, 0.56], [-2.43, 0.56]], 2.16, cladding, 0));
+                    // Linha de vinco da caçamba
+                    G.add(this.makeBox(2.12, 0.03, 2.2, cladding, 0, 1.03, 1.3));
+
+                    // Barra de LED dianteira e traseira de ponta a ponta
+                    G.add(this.makeBox(2.05, 0.05, 0.05, white, 0, 0.86, -2.43));
+                    G.add(this.makeBox(2.08, 0.07, 0.06, red, 0, 0.97, 2.43));
+                    [-0.8, 0, 0.8].forEach(x => {
+                        const g = this.makeGlow(0xff2244, 0.8, 0.55);
+                        g.position.set(x, 0.97, 2.5);
+                        G.add(g);
                     });
-                    const cyberWheelMat = new THREE.MeshStandardMaterial({ color: 0x14151a, roughness: 0.8 });
-                    const cyberCapMat = new THREE.MeshStandardMaterial({ color: 0x484b57, metalness: 0.85, roughness: 0.25 });
 
-                    // Casco Angular Inferior
-                    const bodyGeo = new THREE.BoxGeometry(2.15, 0.52, 4.6);
-                    const bodyMesh = new THREE.Mesh(bodyGeo, steelMat);
-                    bodyMesh.position.y = 0.46;
-                    bodyMesh.castShadow = true;
-                    this.truckGroup.add(bodyMesh);
-
-                    // Teto em Ápice Piramidal Angular Característico
-                    const cabinGeo = new THREE.BoxGeometry(1.82, 0.65, 2.3);
-                    const cabinMesh = new THREE.Mesh(cabinGeo, armorGlassMat);
-                    cabinMesh.position.set(0, 0.95, -0.15);
-                    cabinMesh.rotation.x = -0.14;
-                    this.truckGroup.add(cabinMesh);
-
-                    // Caçamba Angular
-                    const bedGeo = new THREE.BoxGeometry(1.9, 0.2, 1.8);
-                    const bedMesh = new THREE.Mesh(bedGeo, steelMat);
-                    bedMesh.position.set(0, 0.72, 1.25);
-                    bedMesh.rotation.x = 0.12;
-                    this.truckGroup.add(bedMesh);
-
-                    // Barra Dianteira Contínua de LED Linear Branco
-                    const frontLightbar = new THREE.Mesh(
-                        new THREE.BoxGeometry(2.0, 0.08, 0.12),
-                        new THREE.MeshBasicMaterial({ color: 0xffffff })
+                    this.addWheels(
+                        [[-1.1, 0.47, -1.55], [1.1, 0.47, -1.55], [-1.1, 0.47, 1.55], [1.1, 0.47, 1.55]],
+                        0.47, 0.38, tireMat,
+                        new THREE.MeshStandardMaterial({ color: 0x6b707c, metalness: 0.4, roughness: 0.4, flatShading: true }),
+                        3
                     );
-                    frontLightbar.position.set(0, 0.62, -2.26);
-                    this.truckGroup.add(frontLightbar);
-
-                    const frontLight = new THREE.PointLight(0xffffff, 1.5, 9);
-                    frontLight.position.set(0, 0.65, -2.35);
-                    this.truckGroup.add(frontLight);
-
-                    // Barra Traseira Contínua de LED Vermelho
-                    const rearLightbar = new THREE.Mesh(
-                        new THREE.BoxGeometry(2.0, 0.08, 0.12),
-                        new THREE.MeshBasicMaterial({ color: 0xff0033 })
-                    );
-                    rearLightbar.position.set(0, 0.65, 2.26);
-                    this.truckGroup.add(rearLightbar);
-
-                    const rearGlow = new THREE.PointLight(0xff0033, 1.3, 6);
-                    rearGlow.position.set(0, 0.65, 2.32);
-                    this.truckGroup.add(rearGlow);
-
-                    // 4 Rodas Poligonais All-Terrain
-                    const wheelGeo = new THREE.CylinderGeometry(0.46, 0.46, 0.38, 12).rotateZ(Math.PI / 2);
-                    const wheelPositions = [
-                        [-1.08, 0.44, -1.45],
-                        [ 1.08, 0.44, -1.45],
-                        [-1.08, 0.44,  1.45],
-                        [ 1.08, 0.44,  1.45]
-                    ];
-
-                    wheelPositions.forEach(pos => {
-                        const wheel = new THREE.Mesh(wheelGeo, cyberWheelMat);
-                        wheel.position.set(...pos);
-                        wheel.castShadow = true;
-                        const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.4, 6).rotateZ(Math.PI / 2), cyberCapMat);
-                        wheel.add(cap);
-                        this.truckGroup.add(wheel);
-                        this.wheels.push(wheel);
-                    });
 
                 } else if (carId === 'phantom') {
                     // -------------------------------------------------------------
-                    // 2. NEON PHANTOM (ROXO CÓSMICO, NEON CIANO, AEROFÓLIO DUPLO)
+                    // NEON PHANTOM: carro largo e rebaixado, roxo com neon ciano
                     // -------------------------------------------------------------
-                    const phantomPaint = new THREE.MeshStandardMaterial({
-                        color: 0x1d0a2d,
-                        roughness: 0.12,
-                        metalness: 0.92,
-                        flatShading: true
+                    const paint = new THREE.MeshStandardMaterial({
+                        color: 0x5a23a6, roughness: 0.3, metalness: 0.35
                     });
-                    const cyanNeonMat = new THREE.MeshBasicMaterial({ color: 0x00f5ff });
-                    const darkGlass = new THREE.MeshStandardMaterial({ color: 0x06080e, roughness: 0.05, metalness: 0.98 });
-                    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111216, roughness: 0.6 });
-                    const cyanRimMat = new THREE.MeshBasicMaterial({ color: 0x00f5ff });
+                    const dark = new THREE.MeshStandardMaterial({ color: 0x14101f, roughness: 0.5, metalness: 0.4 });
+                    const neon = new THREE.MeshBasicMaterial({ color: 0x22f3ff });
 
-                    // Chassi Rebaixado Aerodinâmico
-                    const baseMesh = new THREE.Mesh(new THREE.BoxGeometry(2.05, 0.38, 4.3), phantomPaint);
-                    baseMesh.position.y = 0.38;
-                    baseMesh.castShadow = true;
-                    this.truckGroup.add(baseMesh);
+                    G.add(this.makeProfile([[-2.25, 0.24], [2.25, 0.24], [2.38, 0.34], [2.2, 0.44], [1.0, 0.58], [-1.3, 0.64], [-2.25, 0.6]], 2.2, paint, 0.06));
+                    // Cockpit em bolha
+                    G.add(this.makeProfile([[0.95, 0.55], [0.2, 0.95], [-0.7, 0.96], [-1.25, 0.62]], 1.35, glassMat, 0.05));
 
-                    // Cockpit Esportivo
-                    const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.48, 2.2), darkGlass);
-                    cabin.position.set(0, 0.78, -0.1);
-                    cabin.rotation.x = -0.15;
-                    this.truckGroup.add(cabin);
+                    // Saias laterais e faixas de neon no capô
+                    [-1.13, 1.13].forEach(x => G.add(this.makeBox(0.05, 0.05, 3.9, neon, x, 0.3, 0)));
+                    [-0.45, 0.45].forEach(x => G.add(this.makeBox(0.07, 0.03, 1.4, neon, x, 0.6, -1.4)));
 
-                    // Saias Laterais em Neon Ciano
-                    [-1.05, 1.05].forEach(xSide => {
-                        const neonSide = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 3.8), cyanNeonMat);
-                        neonSide.position.set(xSide, 0.26, 0);
-                        this.truckGroup.add(neonSide);
+                    // Barbatanas verticais + aerofólio flutuante com borda neon
+                    [-0.75, 0.75].forEach(x => G.add(this.makeBox(0.06, 0.48, 0.7, paint, x, 0.86, 1.85)));
+                    G.add(this.makeBox(1.95, 0.05, 0.45, dark, 0, 1.1, 1.95));
+                    G.add(this.makeBox(1.95, 0.03, 0.04, neon, 0, 1.12, 2.18));
+
+                    // Lanternas ciano divididas
+                    [-0.6, 0.6].forEach(x => {
+                        G.add(this.makeBox(0.75, 0.06, 0.05, neon, x, 0.5, 2.27));
+                        const g = this.makeGlow(0x22f3ff, 0.9, 0.6);
+                        g.position.set(x, 0.5, 2.35);
+                        G.add(g);
                     });
 
-                    // Faixas de Neon no Capô
-                    [-0.5, 0.5].forEach(xPos => {
-                        const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.04, 1.8), cyanNeonMat);
-                        stripe.position.set(xPos, 0.58, -1.0);
-                        this.truckGroup.add(stripe);
+                    // Underglow: luz neon refletida no asfalto
+                    const ugMat = new THREE.MeshBasicMaterial({
+                        map: this.getSoftTexture(), color: 0x22e5ff, transparent: true, opacity: 0.55,
+                        blending: THREE.AdditiveBlending, depthWrite: false
                     });
+                    const underglow = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 6.0), ugMat);
+                    underglow.rotation.x = -Math.PI / 2;
+                    underglow.position.y = 0.03;
+                    G.add(underglow);
+                    this.underglow = underglow;
 
-                    // Aerofólio Duplo Traseiro GT
-                    const wing1 = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.06, 0.3), phantomPaint);
-                    wing1.position.set(0, 0.75, 1.95);
-                    const wing2 = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.06, 0.28), cyanNeonMat);
-                    wing2.position.set(0, 0.9, 2.05);
-                    this.truckGroup.add(wing1);
-                    this.truckGroup.add(wing2);
-
-                    const cyanFrontGlow = new THREE.PointLight(0x00f5ff, 1.6, 8);
-                    cyanFrontGlow.position.set(0, 0.5, -2.1);
-                    this.truckGroup.add(cyanFrontGlow);
-
-                    // Rodas com anel Neon
-                    const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 16).rotateZ(Math.PI / 2);
-                    [[-1.0, 0.4, -1.3], [1.0, 0.4, -1.3], [-1.0, 0.4, 1.3], [1.0, 0.4, 1.3]].forEach(pos => {
-                        const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-                        wheel.position.set(...pos);
-                        const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.32, 14).rotateZ(Math.PI / 2), cyanRimMat);
-                        wheel.add(ring);
-                        this.truckGroup.add(wheel);
-                        this.wheels.push(wheel);
-                    });
+                    this.addWheels(
+                        [[-1.05, 0.4, -1.35], [1.05, 0.4, -1.35], [-1.05, 0.4, 1.35], [1.05, 0.4, 1.35]],
+                        0.4, 0.32, tireMat, neon, 4
+                    );
 
                 } else if (carId === 'solaris') {
                     // -------------------------------------------------------------
-                    // 3. SOLARIS HYPERCAR (DOURADO METÁLICO, CARBONO, ESCAPE QUÁDRUPLO)
+                    // SOLARIS HYPERCAR: dourado, cauda longa, barbatana e 4 escapes
                     // -------------------------------------------------------------
-                    const goldPaint = new THREE.MeshStandardMaterial({
-                        color: 0xffb703,
-                        roughness: 0.1,
-                        metalness: 0.98,
-                        flatShading: true
+                    const gold = new THREE.MeshStandardMaterial({
+                        color: 0xf0b030, roughness: 0.28, metalness: 0.5
                     });
-                    const carbonMat = new THREE.MeshStandardMaterial({ color: 0x111216, roughness: 0.75, metalness: 0.2 });
-                    const darkGlass = new THREE.MeshStandardMaterial({ color: 0x050508, roughness: 0.05, metalness: 0.98 });
-                    const orangeGlowMat = new THREE.MeshBasicMaterial({ color: 0xff6600 });
+                    const carbon = new THREE.MeshStandardMaterial({ color: 0x17181d, roughness: 0.55, metalness: 0.35 });
+                    const orange = new THREE.MeshBasicMaterial({ color: 0xff7a1a });
 
-                    // Casco Hypercar
-                    const baseMesh = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.4, 4.4), goldPaint);
-                    baseMesh.position.y = 0.4;
-                    baseMesh.castShadow = true;
-                    this.truckGroup.add(baseMesh);
+                    G.add(this.makeProfile([[-2.55, 0.26], [2.3, 0.26], [2.45, 0.36], [2.25, 0.46], [0.9, 0.64], [-0.4, 0.8], [-2.2, 0.66], [-2.55, 0.52]], 2.15, gold, 0.06));
+                    // Cockpit em gota
+                    G.add(this.makeProfile([[1.0, 0.6], [0.35, 0.98], [-0.5, 1.0], [-1.6, 0.7]], 1.3, glassMat, 0.05));
+                    // Barbatana dorsal de carbono
+                    G.add(this.makeProfile([[-0.6, 0.95], [-2.45, 0.62], [-2.45, 1.12]], 0.07, carbon, 0));
+                    // Splitter dianteiro, difusor traseiro e entradas de ar laterais
+                    G.add(this.makeBox(2.2, 0.05, 0.5, carbon, 0, 0.26, -2.25));
+                    G.add(this.makeBox(1.9, 0.16, 0.3, carbon, 0, 0.33, 2.45));
+                    [-1.12, 1.12].forEach(x => G.add(this.makeBox(0.05, 0.22, 0.9, carbon, x, 0.48, 0.6)));
 
-                    // Splitters Dianteiro e Traseiro em Carbono
-                    const frontSplitter = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.06, 0.6), carbonMat);
-                    frontSplitter.position.set(0, 0.24, -2.1);
-                    this.truckGroup.add(frontSplitter);
+                    // Lanterna laranja fina de ponta a ponta
+                    G.add(this.makeBox(2.0, 0.04, 0.05, orange, 0, 0.6, 2.53));
 
-                    // Cockpit em Gota
-                    const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.5, 2.4), darkGlass);
-                    cabin.position.set(0, 0.82, -0.1);
-                    cabin.rotation.x = -0.12;
-                    this.truckGroup.add(cabin);
-
-                    // Aleta Dorsal Central de Estabilidade
-                    const dorsalFin = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.35, 1.8), carbonMat);
-                    dorsalFin.position.set(0, 0.92, 0.9);
-                    this.truckGroup.add(dorsalFin);
-
-                    // Quatro Saídas de Escape Douradas com Chama Interior
-                    [-0.5, -0.18, 0.18, 0.5].forEach(xExhaust => {
-                        const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.25, 8).rotateX(Math.PI / 2), carbonMat);
-                        pipe.position.set(xExhaust, 0.45, 2.22);
-                        const flame = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.28, 8).rotateX(Math.PI / 2), orangeGlowMat);
-                        pipe.add(flame);
-                        this.truckGroup.add(pipe);
+                    // Quatro escapes com chamas tremulando
+                    this.exhaustFlames = [];
+                    [-0.45, -0.17, 0.17, 0.45].forEach(x => {
+                        const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.2, 10).rotateX(Math.PI / 2), carbon);
+                        pipe.position.set(x, 0.4, 2.58);
+                        G.add(pipe);
+                        const flame = this.makeGlow(0xff8a2a, 0.55, 0.95);
+                        flame.position.set(x, 0.4, 2.72);
+                        G.add(flame);
+                        this.exhaustFlames.push(flame);
                     });
 
-                    const flameLight = new THREE.PointLight(0xff5500, 1.8, 6);
-                    flameLight.position.set(0, 0.45, 2.35);
-                    this.truckGroup.add(flameLight);
-
-                    // Rodas de Ouro e Carbono
-                    const wheelGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.32, 16).rotateZ(Math.PI / 2);
-                    [[-1.02, 0.42, -1.35], [1.02, 0.42, -1.35], [-1.02, 0.42, 1.35], [1.02, 0.42, 1.35]].forEach(pos => {
-                        const wheel = new THREE.Mesh(wheelGeo, carbonMat);
-                        wheel.position.set(...pos);
-                        const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.34, 8).rotateZ(Math.PI / 2), goldPaint);
-                        wheel.add(rim);
-                        this.truckGroup.add(wheel);
-                        this.wheels.push(wheel);
-                    });
+                    this.addWheels(
+                        [[-1.05, 0.42, -1.4], [1.05, 0.42, -1.4], [-1.05, 0.42, 1.45], [1.05, 0.42, 1.45]],
+                        0.42, 0.34, carbon, gold, 5
+                    );
 
                 } else {
                     // -------------------------------------------------------------
-                    // 4. TESLA ROADSTER 2077 (BRANCO PÉROLA METÁLICO - PADRÃO)
+                    // TESLA ROADSTER 2077: branco pérola, cunha baixa e LED vermelho
                     // -------------------------------------------------------------
-                    const carPaintMat = new THREE.MeshStandardMaterial({
-                        color: 0xf1f3f7,
-                        roughness: 0.18,
-                        metalness: 0.92,
-                        flatShading: true
+                    const pearl = new THREE.MeshStandardMaterial({
+                        color: 0xf4f5f8, roughness: 0.3, metalness: 0.15
                     });
-                    const darkRoofMat = new THREE.MeshStandardMaterial({ color: 0x0f1118, roughness: 0.05, metalness: 0.95 });
-                    const rearLedMat = new THREE.MeshBasicMaterial({ color: 0xff0033 });
-                    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x16171d, roughness: 0.7 });
-                    const rimMat = new THREE.MeshStandardMaterial({ color: 0x3b3e4f, roughness: 0.3, metalness: 0.8 });
+                    const dark = new THREE.MeshStandardMaterial({ color: 0x1b1d24, roughness: 0.6, metalness: 0.3 });
+                    const red = new THREE.MeshBasicMaterial({ color: 0xff1a3c });
+                    const white = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
-                    const baseMesh = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.44, 4.2), carPaintMat);
-                    baseMesh.position.y = 0.42;
-                    baseMesh.castShadow = true;
-                    this.truckGroup.add(baseMesh);
+                    G.add(this.makeProfile([[-2.15, 0.28], [2.05, 0.28], [2.22, 0.4], [2.1, 0.52], [0.9, 0.66], [-1.5, 0.76], [-2.12, 0.72], [-2.2, 0.5]], 2.0, pearl, 0.07));
+                    // Capota de vidro escuro
+                    G.add(this.makeProfile([[1.05, 0.62], [0.25, 1.08], [-0.75, 1.1], [-1.55, 0.74]], 1.5, glassMat, 0.05));
+                    // Lábio do spoiler integrado
+                    G.add(this.makeBox(1.85, 0.05, 0.3, pearl, 0, 0.8, 1.98));
+                    // Difusor traseiro
+                    G.add(this.makeBox(1.7, 0.14, 0.2, dark, 0, 0.35, 2.17));
+                    // Retrovisores
+                    [-0.95, 0.95].forEach(x => G.add(this.makeBox(0.18, 0.08, 0.12, pearl, x, 0.8, -0.55)));
+                    // Faróis dianteiros
+                    [-0.65, 0.65].forEach(x => G.add(this.makeBox(0.5, 0.05, 0.05, white, x, 0.5, -2.16)));
 
-                    const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.52, 2.3), darkRoofMat);
-                    cabin.position.set(0, 0.88, -0.15);
-                    cabin.rotation.x = -0.12;
-                    this.truckGroup.add(cabin);
-
-                    const spoiler = new THREE.Mesh(new THREE.BoxGeometry(1.85, 0.08, 0.35), carPaintMat);
-                    spoiler.position.set(0, 0.78, 2.05);
-                    this.truckGroup.add(spoiler);
-
-                    const rearLed = new THREE.Mesh(new THREE.BoxGeometry(1.85, 0.06, 0.08), rearLedMat);
-                    rearLed.position.set(0, 0.74, 2.18);
-                    this.truckGroup.add(rearLed);
-
-                    const rearGlow = new THREE.PointLight(0xff0033, 1.2, 5);
-                    rearGlow.position.set(0, 0.74, 2.25);
-                    this.truckGroup.add(rearGlow);
-
-                    const wheelGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.32, 16).rotateZ(Math.PI / 2);
-                    [[-1.0, 0.42, -1.3], [1.0, 0.42, -1.3], [-1.0, 0.42, 1.3], [1.0, 0.42, 1.3]].forEach(pos => {
-                        const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-                        wheel.position.set(...pos);
-                        const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.34, 6).rotateZ(Math.PI / 2), rimMat);
-                        wheel.add(cap);
-                        this.truckGroup.add(wheel);
-                        this.wheels.push(wheel);
+                    // LED traseiro vermelho de ponta a ponta + brilho
+                    G.add(this.makeBox(1.9, 0.06, 0.06, red, 0, 0.64, 2.2));
+                    [-0.7, 0, 0.7].forEach(x => {
+                        const g = this.makeGlow(0xff2244, 0.75, 0.55);
+                        g.position.set(x, 0.64, 2.28);
+                        G.add(g);
                     });
+
+                    this.addWheels(
+                        [[-1.0, 0.4, -1.3], [1.0, 0.4, -1.3], [-1.0, 0.4, 1.32], [1.0, 0.4, 1.32]],
+                        0.4, 0.32, tireMat,
+                        new THREE.MeshStandardMaterial({ color: 0xd9dce3, metalness: 0.3, roughness: 0.35 }),
+                        5
+                    );
                 }
 
                 this.scene.add(this.truckGroup);
                 this.truckGroup.position.set(this.playerX, this.playerY, 0);
             }
 
-            // Nuvem cônica de fumaça na traseira personalizada por veículo
+            // Rastro de fumaça branca suave e transparente (sprites com textura radial)
             emitRearSmokeCloud() {
-                const count = this.isFlying ? 3 : 2;
-                let particleColor = 0xffffff;
-                if (this.isFlying) {
-                    particleColor = 0x22d3ee;
-                } else if (this.selectedCar === 'phantom') {
-                    particleColor = 0xa855f7;
-                } else if (this.selectedCar === 'solaris') {
-                    particleColor = 0xf59e0b;
-                } else if (this.selectedCar === 'cybertruck') {
-                    particleColor = 0xd1d5db;
-                }
+                let color = 0xffffff;
+                if (this.isFlying) color = 0xdff7ff;
+                else if (this.selectedCar === 'phantom') color = 0xeadfff;
+                else if (this.selectedCar === 'solaris') color = 0xfff0e0;
 
-                for (let i = 0; i < count; i++) {
-                    const pGeo = new THREE.SphereGeometry(0.22 + Math.random() * 0.15, 6, 6);
-                    const pMat = new THREE.MeshBasicMaterial({
-                        color: particleColor,
-                        transparent: true,
-                        opacity: 0.7
-                    });
-                    const particle = new THREE.Mesh(pGeo, pMat);
-                    const offsetX = (Math.random() - 0.5) * 0.9;
-                    const offsetY = (Math.random() - 0.5) * 0.3;
-                    particle.position.set(
-                        this.truckGroup.position.x + offsetX,
-                        this.truckGroup.position.y + 0.45 + offsetY,
-                        this.truckGroup.position.z + 2.2
+                const tex = this.getSoftTexture();
+                const rearZ = this.truckGroup.position.z + 2.5;
+                for (let i = 0; i < 2; i++) {
+                    const mat = new THREE.SpriteMaterial({ map: tex, color, transparent: true, opacity: 0, depthWrite: false });
+                    const p = new THREE.Sprite(mat);
+                    const side = i === 0 ? -0.55 : 0.55;
+                    p.position.set(
+                        this.truckGroup.position.x + side + (Math.random() - 0.5) * 0.2,
+                        this.truckGroup.position.y + 0.25 + Math.random() * 0.1,
+                        rearZ
                     );
-
-                    particle.velocity = new THREE.Vector3(
-                        (Math.random() - 0.5) * 0.4,
-                        Math.random() * 0.2,
-                        this.currentSpeed * 0.4 + Math.random() * 8.0
+                    const s = 0.45 + Math.random() * 0.2;
+                    p.scale.set(s, s, 1);
+                    p.velocity = new THREE.Vector3(
+                        side * 0.9 + (Math.random() - 0.5) * 0.5,
+                        0.2 + Math.random() * 0.4,
+                        this.currentSpeed * 0.55 + Math.random() * 4.0
                     );
-                    particle.life = 0.45;
-                    particle.maxLife = 0.45;
+                    p.life = 0.55;
+                    p.maxLife = 0.55;
+                    p.baseOpacity = this.isFlying ? 0.5 : 0.38;
+                    p.growth = 2.6;
 
-                    this.scene.add(particle);
-                    this.smokeParticles.push(particle);
+                    this.scene.add(p);
+                    this.smokeParticles.push(p);
                 }
             }
 
@@ -2505,6 +2639,57 @@
             }
 
             // =================================================================
+            // FEED DE COMBOS (estilo Roadster Dash): "+10 STREAK", "BARREL ROLL +180"...
+            // =================================================================
+            addScoreEvent(label, points, big = false) {
+                this.streak = (this.streak || 0) + 1;
+                this.streakTimer = 3.5;
+                // Bônus de sequência: +10 por nível de streak (máx. +200)
+                const streakBonus = this.streak >= 2 ? Math.min(this.streak, 20) * 10 : 0;
+                const total = points + streakBonus;
+                this.scorePoints += total;
+
+                if (this.comboFeed) {
+                    const item = document.createElement("div");
+                    item.className = "combo-item" + (big ? " big" : "");
+                    const lbl = document.createElement("span");
+                    lbl.textContent = label;
+                    const pts = document.createElement("span");
+                    pts.className = "pts";
+                    pts.textContent = `+${total}`;
+                    item.appendChild(lbl);
+                    item.appendChild(pts);
+                    this.comboFeed.appendChild(item);
+
+                    const items = this.comboFeed.querySelectorAll(".combo-item");
+                    if (items.length > 4) items[0].remove();
+                    setTimeout(() => item.remove(), 2000);
+                }
+                this.updateStreakUI(true);
+            }
+
+            updateStreakUI(bump) {
+                if (!this.streakLine) return;
+                if (this.streak >= 2) {
+                    this.streakLine.textContent = `STREAK x${this.streak}`;
+                    this.streakLine.classList.add("active");
+                    if (bump) {
+                        this.streakLine.classList.remove("bump");
+                        void this.streakLine.offsetWidth; // reinicia a animação
+                        this.streakLine.classList.add("bump");
+                    }
+                } else {
+                    this.streakLine.classList.remove("active");
+                }
+            }
+
+            resetStreak() {
+                this.streak = 0;
+                this.streakTimer = 0;
+                this.updateStreakUI(false);
+            }
+
+            // =================================================================
             // EVENTOS DE INTERFACE E MODAIS
             // =================================================================
             initEventListeners() {
@@ -2600,7 +2785,8 @@
                 this.coinsCollected = 0;
                 this.coinsEarnedThisRun = 0;
                 this.invulnerableTimer = 0;
-
+                this.resetStreak();
+                if (this.comboFeed) this.comboFeed.querySelectorAll(".combo-item").forEach(el => el.remove());
                 // Atributos específicos do veículo equipado
                 if (this.selectedCar === 'cybertruck') {
                     this.maxLives = 4;
@@ -2975,6 +3161,7 @@
                 this.sound.playCrash();
                 this.flashDamage();
                 this.updateHeartsUI();
+                this.resetStreak();
 
                 if (this.lives <= 0) {
                     this.gameOver(reason);
@@ -3129,8 +3316,7 @@
                                 this.trickAwarded = false;
                                 this.velocityY = 25.0 + (this.currentSpeed - this.baseSpeed) * 0.09;
                                 this.sound.playRampLaunch();
-                                this.triggerActionPopup("RAMP LAUNCH! +300");
-                                this.scorePoints += 300;
+                                this.addScoreEvent("RAMP LAUNCH", 300);
                             }
                         }
                     }
@@ -3159,8 +3345,7 @@
                         this.truckGroup.rotation.z = 0;
                         if (!this.trickAwarded) {
                             this.trickAwarded = true;
-                            this.triggerActionPopup("BARREL ROLL! +180");
-                            this.scorePoints += 180;
+                            this.addScoreEvent("BARREL ROLL", 180);
                             this.sound.playTrickScore();
                         }
                     }
@@ -3173,8 +3358,7 @@
                         this.truckGroup.rotation.x = 0;
                         this.truckGroup.rotation.z = 0;
                         this.isRampJumping = false;
-                        this.triggerActionPopup("PERFECT LANDING! +400");
-                        this.scorePoints += 400;
+                        this.addScoreEvent("PERFECT LANDING", 400, true);
                         this.sound.playCoin();
                         this.sound.playSlam();
                         this.airLiters = Math.min(this.maxAirLiters, this.airLiters + 35);
@@ -3200,6 +3384,25 @@
                 // Rotação das rodas proporcional à alta velocidade
                 const wheelRotation = (this.currentSpeed * delta) / 0.42;
                 this.wheels.forEach(w => w.rotation.x -= wheelRotation);
+
+                // Chamas dos escapes tremulando (Solaris) e pulso do neon (Phantom)
+                if (this.exhaustFlames) {
+                    const boost = this.isFlying ? 1.6 : 1.0;
+                    this.exhaustFlames.forEach(f => {
+                        const sc = f.userData.base * boost * (0.75 + Math.random() * 0.5);
+                        f.scale.set(sc, sc, 1);
+                    });
+                }
+                if (this.underglow) {
+                    this.underglow.material.opacity = 0.45 + Math.sin(performance.now() * 0.006) * 0.15;
+                    this.underglow.visible = this.playerY < GROUND_Y + 1.5;
+                }
+
+                // Streak expira se o jogador ficar muito tempo sem pontuar
+                if (this.streakTimer > 0) {
+                    this.streakTimer -= delta;
+                    if (this.streakTimer <= 0) this.resetStreak();
+                }
 
                 if (this.invulnerableTimer > 0) {
                     this.invulnerableTimer -= delta;
@@ -3245,6 +3448,15 @@
 
                         if (distToCarX < 1.7 && distToCarZ < 3.4) {
                             this.takeDamage("COLISÃO COM VEÍCULO NO TRÁFEGO");
+                        }
+                    }
+
+                    // NEAR MISS: passou raspando na faixa ao lado sem bater
+                    if (!car.passed && car.position.z > this.truckGroup.position.z + 2.0) {
+                        car.passed = true;
+                        const dX = Math.abs(this.truckGroup.position.x - car.position.x);
+                        if (this.invulnerableTimer <= 0 && !this.isFlying && this.playerY < car.boxHeight + 0.5 && dX >= 1.7 && dX < 4.3) {
+                            this.addScoreEvent("NEAR MISS", 75);
                         }
                     }
 
@@ -3300,7 +3512,7 @@
                         if (item.itemType === "coin") {
                             this.coinsCollected++;
                             this.coinsEarnedThisRun++;
-                            this.scorePoints += 150;
+                            this.addScoreEvent("COIN", 150);
                             this.sound.playCoin();
                         } else if (item.itemType === "heart") {
                             this.addHeart();
@@ -3322,11 +3534,16 @@
                     const p = this.smokeParticles[i];
                     p.position.addScaledVector(p.velocity, delta);
                     p.life -= delta;
-                    p.scale.addScalar(delta * 2.8);
-                    p.material.opacity = (p.life / p.maxLife) * 0.7;
+                    const grow = delta * (p.growth || 2.8);
+                    p.scale.x += grow;
+                    p.scale.y += grow;
+                    // aparece rápido e some suavemente
+                    const t = 1 - Math.max(0, p.life) / p.maxLife;
+                    p.material.opacity = (p.baseOpacity || 0.3) * Math.min(1, t * 6) * (1 - t);
 
                     if (p.life <= 0) {
                         this.scene.remove(p);
+                        p.material.dispose();
                         this.smokeParticles.splice(i, 1);
                     }
                 }
