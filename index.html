@@ -102,20 +102,50 @@
             transform: scale(0.95);
         }
 
+        /* Painéis com vidro fosco escuro translúcido para leitura impecável */
+        .hud-telemetry-panel {
+            background: rgba(12, 10, 20, 0.68);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 14px;
+            padding: 10px 14px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            pointer-events: auto;
+            min-width: 140px;
+        }
+
+        .hud-score-panel {
+            background: rgba(12, 10, 20, 0.68);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 14px;
+            padding: 8px 16px 12px 16px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            pointer-events: auto;
+        }
+
         .distance-display {
-            font-size: 1.15rem;
-            font-weight: 800;
+            font-size: 1.28rem;
+            font-weight: 900;
             color: #ffffff;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95);
         }
 
         .speed-display {
-            font-size: 0.95rem;
+            font-size: 1.05rem;
             font-weight: 900;
             color: #fde047;
             letter-spacing: 1.5px;
-            text-shadow: 0 0 10px rgba(253, 224, 71, 0.6);
-            margin-top: 1px;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95), 0 0 12px rgba(253, 224, 71, 0.7);
         }
 
         /* Top Right: Score limpo */
@@ -132,7 +162,7 @@
             color: #ffffff;
             letter-spacing: -1px;
             line-height: 1;
-            text-shadow: 0 3px 14px rgba(0, 0, 0, 0.45);
+            text-shadow: 0 3px 14px rgba(0, 0, 0, 0.9), 0 0 18px rgba(255, 255, 255, 0.25);
         }
 
         .rocket-sub-bar {
@@ -582,37 +612,38 @@
 
         /* Speed Meta (Level & Timer a cada 30 segundos) */
         .speed-meta {
-            font-size: 0.72rem;
-            font-weight: 800;
+            font-size: 0.82rem;
+            font-weight: 900;
             color: #38bdf8;
-            letter-spacing: 1px;
+            letter-spacing: 1.2px;
             text-transform: uppercase;
-            text-shadow: 0 0 8px rgba(56, 189, 248, 0.7);
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95), 0 0 10px rgba(56, 189, 248, 0.7);
         }
 
         /* Marcador de Moedas no HUD */
         .hud-coins-display {
-            font-size: 0.95rem;
+            font-size: 1.05rem;
             font-weight: 900;
             color: #fbbf24;
             display: flex;
             align-items: center;
-            gap: 4px;
-            text-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
+            gap: 5px;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95), 0 0 10px rgba(251, 191, 36, 0.7);
             margin-top: 2px;
         }
 
         /* Badge do Piloto / Usuário */
         .user-badge {
-            font-size: 0.72rem;
-            font-weight: 700;
-            color: #e2e8f0;
-            background: rgba(255, 255, 255, 0.12);
-            padding: 3px 8px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: #f1f5f9;
+            background: rgba(255, 255, 255, 0.16);
+            padding: 4px 10px;
             border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.25);
             backdrop-filter: blur(6px);
             margin-top: 4px;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
             display: inline-block;
             cursor: pointer;
             pointer-events: auto;
@@ -937,31 +968,35 @@
     <!-- HUD Idêntico ao Roadster Dash -->
     <div id="hud">
         <header class="hud-header">
-            <!-- Canto Esquerdo: Botões, Distância e Vidas -->
+            <!-- Canto Esquerdo: Botões e Painel de Telemetria com fundo escuro translúcido -->
             <div class="header-left">
                 <div class="top-btn-row">
                     <button class="hud-icon-btn" id="pause-btn" title="Pausar">⏸</button>
                     <button class="hud-icon-btn" id="sound-btn" title="Som">🔊</button>
                 </div>
-                <div class="distance-display" id="hud-distance">0 m</div>
-                <div class="speed-display" id="hud-speed">125 KM/H</div>
-                <div class="speed-meta"><span id="hud-level">NÍVEL 1</span> • <span id="hud-speed-timer">30s</span></div>
-                <div class="hud-coins-display" id="hud-coins-box">🪙 <span id="hud-coins">0</span></div>
-                <div class="user-badge" id="hud-user-badge" title="Clique para alterar seu Nickname">👤 <span id="hud-username">Piloto</span></div>
-                <div class="hearts-box">
-                    <span class="heart-badge" id="heart-1">❤️</span>
-                    <span class="heart-badge empty" id="heart-2">❤️</span>
-                    <span class="heart-badge empty" id="heart-3">❤️</span>
+                <div class="hud-telemetry-panel">
+                    <div class="distance-display" id="hud-distance">0 m</div>
+                    <div class="speed-display" id="hud-speed">125 KM/H</div>
+                    <div class="speed-meta"><span id="hud-level">NÍVEL 1</span> • <span id="hud-speed-timer">30s</span></div>
+                    <div class="hud-coins-display" id="hud-coins-box">🪙 <span id="hud-coins">0</span></div>
+                    <div class="user-badge" id="hud-user-badge" title="Clique para alterar seu Nickname">👤 <span id="hud-username">Piloto</span></div>
+                    <div class="hearts-box">
+                        <span class="heart-badge" id="heart-1">❤️</span>
+                        <span class="heart-badge empty" id="heart-2">❤️</span>
+                        <span class="heart-badge empty" id="heart-3">❤️</span>
+                    </div>
                 </div>
             </div>
 
             <!-- Canto Direito: Placar e Barra Rocket -->
             <div class="header-right">
-                <div class="main-score" id="hud-score">0</div>
-                <div class="rocket-sub-bar">
-                    <div class="rocket-sub-fill" id="rocket-sub-fill"></div>
+                <div class="hud-score-panel">
+                    <div class="main-score" id="hud-score">0</div>
+                    <div class="rocket-sub-bar">
+                        <div class="rocket-sub-fill" id="rocket-sub-fill"></div>
+                    </div>
+                    <div class="rocket-label">ROCKET</div>
                 </div>
-                <div class="rocket-label">ROCKET</div>
                 <div class="combo-feed" id="combo-feed">
                     <div class="streak-line" id="streak-line">STREAK x0</div>
                 </div>
@@ -1718,6 +1753,17 @@
                     this.scene.add(palm);
                     this.palmTrees.push(palm);
                 }
+
+                // 5. Metrópole / Skyline Costeiro de Prédios Futuristas na Direita (cenário rico e imersivo)
+                this.buildings = [];
+                for (let b = 0; b < 24; b++) {
+                    const building = this.createSkylineBuilding();
+                    const bx = 28 + (b % 4) * 13 + (Math.random() - 0.5) * 5;
+                    const bz = -460 + b * 22 + (Math.random() - 0.5) * 6;
+                    building.position.set(bx, -3.8, bz);
+                    this.scene.add(building);
+                    this.buildings.push(building);
+                }
             }
 
             addBridgeArchitecture(parentMesh, width, length) {
@@ -1766,39 +1812,93 @@
                 outerBarrier.position.set(sidewalkCenterX - sidewalkWidth / 2 + 0.15, 0, 0.6);
                 parentMesh.add(outerBarrier);
 
-                // Canteiros circulares de pedra com terra fértil na base de cada coqueiro
+                // Sombra de contato suave e escura no chão na base de cada coqueiro (sem discos marrons flutuantes)
+                const shadowGeo = new THREE.PlaneGeometry(2.4, 1.4);
+                const shadowMat = new THREE.MeshBasicMaterial({
+                    map: this.getSoftTexture(),
+                    color: 0x0a0510,
+                    transparent: true,
+                    opacity: 0.38,
+                    depthWrite: false
+                });
                 for (let pz = -length / 2 + 10; pz < length / 2; pz += 22) {
-                    const planterRing = new THREE.Mesh(
-                        new THREE.CylinderGeometry(1.3, 1.4, 0.35, 16).rotateX(Math.PI / 2),
-                        new THREE.MeshStandardMaterial({ color: 0x7c7368, roughness: 0.85 })
-                    );
-                    planterRing.position.set(sidewalkCenterX, pz, 0.32);
-                    parentMesh.add(planterRing);
-
-                    const soil = new THREE.Mesh(
-                        new THREE.CircleGeometry(1.2, 16),
-                        new THREE.MeshStandardMaterial({ color: 0x2b1c14, roughness: 0.95 })
-                    );
-                    soil.position.set(sidewalkCenterX, pz, 0.5);
-                    parentMesh.add(soil);
+                    const shadow = new THREE.Mesh(shadowGeo, shadowMat);
+                    shadow.position.set(sidewalkCenterX, pz, 0.16);
+                    parentMesh.add(shadow);
                 }
 
-                // Estrutura coberta/pórtico moderno na lateral direita
-                const rightWall = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.5, length, 2.2),
-                    new THREE.MeshStandardMaterial({ color: 0x383547, metalness: 0.8, roughness: 0.25 })
-                );
-                rightWall.position.set(width / 2 + 0.2, 0, 1.1);
-                parentMesh.add(rightWall);
+                // =============================================================
+                // GUARDA-CORPO E GRADE ESTRUTURAL DA PONTE NA LATERAL DIREITA
+                // =============================================================
+                const rightEdgeX = width / 2; // +7.25
 
-                // Vigas superiores da estrutura da direita
-                for (let b = -length / 2 + 5; b < length / 2; b += 10) {
-                    const beam = new THREE.Mesh(
-                        new THREE.BoxGeometry(2.4, 0.3, 0.2),
-                        new THREE.MeshStandardMaterial({ color: 0x5a556e, metalness: 0.8 })
+                // Mureta base contínua de concreto limpo
+                const rightCurb = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.45, length, 0.75),
+                    new THREE.MeshStandardMaterial({ color: 0x4a4754, roughness: 0.7, metalness: 0.2 })
+                );
+                rightCurb.position.set(rightEdgeX + 0.22, 0, 0.375);
+                parentMesh.add(rightCurb);
+
+                // Friso linear de LED guia de pista (laranja pôr-do-sol)
+                const ledStrip = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.08, length, 0.08),
+                    new THREE.MeshBasicMaterial({ color: 0xff7a36 })
+                );
+                ledStrip.position.set(rightEdgeX + 0.02, 0, 0.2);
+                parentMesh.add(ledStrip);
+
+                // Corrimãos horizontais metálicos duplos (Top Rail & Mid Rail)
+                const railMat = new THREE.MeshStandardMaterial({ color: 0xd8dce6, metalness: 0.85, roughness: 0.25 });
+                const topRail = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.16, length, 0.12),
+                    railMat
+                );
+                topRail.position.set(rightEdgeX + 0.22, 0, 1.25);
+                parentMesh.add(topRail);
+
+                const midRail = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.12, length, 0.08),
+                    railMat
+                );
+                midRail.position.set(rightEdgeX + 0.22, 0, 0.82);
+                parentMesh.add(midRail);
+
+                // Postes verticais de suporte a cada 3.5m
+                const postGeo = new THREE.BoxGeometry(0.14, 0.14, 0.95);
+                const postMat = new THREE.MeshStandardMaterial({ color: 0x8a90a0, metalness: 0.8, roughness: 0.3 });
+                for (let pz = -length / 2 + 1.75; pz < length / 2; pz += 3.5) {
+                    const post = new THREE.Mesh(postGeo, postMat);
+                    post.position.set(rightEdgeX + 0.22, pz, 0.75);
+                    parentMesh.add(post);
+                }
+
+                // Postes de iluminação pública com luminárias estéticas ao longo da ponte
+                for (let lp = -length / 2 + 15; lp < length / 2; lp += 35) {
+                    const lampGroup = new THREE.Group();
+                    const pole = new THREE.Mesh(
+                        new THREE.CylinderGeometry(0.09, 0.13, 4.4, 8).rotateX(Math.PI / 2),
+                        new THREE.MeshStandardMaterial({ color: 0xb0b6c6, metalness: 0.85, roughness: 0.25 })
                     );
-                    beam.position.set(width / 2 - 0.8, b, 2.2);
-                    parentMesh.add(beam);
+                    pole.position.set(0, 0, 2.2);
+                    lampGroup.add(pole);
+
+                    const arm = new THREE.Mesh(
+                        new THREE.BoxGeometry(1.5, 0.09, 0.09),
+                        new THREE.MeshStandardMaterial({ color: 0xb0b6c6, metalness: 0.85 })
+                    );
+                    arm.position.set(-0.65, 0, 4.35);
+                    lampGroup.add(arm);
+
+                    const lamp = new THREE.Mesh(
+                        new THREE.BoxGeometry(0.45, 0.2, 0.08),
+                        new THREE.MeshBasicMaterial({ color: 0xfff0cc })
+                    );
+                    lamp.position.set(-1.25, 0, 4.32);
+                    lampGroup.add(lamp);
+
+                    lampGroup.position.set(rightEdgeX + 0.26, lp, 0);
+                    parentMesh.add(lampGroup);
                 }
 
                 // Faixas brancas limpas da rodovia
@@ -1880,6 +1980,65 @@
                 s.scale.set(size, size, 1);
                 s.userData.base = size;
                 return s;
+            }
+
+            // Metrópole Costeira: Torres e Arranha-Céus Futuristas ao Fundo na Direita
+            createSkylineBuilding() {
+                const group = new THREE.Group();
+                const w = 7 + Math.random() * 8;
+                const d = 8 + Math.random() * 10;
+                const h = 32 + Math.random() * 55;
+
+                const facadeColors = [0x1e1a2b, 0x252036, 0x181724, 0x2b233d, 0x1d2030];
+                const facadeColor = facadeColors[Math.floor(Math.random() * facadeColors.length)];
+                const bMat = new THREE.MeshStandardMaterial({
+                    color: facadeColor,
+                    roughness: 0.55,
+                    metalness: 0.35
+                });
+
+                const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), bMat);
+                body.position.y = h / 2;
+                group.add(body);
+
+                // Faixas de janelas com iluminação em tom âmbar e neon
+                const windowMat = new THREE.MeshBasicMaterial({
+                    color: Math.random() < 0.65 ? 0xffdf88 : (Math.random() < 0.5 ? 0x38bdf8 : 0xf472b6),
+                    transparent: true,
+                    opacity: 0.72
+                });
+
+                const floors = Math.floor(h / 6);
+                for (let f = 1; f < floors; f++) {
+                    if (Math.random() < 0.28) continue;
+                    const band = new THREE.Mesh(new THREE.BoxGeometry(w + 0.08, 0.75, d + 0.08), windowMat);
+                    band.position.y = f * 6;
+                    group.add(band);
+                }
+
+                // Topo da torre: Antena com sinalizador de aviação ou cobertura estilizada
+                if (Math.random() < 0.65) {
+                    const spireH = 8 + Math.random() * 10;
+                    const spire = new THREE.Mesh(
+                        new THREE.CylinderGeometry(0.08, 0.25, spireH, 6),
+                        new THREE.MeshStandardMaterial({ color: 0x828898, metalness: 0.9 })
+                    );
+                    spire.position.y = h + spireH / 2;
+                    group.add(spire);
+
+                    const beacon = this.makeGlow(0xff2233, 1.3, 0.85);
+                    beacon.position.y = h + spireH;
+                    group.add(beacon);
+                } else {
+                    const topCap = new THREE.Mesh(
+                        new THREE.BoxGeometry(w * 0.7, 4.5, d * 0.7),
+                        bMat
+                    );
+                    topCap.position.y = h + 2.25;
+                    group.add(topCap);
+                }
+
+                return group;
             }
 
             // Carroceria a partir de um perfil lateral: [x = comprimento, y = altura]
@@ -2479,16 +2638,58 @@
 
                 } else {
                     const count = 4;
-                    const coinY = this.isFlying ? FLIGHT_Y : 1.2;
-                    const coinGeo = new THREE.CylinderGeometry(0.36, 0.36, 0.08, 14).rotateX(Math.PI / 2);
-                    const coinMat = new THREE.MeshStandardMaterial({ color: 0xffb703, emissive: 0xfb8500, emissiveIntensity: 0.45, metalness: 0.9 });
+                    const coinY = this.isFlying ? FLIGHT_Y : 1.25;
+
+                    // Aro externo dourado polido
+                    const rimGeo = new THREE.CylinderGeometry(0.46, 0.46, 0.1, 24).rotateX(Math.PI / 2);
+                    const rimMat = new THREE.MeshStandardMaterial({
+                        color: 0xffb703,
+                        emissive: 0xf59e0b,
+                        emissiveIntensity: 0.35,
+                        metalness: 0.85,
+                        roughness: 0.22
+                    });
+
+                    // Centro dourado reflexivo em relevo
+                    const coreGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.12, 18).rotateX(Math.PI / 2);
+                    const coreMat = new THREE.MeshStandardMaterial({
+                        color: 0xfff08a,
+                        emissive: 0xfbbf24,
+                        emissiveIntensity: 0.55,
+                        metalness: 0.9,
+                        roughness: 0.18
+                    });
+
+                    // Emblema geométrico central brilhante
+                    const emblemGeo = new THREE.BoxGeometry(0.18, 0.18, 0.14);
+                    const emblemMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
                     for (let c = 0; c < count; c++) {
-                        const coin = new THREE.Mesh(coinGeo, coinMat);
-                        coin.position.set(laneX, coinY, spawnZ - (c * 4.5));
-                        coin.itemType = "coin";
-                        this.scene.add(coin);
-                        this.collectibles.push(coin);
+                        const coinGroup = new THREE.Group();
+
+                        const rim = new THREE.Mesh(rimGeo, rimMat);
+                        coinGroup.add(rim);
+
+                        const core = new THREE.Mesh(coreGeo, coreMat);
+                        coinGroup.add(core);
+
+                        const emblem = new THREE.Mesh(emblemGeo, emblemMat);
+                        emblem.rotation.z = Math.PI / 4;
+                        coinGroup.add(emblem);
+
+                        // Halo de brilho dourado (glow sprite)
+                        const glow = this.makeGlow(0xffb703, 1.8, 0.65);
+                        coinGroup.add(glow);
+                        coinGroup.glowSprite = glow;
+
+                        // Posição e orientação voltada para a câmera
+                        coinGroup.position.set(laneX, coinY, spawnZ - (c * 4.5));
+                        coinGroup.rotation.x = -0.15; // leve inclinação para a visão do piloto
+                        coinGroup.baseY = coinY;
+                        coinGroup.itemType = "coin";
+
+                        this.scene.add(coinGroup);
+                        this.collectibles.push(coinGroup);
                     }
                 }
             }
@@ -3261,6 +3462,17 @@
                     }
                 });
 
+                // Metrópole de arranha-céus à direita com efeito de parallax
+                if (this.buildings) {
+                    const cityMove = this.currentSpeed * delta * 0.42;
+                    this.buildings.forEach(b => {
+                        b.position.z += cityMove;
+                        if (b.position.z > 80) {
+                            b.position.z -= 530;
+                        }
+                    });
+                }
+
                 // 4. Movimentação do Carro na Faixa X
                 const targetX = LANES[this.currentLane];
                 const dx = targetX - this.playerX;
@@ -3505,7 +3717,24 @@
                 for (let i = this.collectibles.length - 1; i >= 0; i--) {
                     const item = this.collectibles[i];
                     item.position.z += this.currentSpeed * delta;
-                    item.rotation.y += 2.5 * delta;
+
+                    if (item.itemType === "coin") {
+                        // Rotação no próprio eixo Z (face redonda fica SEMPRE 100% voltada ao jogador, nunca vira palito!)
+                        item.rotation.z += 2.6 * delta;
+
+                        // Pulsação suave do halo de brilho dourado
+                        if (item.glowSprite) {
+                            const pulse = 1.6 + Math.sin(performance.now() * 0.008 + item.position.z * 0.05) * 0.28;
+                            item.glowSprite.scale.set(pulse, pulse, 1);
+                        }
+
+                        // Flutuação vertical elegante (hover bobbing)
+                        if (item.baseY !== undefined) {
+                            item.position.y = item.baseY + Math.sin(performance.now() * 0.004 + item.position.z * 0.15) * 0.14;
+                        }
+                    } else {
+                        item.rotation.y += 2.5 * delta;
+                    }
 
                     const dist = this.truckGroup.position.distanceTo(item.position);
                     if (dist < 2.2) {
