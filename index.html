@@ -2,229 +2,2283 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Mini-RPG de Texto interativo em homenagem ao casamento do nosso querido professor de programação.">
-    <title>casamento.exe // Mini-RPG do Professor</title>
-    <link rel="stylesheet" href="css/style.css">
-    <!-- Favicon com símbolo de código -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💍</text></svg>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ROADSTER DASH // Sunset Coastal Highway</title>
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --air-cyan: #22d3ee;
+            --sunset-peach: #f97316;
+            --sunset-pink: #ec4899;
+            --glass-card: rgba(18, 12, 28, 0.55);
+            --font-main: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: linear-gradient(180deg, #2b1136 0%, #7e2a52 35%, #cf635a 68%, #f89e78 100%);
+            font-family: var(--font-main);
+            color: #ffffff;
+            touch-action: none; /* Bloqueia zoom e rolagem acidental no celular */
+        }
+
+        #game-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: block;
+            z-index: 1;
+            touch-action: none;
+        }
+
+        /* ================= HUD IDÊNTICO À IMAGEM DO ROADSTER DASH ================= */
+        #hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: calc(env(safe-area-inset-top, 16px) + 12px) 20px calc(env(safe-area-inset-bottom, 16px) + 14px) 20px;
+        }
+
+        /* Top Bar: Botões à esquerda e Placar à direita */
+        .hud-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .top-btn-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .hud-icon-btn {
+            pointer-events: auto;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(18, 12, 28, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s;
+        }
+
+        .hud-icon-btn:active {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0.95);
+        }
+
+        .distance-display {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #ffffff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+        }
+
+        .speed-display {
+            font-size: 0.95rem;
+            font-weight: 900;
+            color: #fde047;
+            letter-spacing: 1.5px;
+            text-shadow: 0 0 10px rgba(253, 224, 71, 0.6);
+            margin-top: 1px;
+        }
+
+        /* Top Right: Score limpo */
+        .header-right {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .main-score {
+            font-size: 2.8rem;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: -1px;
+            line-height: 1;
+            text-shadow: 0 3px 14px rgba(0, 0, 0, 0.45);
+        }
+
+        .rocket-sub-bar {
+            width: 140px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            margin-top: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rocket-sub-fill {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff5e97, #ffb347);
+        }
+
+        .rocket-label {
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.75);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .hearts-box {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .heart-badge {
+            font-size: 1.25rem;
+            filter: drop-shadow(0 0 6px rgba(255, 42, 90, 0.8));
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .heart-badge.empty {
+            opacity: 0.2;
+            filter: grayscale(1);
+        }
+
+        /* Notificação central de ação */
+        .action-popup {
+            position: absolute;
+            top: 26%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            font-size: 1.25rem;
+            font-weight: 900;
+            color: #fde047;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0;
+            transition: all 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-shadow: 0 0 16px rgba(253, 224, 71, 0.8), 0 2px 6px rgba(0, 0, 0, 0.6);
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .action-popup.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* ================= BOTTOM BAR: RESPONSIVO NO CELULAR ================= */
+        .hud-bottom {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+        }
+
+        /* Linha de Controles Touchscreen (Dois Polegares) */
+        .touch-controls-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            width: 100%;
+            pointer-events: none;
+        }
+
+        /* Grupo Esquerdo: Botões de Direção ◀ e ▶ */
+        .steer-btn-group {
+            display: flex;
+            gap: 12px;
+            pointer-events: auto;
+        }
+
+        .mobile-dir-btn {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            background: rgba(18, 12, 28, 0.55);
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            color: #ffffff;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            transition: transform 0.1s, background 0.1s;
+            touch-action: none;
+        }
+
+        .mobile-dir-btn:active {
+            transform: scale(0.9);
+            background: rgba(34, 211, 238, 0.45);
+            border-color: #22d3ee;
+        }
+
+        /* Grupo Direito: Slam ⬇ e Boost ⇪ */
+        .action-btn-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            pointer-events: auto;
+        }
+
+        .mobile-slam-btn {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: rgba(18, 12, 28, 0.55);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: transform 0.1s;
+            touch-action: none;
+        }
+
+        .mobile-slam-btn:active {
+            transform: scale(0.9);
+            background: rgba(249, 115, 22, 0.5);
+            border-color: #f97316;
+        }
+
+        /* Botão circular de Boost/Voo à direita */
+        .boost-touch-btn {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(34, 211, 238, 0.4) 0%, rgba(14, 116, 144, 0.7) 100%);
+            border: 2px solid rgba(34, 211, 238, 0.85);
+            box-shadow: 0 0 22px rgba(34, 211, 238, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: transform 0.1s, box-shadow 0.1s;
+            touch-action: none;
+        }
+
+        .boost-touch-btn:active {
+            transform: scale(0.92);
+            box-shadow: 0 0 35px rgba(34, 211, 238, 0.95);
+        }
+
+        .boost-icon {
+            font-size: 1.4rem;
+            color: #ffffff;
+            line-height: 1;
+        }
+
+        .boost-text {
+            font-size: 0.65rem;
+            font-weight: 900;
+            color: #22d3ee;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        /* Barra de AR Segmentada (10 blocos) */
+        .air-segment-box {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .air-meta-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: #e2e8f0;
+            text-transform: uppercase;
+        }
+
+        .air-segmented-bar {
+            width: 100%;
+            height: 14px;
+            display: flex;
+            gap: 3px;
+            padding: 2px;
+            background: rgba(10, 8, 18, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 4px;
+            backdrop-filter: blur(8px);
+        }
+
+        .air-segment {
+            flex: 1;
+            height: 100%;
+            background: #22d3ee;
+            border-radius: 2px;
+            box-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
+            transition: opacity 0.15s, background-color 0.2s;
+        }
+
+        .air-segment.depleted {
+            opacity: 0.12;
+            background: #64748b;
+            box-shadow: none;
+        }
+
+        /* Efeito de Flash na tela ao colidir */
+        #damage-flash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle, rgba(255, 60, 100, 0) 30%, rgba(255, 60, 100, 0.7) 100%);
+            opacity: 0;
+            transition: opacity 0.25s ease-out;
+            z-index: 8;
+        }
+
+        /* ================= TELAS DE MENU E GAMEOVER ================= */
+        .modal-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(16, 9, 24, 0.65);
+            backdrop-filter: blur(14px);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+        }
+
+        .modal-screen.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .glass-box {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+            border-radius: 22px;
+            padding: 34px 28px;
+            max-width: 480px;
+            width: 100%;
+            transform: scale(0.96);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(20px);
+        }
+
+        .modal-screen.active .glass-box {
+            transform: scale(1);
+        }
+
+        .game-title {
+            font-size: 2.3rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: #ffffff;
+            margin-bottom: 4px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .game-subtitle {
+            font-size: 0.85rem;
+            color: #f97316;
+            letter-spacing: 2px;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .controls-guide {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 22px;
+            font-size: 0.85rem;
+            color: #f1f5f9;
+            line-height: 1.8;
+            text-align: left;
+        }
+
+        .controls-guide strong {
+            color: #22d3ee;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #f97316, #ec4899);
+            color: #ffffff;
+            border: none;
+            border-radius: 30px;
+            font-family: inherit;
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            padding: 15px 40px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(249, 115, 22, 0.45);
+            transition: transform 0.15s, box-shadow 0.15s;
+            outline: none;
+            text-transform: uppercase;
+            touch-action: none;
+        }
+
+        .action-btn:active {
+            transform: scale(0.96);
+        }
+
+        .gameover-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 18px 0 24px 0;
+        }
+
+        .gameover-stat-item {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 12px;
+            border-radius: 12px;
+        }
+
+        .stat-label {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .stat-val {
+            font-size: 1.7rem;
+            font-weight: 900;
+            color: #fff;
+            margin-top: 3px;
+        }
+
+        /* Ajustes específicos para Celular */
+        @media (max-width: 600px) {
+            #hud { padding: 14px 14px 12px 14px; }
+            .main-score { font-size: 2.3rem; }
+            .mobile-dir-btn { width: 56px; height: 56px; font-size: 1.25rem; }
+            .boost-touch-btn { width: 68px; height: 68px; }
+            .mobile-slam-btn { width: 48px; height: 48px; }
+            .glass-box { padding: 26px 18px; }
+            .game-title { font-size: 1.9rem; }
+        }
+    </style>
 </head>
 <body>
 
-    <!-- Canvas de Confetes da Vitória -->
-    <canvas id="confetti-canvas"></canvas>
+    <!-- Flash de Dano -->
+    <div id="damage-flash"></div>
 
-    <!-- Container Principal estilo IDE / VS Code -->
-    <main class="ide-container" id="ide-app">
+    <!-- Canvas Three.js -->
+    <canvas id="game-canvas"></canvas>
 
-        <!-- Barra Superior da Janela (Title Bar) -->
-        <header class="ide-title-bar">
-            <div class="window-controls">
-                <span class="control-dot close" title="Fechar"></span>
-                <span class="control-dot minimize" title="Minimizar"></span>
-                <span class="control-dot maximize" title="Maximizar"></span>
+    <!-- HUD Idêntico ao Roadster Dash -->
+    <div id="hud">
+        <header class="hud-header">
+            <!-- Canto Esquerdo: Botões, Distância e Vidas -->
+            <div class="header-left">
+                <div class="top-btn-row">
+                    <button class="hud-icon-btn" id="pause-btn" title="Pausar">⏸</button>
+                    <button class="hud-icon-btn" id="sound-btn" title="Som">🔊</button>
+                </div>
+                <div class="distance-display" id="hud-distance">0 m</div>
+                <div class="speed-display" id="hud-speed">125 KM/H</div>
+                <div class="hearts-box">
+                    <span class="heart-badge" id="heart-1">❤️</span>
+                    <span class="heart-badge empty" id="heart-2">❤️</span>
+                    <span class="heart-badge empty" id="heart-3">❤️</span>
+                </div>
             </div>
-            <div class="window-title" id="window-title">
-                <span class="folder-icon">📂</span>
-                <span class="project-name">projeto_casamento</span>
-                <span class="separator">—</span>
-                <span class="current-file" id="title-file-name">casamento.js</span>
-            </div>
-            <div class="window-actions">
-                <button id="btn-sound-toggle" class="icon-btn" title="Alternar Efeitos Sonoros Retro (Web Audio API)">
-                    <span id="sound-icon">🔊</span> <span class="btn-text">Som: ON</span>
-                </button>
-                <button id="btn-restart-game" class="icon-btn" title="Reiniciar do Início">
-                    <span>↺</span> <span class="btn-text">Reiniciar</span>
-                </button>
+
+            <!-- Canto Direito: Placar e Barra Rocket -->
+            <div class="header-right">
+                <div class="main-score" id="hud-score">0</div>
+                <div class="rocket-sub-bar">
+                    <div class="rocket-sub-fill" id="rocket-sub-fill"></div>
+                </div>
+                <div class="rocket-label">ROCKET</div>
             </div>
         </header>
 
-        <!-- Barra de Abas do Editor -->
-        <nav class="ide-tab-bar" aria-label="Abas do Editor">
-            <div class="editor-tab active" id="active-tab">
-                <span class="tab-lang-icon" id="tab-lang-icon">JS</span>
-                <span class="tab-name" id="tab-file-name">main.c</span>
-                <span class="tab-close">×</span>
-            </div>
-            <div class="editor-tab tab-secondary">
-                <span class="tab-lang-icon">JSON</span>
-                <span class="tab-name">package.json</span>
-            </div>
-            <div class="editor-tab tab-secondary">
-                <span class="tab-lang-icon">MD</span>
-                <span class="tab-name">VOTOS_NUPCIAIS.md</span>
-            </div>
-        </nav>
+        <!-- Notificação de Ação Centralizada -->
+        <div class="action-popup" id="action-popup">PERFECT PASS</div>
 
-        <!-- Breadcrumbs (Caminho do Arquivo) -->
-        <div class="ide-breadcrumbs" id="breadcrumbs">
-            <span>projeto_casamento</span>
-            <span class="bc-sep">›</span>
-            <span>src</span>
-            <span class="bc-sep">›</span>
-            <span id="bc-stage">Compilador Inicial</span>
-            <span class="bc-sep">›</span>
-            <span class="bc-current" id="bc-file">main.c</span>
-        </div>
-
-        <!-- Área de Conteúdo / Terminal do Jogo -->
-        <section class="ide-content-area" id="terminal-screen" tabindex="0">
-            <!-- Barra Lateral com Numeração de Linhas -->
-            <aside class="line-numbers" id="line-numbers" aria-hidden="true">
-                <span>01</span><span>02</span><span>03</span><span>04</span><span>05</span>
-                <span>06</span><span>07</span><span>08</span><span>09</span><span>10</span>
-                <span>11</span><span>12</span><span>13</span><span>14</span><span>15</span>
-                <span>16</span><span>17</span><span>18</span><span>19</span><span>20</span>
-                <span>21</span><span>22</span><span>23</span><span>24</span><span>25</span>
-            </aside>
-
-            <!-- Painel de Execução do Jogo -->
-            <div class="game-viewport">
-                
-                <!-- Badge da Fase Atual -->
-                <div class="stage-badge-container">
-                    <span class="stage-badge" id="stage-badge">FASE 1: COMPILAÇÃO INICIAL</span>
-                    <span class="skip-tip" id="skip-tip" title="Clique no texto para pular animação">⚡ [Pressione Enter ou Clique para Acelerar]</span>
+        <!-- Parte Inferior: Controles Touch Responsivos para Celular -->
+        <footer class="hud-bottom">
+            <div class="touch-controls-row">
+                <!-- Polegar Esquerdo: Direcionais ◀ e ▶ -->
+                <div class="steer-btn-group">
+                    <button class="mobile-dir-btn" id="btn-left" aria-label="Esquerda">◀</button>
+                    <button class="mobile-dir-btn" id="btn-right" aria-label="Direita">▶</button>
                 </div>
 
-                <!-- Título da Cena -->
-                <h1 class="scene-title" id="scene-title">PROJETO: CASAMENTO_V1.0.EXE</h1>
-
-                <!-- Bloco de Texto com Efeito Máquina de Escrever -->
-                <div class="terminal-narrative" id="narrative-box">
-                    <div class="typewriter-content" id="typewriter-text"></div>
-                    <span class="terminal-cursor" id="terminal-cursor">█</span>
+                <!-- Polegar Direito: Queda Rápida ⬇ e BOOST ⇪ -->
+                <div class="action-btn-group">
+                    <button class="mobile-slam-btn" id="btn-slam" aria-label="Descer Rápido">⬇</button>
+                    <button class="boost-touch-btn" id="boost-touch-btn" aria-label="Voo e Boost">
+                        <span class="boost-icon">⇪</span>
+                        <span class="boost-text">BOOST</span>
+                    </button>
                 </div>
-
-                <!-- Bloco de Código Opcional (Snippet do Desafio) -->
-                <div class="code-editor-box" id="code-snippet-container" style="display: none;">
-                    <div class="code-box-header">
-                        <span class="code-box-dot dot-red"></span>
-                        <span class="code-box-dot dot-yellow"></span>
-                        <span class="code-box-dot dot-green"></span>
-                        <span class="code-box-title" id="code-snippet-title">snippet.js</span>
-                    </div>
-                    <pre class="code-snippet"><code id="code-snippet-content"></code></pre>
-                </div>
-
-                <!-- Alerta ou Mensagem de Erro Interativa (Para Boss do Altar / Bugs) -->
-                <div class="interactive-alert-box" id="interactive-alert" style="display: none;">
-                    <div class="alert-icon">⚠️</div>
-                    <div class="alert-content">
-                        <strong id="alert-title">ALERTA NO EVENT LOOP:</strong>
-                        <p id="alert-desc">Erro detectado.</p>
-                    </div>
-                </div>
-
-                <!-- Container Dinâmico de Opções / Botões de Escolha -->
-                <nav class="choices-container" id="choices-container" aria-label="Opções de Decisão">
-                    <!-- Botões injetados dinamicamente via engine.js -->
-                </nav>
-
             </div>
-        </section>
 
-        <!-- Barra de Status Inferior (Status Bar) -->
-        <footer class="ide-status-bar">
-            <div class="status-left">
-                <span class="status-item git-branch"><span class="status-symbol">⎇</span> main*</span>
-                <span class="status-item diagnostics-error"><span class="status-symbol">⊗</span> 0</span>
-                <span class="status-item diagnostics-warning"><span class="status-symbol">⚠</span> 0</span>
-                <span class="status-item sync-status">↻ Em sincronia</span>
-            </div>
-            <div class="status-right">
-                <span class="status-item" id="status-position">Ln 42, Col 1</span>
-                <span class="status-item">Espaços: 4</span>
-                <span class="status-item">UTF-8</span>
-                <span class="status-item status-lang" id="status-language">JavaScript</span>
-                <span class="status-item status-heart" title="Nível de Amor do Casal">♥ 100% AMOR</span>
+            <!-- Barra de AR Segmentada (10 blocos) -->
+            <div class="air-segment-box">
+                <div class="air-meta-row">
+                    <span>AIR</span>
+                    <span id="air-liters">180 L</span>
+                </div>
+                <div class="air-segmented-bar" id="air-segmented-bar">
+                    <div class="air-segment"></div>
+                    <div class="air-segment"></div>
+                    <div class="air-segment"></div>
+                    <div class="air-segment"></div>
+                    <div class="air-segment"></div>
+                    <div class="air-segment"></div>
+                    <div class="air-segment"></div>
+                    <div class="air-segment"></div>
+                    <div class="air-segment"></div>
+                    <div class="air-segment"></div>
+                </div>
             </div>
         </footer>
+    </div>
 
-    </main>
+    <!-- TELA INICIAL (MENU DE ENTRADA) -->
+    <div class="modal-screen active" id="start-screen">
+        <div class="glass-box">
+            <h1 class="game-title">ROADSTER DASH</h1>
+            <div class="game-subtitle">SUNSET COASTAL HIGHWAY // 2077</div>
 
-    <!-- ============================================================ -->
-    <!-- OVERLAY: TELA AZUL DA MORTE (BSOD)                           -->
-    <!-- ============================================================ -->
-    <div class="bsod-overlay" id="bsod-screen" style="display: none;" role="alertdialog" aria-modal="true">
-        <div class="bsod-content">
-            <div class="bsod-emoticon">:(</div>
-            <h2 class="bsod-title">Ocorreu um problema no seu código matrimonial e ele precisa ser reiniciado.</h2>
-            <p class="bsod-text">
-                Estamos apenas coletando algumas informações sobre o bug de noivo e, em seguida, você poderá reiniciar a depuração.
-            </p>
-            <div class="bsod-progress">
-                <span id="bsod-percentage">100%</span> concluído.
+            <div class="controls-guide">
+                <div>📱 <strong>No Celular:</strong> Use os botões ◀ ▶ para virar, ⇪ BOOST para voar e ⬇ para descer rápido (ou arraste os dedos)!</div>
+                <div>💻 <strong>No PC:</strong> Setas / A D para virar, ESPAÇO / W para voar e S para descer.</div>
+                <div>🛹 <strong>Rampas de Salto:</strong> Suba nas rampas para saltar alto, fazer manobras (Barrel Roll) e pular sobre o trânsito!</div>
+                <div>⚡ <strong>Velocidade Intensa:</strong> Aceleração rápida com velocímetro e tráfego veloz para testar seus reflexos!</div>
+                <div>🦅 <strong>Céu com Desafios:</strong> Desvie de Pássaros, Aviões e Cabos Elétricos ao saltar ou voar!</div>
             </div>
 
-            <div class="bsod-details">
-                <div class="bsod-qr-code" aria-label="Código QR simulado">
-                    <div class="qr-matrix"></div>
-                </div>
-                <div class="bsod-info-block">
-                    <p>Para saber mais sobre o erro, consulte a documentação da vida a dois:</p>
-                    <p class="bsod-stopcode" id="bsod-stopcode">CÓDIGO DE PARADA: STUDENT_SYNTAX_ERROR_AT_3AM</p>
-                    <p class="bsod-crash-desc" id="bsod-crash-desc">Descrição do erro detalhada aqui...</p>
-                </div>
-            </div>
-
-            <div class="bsod-actions">
-                <button class="bsod-btn" id="bsod-restart-btn">
-                    <span>🔄 Reiniciar Depuração (Reboot Sistema)</span>
-                </button>
-            </div>
+            <button class="action-btn" id="start-btn">INICIAR CORRIDA</button>
         </div>
     </div>
 
-    <!-- ============================================================ -->
-    <!-- MODAL: LISTA DE PRESENTES / DEPLOY EM PRODUÇÃO               -->
-    <!-- ============================================================ -->
-    <div class="modal-overlay" id="gift-modal" style="display: none;" role="dialog" aria-modal="true">
-        <div class="modal-window">
-            <header class="modal-header">
-                <span class="modal-title">🎁 DEPLOY EM PRODUÇÃO: LISTA DE PRESENTES</span>
-                <button class="modal-close-btn" id="modal-close-btn" title="Fechar">×</button>
-            </header>
-            <div class="modal-body">
-                <div class="gift-banner">
-                    <span class="gift-icon">💍</span>
-                    <h3>Parabéns pelo Casamento, Professor!</h3>
-                    <p>A turma preparou este projeto com muito carinho para celebrar essa união inesquecível!</p>
-                </div>
+    <!-- TELA DE GAME OVER -->
+    <div class="modal-screen" id="gameover-screen">
+        <div class="glass-box">
+            <h1 class="game-title" style="color: #ec4899;">FIM DE CORRIDA</h1>
+            <div class="game-subtitle" id="go-reason">COLISÃO NO TRÁFEGO DA PONTE</div>
 
-                <div class="gift-instructions">
-                    <p>Para presentear o novo casal e abençoar a lua de mel com muitos gigabytes de alegria:</p>
+            <div class="gameover-stats">
+                <div class="gameover-stat-item">
+                    <div class="stat-label">Pontuação</div>
+                    <div class="stat-val" id="go-score">0</div>
                 </div>
-
-                <!-- Chave PIX ou Link Customizável -->
-                <div class="gift-box">
-                    <label for="pix-key-input">Chave PIX dos Noivos (ou Lista de Casamento):</label>
-                    <div class="gift-input-group">
-                        <input type="text" id="pix-key-input" value="presente-professor@casamento.dev.br" readonly>
-                        <button class="copy-btn" id="btn-copy-pix">
-                            <span id="copy-text">Copiar</span>
-                        </button>
-                    </div>
-                    <small class="tip-text">💡 Dica: Você pode alterar essa chave no arquivo <code>engine.js</code>.</small>
+                <div class="gameover-stat-item">
+                    <div class="stat-label">Distância</div>
+                    <div class="stat-val" style="color: #22d3ee;" id="go-dist">0 m</div>
                 </div>
-
-                <!-- Botão de Acesso Externo à Lista -->
-                <div class="modal-actions">
-                    <a href="https://www.icasei.com.br" target="_blank" rel="noopener noreferrer" class="btn-external-gift" id="gift-link-btn">
-                        🌐 Abrir Site Oficial dos Noivos
-                    </a>
+                <div class="gameover-stat-item" style="grid-column: span 2; border-color: #f97316;">
+                    <div class="stat-label">RECORDE MÁXIMO</div>
+                    <div class="stat-val" style="color: #fde047;" id="go-best">0</div>
                 </div>
             </div>
-            <footer class="modal-footer">
-                <span class="footer-note">Feito com &lt;3 por alunos que prestam atenção na aula (às vezes)!</span>
-            </footer>
+
+            <button class="action-btn" id="restart-btn">JOGAR NOVAMENTE</button>
         </div>
     </div>
 
-    <!-- Scripts do Jogo -->
-    <script src="js/story.js"></script>
-    <script src="js/engine.js"></script>
+    <!-- ================================================================= -->
+    <!-- MOTOR THREE.JS RESPONSIVO E COM CHÃO PARA OS COQUEIROS           -->
+    <!-- ================================================================= -->
+    <script>
+    (function () {
+        "use strict";
+
+        // =====================================================================
+        // SINTETIZADOR DE ÁUDIO RETRÔ VIA WEB AUDIO API (100% NATIVO)
+        // =====================================================================
+        class SoundSystem {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+                this.engineOsc = null;
+                this.engineGain = null;
+            }
+
+            init() {
+                if (!this.ctx && typeof AudioContext !== "undefined") {
+                    const AC = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AC();
+                    this.setupEngineSound();
+                }
+                if (this.ctx && this.ctx.state === "suspended") {
+                    this.ctx.resume();
+                }
+            }
+
+            setupEngineSound() {
+                if (!this.ctx) return;
+                try {
+                    this.engineOsc = this.ctx.createOscillator();
+                    this.engineGain = this.ctx.createGain();
+                    this.engineOsc.type = "sawtooth";
+                    this.engineOsc.frequency.setValueAtTime(55, this.ctx.currentTime);
+                    this.engineGain.gain.setValueAtTime(0.001, this.ctx.currentTime);
+                    this.engineOsc.connect(this.engineGain);
+                    this.engineGain.connect(this.ctx.destination);
+                    this.engineOsc.start();
+                } catch(e) {}
+            }
+
+            updateEngine(speed, isFlying) {
+                if (!this.ctx || !this.enabled || !this.engineOsc) return;
+                const baseFreq = isFlying ? 120 : (55 + speed * 0.85);
+                this.engineOsc.frequency.setTargetAtTime(baseFreq, this.ctx.currentTime, 0.08);
+                const targetGain = isFlying ? 0.03 : 0.012;
+                this.engineGain.gain.setTargetAtTime(targetGain, this.ctx.currentTime, 0.08);
+            }
+
+            stopEngine() {
+                if (this.engineGain && this.ctx) {
+                    this.engineGain.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.1);
+                }
+            }
+
+            playTone(freq, type, duration, gainLevel = 0.1) {
+                if (!this.enabled || !this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(gainLevel, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch (e) {}
+            }
+
+            playAirPuff() {
+                if (!this.enabled || !this.ctx) return;
+                try {
+                    const bufferSize = this.ctx.sampleRate * 0.14;
+                    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+                    }
+                    const noise = this.ctx.createBufferSource();
+                    noise.buffer = buffer;
+                    const filter = this.ctx.createBiquadFilter();
+                    filter.type = "bandpass";
+                    filter.frequency.setValueAtTime(1400, this.ctx.currentTime);
+                    const gain = this.ctx.createGain();
+                    gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.14);
+                    noise.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    noise.start();
+                } catch(e) {}
+            }
+
+            playLaneChange() {
+                this.playTone(330, "sine", 0.07, 0.04);
+            }
+
+            playSlam() {
+                this.playTone(95, "triangle", 0.14, 0.12);
+            }
+
+            playCoin() {
+                if (!this.enabled || !this.ctx) return;
+                const notes = [1046.50, 1318.51];
+                notes.forEach((f, i) => {
+                    setTimeout(() => this.playTone(f, "sine", 0.09, 0.05), i * 45);
+                });
+            }
+
+            playHeart() {
+                if (!this.enabled || !this.ctx) return;
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((f, i) => {
+                    setTimeout(() => this.playTone(f, "triangle", 0.14, 0.08), i * 50);
+                });
+            }
+
+            playZap() {
+                this.playTone(220, "sawtooth", 0.2, 0.15);
+            }
+
+            playCrash() {
+                if (!this.enabled || !this.ctx) return;
+                const bufferSize = this.ctx.sampleRate * 0.4;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.25));
+                }
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.35);
+                noise.connect(gain);
+                gain.connect(this.ctx.destination);
+                noise.start();
+            }
+
+            playGameOver() {
+                if (!this.enabled || !this.ctx) return;
+                const notes = [330, 293, 261, 220];
+                notes.forEach((f, i) => {
+                    setTimeout(() => this.playTone(f, "triangle", 0.35, 0.09), i * 140);
+                });
+            }
+
+            playRampLaunch() {
+                if (!this.enabled || !this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = "sawtooth";
+                    osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(750, this.ctx.currentTime + 0.28);
+                    gain.gain.setValueAtTime(0.13, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.32);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.32);
+                } catch(e) {}
+            }
+
+            playTrickScore() {
+                if (!this.enabled || !this.ctx) return;
+                const notes = [659.25, 880.00, 1174.66];
+                notes.forEach((f, i) => {
+                    setTimeout(() => this.playTone(f, "sine", 0.08, 0.06), i * 55);
+                });
+            }
+        }
+
+        // =====================================================================
+        // CONSTANTES DA RODOVIA
+        // =====================================================================
+        const LANES = [-3.8, 0.0, 3.8];
+        const GROUND_Y = 0.52;
+        const FLIGHT_Y = 5.0;
+        const GRAVITY = -36.0;
+        const SLAM_FORCE = -34.0;
+
+        // =====================================================================
+        // CLASSE DO JOGO RESPONSIVO
+        // =====================================================================
+        class RoadsterDashGame {
+            constructor() {
+                this.sound = new SoundSystem();
+                this.canvas = document.getElementById("game-canvas");
+                
+                // HUD
+                this.hudDistance = document.getElementById("hud-distance");
+                this.hudSpeed = document.getElementById("hud-speed");
+                this.hudScore = document.getElementById("hud-score");
+                this.actionPopup = document.getElementById("action-popup");
+                this.rocketSubFill = document.getElementById("rocket-sub-fill");
+                this.heartIcons = [
+                    document.getElementById("heart-1"),
+                    document.getElementById("heart-2"),
+                    document.getElementById("heart-3")
+                ];
+                
+                // Segmentos de Ar (10 blocos)
+                this.airSegments = document.querySelectorAll(".air-segment");
+                this.airLitersEl = document.getElementById("air-liters");
+
+                // Botões Mobile
+                this.btnLeft = document.getElementById("btn-left");
+                this.btnRight = document.getElementById("btn-right");
+                this.btnSlam = document.getElementById("btn-slam");
+                this.boostTouchBtn = document.getElementById("boost-touch-btn");
+
+                this.damageFlash = document.getElementById("damage-flash");
+                this.soundBtn = document.getElementById("sound-btn");
+                this.pauseBtn = document.getElementById("pause-btn");
+
+                // Telas
+                this.startScreen = document.getElementById("start-screen");
+                this.gameoverScreen = document.getElementById("gameover-screen");
+                this.startBtn = document.getElementById("start-btn");
+                this.restartBtn = document.getElementById("restart-btn");
+                this.goScore = document.getElementById("go-score");
+                this.goDist = document.getElementById("go-dist");
+                this.goBest = document.getElementById("go-best");
+                this.goReason = document.getElementById("go-reason");
+
+                // Estado do Jogo
+                this.isRunning = false;
+                this.isPaused = false;
+                this.scoreDistance = 0;
+                this.scorePoints = 0;
+                this.coinsCollected = 0;
+                this.lives = 1;
+                this.maxLives = 3;
+                this.invulnerableTimer = 0;
+
+                // SISTEMA DE AR (180 L MAX - 10 SEGMENTOS)
+                this.maxAirLiters = 180;
+                this.airLiters = 180;
+                this.airDrainRate = 32.0;
+                this.airRechargeRate = 26.0;
+                this.isFlying = false;
+
+                // Velocidade Aumentada (Alta Performance e Dificuldade Dinâmica)
+                this.baseSpeed = 78.0;
+                this.currentSpeed = this.baseSpeed;
+                this.maxSpeed = 175.0;
+
+                // Posição do Jogador
+                this.currentLane = 1;
+                this.playerX = LANES[this.currentLane];
+                this.playerY = GROUND_Y;
+                this.velocityY = 0;
+
+                // Manobras Acrobáticas em Rampas
+                this.isRampJumping = false;
+                this.rampSpinProgress = 0;
+                this.trickAwarded = false;
+
+                // Entidades 3D
+                this.trafficCars = [];
+                this.ramps = [];
+                this.skyObstacles = [];
+                this.collectibles = [];
+                this.smokeParticles = [];
+                this.airPuffParticles = [];
+                this.roadSegments = [];
+                this.palmTrees = [];
+
+                // Timers
+                this.trafficSpawnTimer = 0;
+                this.rampSpawnTimer = 3.5;
+                this.skySpawnTimer = 0;
+                this.collectibleSpawnTimer = 0;
+
+                this.initThree();
+                this.buildAtmosphericWorld();
+                this.buildRoadsterVehicle();
+                this.initControls();
+                this.initEventListeners();
+            }
+
+            // =================================================================
+            // CENA THREE.JS COM ADAPTAÇÃO RESPONSIVA PARA CELULAR
+            // =================================================================
+            initThree() {
+                this.scene = new THREE.Scene();
+                
+                const sunsetFogColor = new THREE.Color(0xf69578);
+                this.scene.background = sunsetFogColor;
+                this.scene.fog = new THREE.FogExp2(0xf69578, 0.0075);
+
+                this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 650);
+                this.updateCameraLayout();
+
+                this.renderer = new THREE.WebGLRenderer({
+                    canvas: this.canvas,
+                    antialias: true,
+                    powerPreference: "high-performance"
+                });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                this.renderer.shadowMap.enabled = true;
+                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                this.renderer.toneMappingExposure = 1.05;
+
+                // Luz solar poente difusa suave
+                const sunLight = new THREE.DirectionalLight(0xffbe88, 2.0);
+                sunLight.position.set(-35, 24, -120);
+                sunLight.castShadow = true;
+                sunLight.shadow.mapSize.width = 1024;
+                sunLight.shadow.mapSize.height = 1024;
+                this.scene.add(sunLight);
+
+                const ambientLight = new THREE.AmbientLight(0xc96d85, 1.35);
+                this.scene.add(ambientLight);
+
+                const hemiLight = new THREE.HemisphereLight(0xf28b9f, 0x242848, 0.85);
+                this.scene.add(hemiLight);
+
+                window.addEventListener("resize", () => {
+                    this.updateCameraLayout();
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+                });
+                window.addEventListener("orientationchange", () => {
+                    setTimeout(() => {
+                        this.updateCameraLayout();
+                        this.renderer.setSize(window.innerWidth, window.innerHeight);
+                    }, 150);
+                });
+            }
+
+            updateCameraLayout() {
+                const isPortrait = window.innerHeight > window.innerWidth;
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+
+                if (isPortrait) {
+                    // MODO CELULAR VERTICAL (RETRATO): FOV maior para caber a pista toda sem cortar
+                    this.camera.fov = 75;
+                    this.camera.position.set(0, 4.8, 8.8);
+                    this.camera.lookAt(0, 1.2, -15);
+                } else {
+                    // MODO PAISAGEM (DESKTOP): Visão esportiva padrão
+                    this.camera.fov = 60;
+                    this.camera.position.set(0, 4.2, 7.6);
+                    this.camera.lookAt(0, 1.4, -14);
+                }
+                this.camera.updateProjectionMatrix();
+            }
+
+            // =================================================================
+            // CENÁRIO: PONTE COM CHÃO SÓLIDO / CALÇADA PARA OS COQUEIROS
+            // =================================================================
+            buildAtmosphericWorld() {
+                // 1. Sol Poente Difuso e Suave
+                const sunGroup = new THREE.Group();
+                const softSunGeo = new THREE.CircleGeometry(32, 32);
+                const softSunMat = new THREE.MeshBasicMaterial({ color: 0xffa366, transparent: true, opacity: 0.55, fog: false });
+                const softSun = new THREE.Mesh(softSunGeo, softSunMat);
+                softSun.position.set(-55, 18, -310);
+                sunGroup.add(softSun);
+
+                const haloGeo = new THREE.CircleGeometry(65, 32);
+                const haloMat = new THREE.MeshBasicMaterial({ color: 0xeb6b47, transparent: true, opacity: 0.25, fog: false });
+                const halo = new THREE.Mesh(haloGeo, haloMat);
+                halo.position.set(-55, 18, -311);
+                sunGroup.add(halo);
+                this.scene.add(sunGroup);
+
+                // 2. Oceano com reflexo suave
+                const oceanGeo = new THREE.PlaneGeometry(1200, 1200);
+                const oceanMat = new THREE.MeshStandardMaterial({ color: 0x2d2440, roughness: 0.25, metalness: 0.75 });
+                this.ocean = new THREE.Mesh(oceanGeo, oceanMat);
+                this.ocean.rotation.x = -Math.PI / 2;
+                this.ocean.position.y = -3.8;
+                this.scene.add(this.ocean);
+
+                // 3. Pista de Rodovia da Ponte (3 Faixas)
+                const segmentLength = 70;
+                const totalSegments = 6;
+                const roadWidth = 14.5;
+
+                const roadGeo = new THREE.PlaneGeometry(roadWidth, segmentLength);
+                const roadMat = new THREE.MeshStandardMaterial({ color: 0x48464f, roughness: 0.35, metalness: 0.35 });
+
+                for (let i = 0; i < totalSegments; i++) {
+                    const roadMesh = new THREE.Mesh(roadGeo, roadMat);
+                    roadMesh.rotation.x = -Math.PI / 2;
+                    roadMesh.position.set(0, 0, -i * segmentLength + 25);
+                    roadMesh.receiveShadow = true;
+                    this.scene.add(roadMesh);
+
+                    // Adiciona a ponte com CALÇADA SÓLIDA para os coqueiros
+                    this.addBridgeArchitecture(roadMesh, roadWidth, segmentLength);
+                    this.roadSegments.push(roadMesh);
+                }
+
+                // 4. Coqueiros firmemente plantados sobre o chão da calçada (X = -9.25, Y = 0.5)
+                for (let i = 0; i < 28; i++) {
+                    const palm = this.createPalmTree();
+                    palm.position.set(-9.25, 0.45, -i * 22);
+                    this.scene.add(palm);
+                    this.palmTrees.push(palm);
+                }
+            }
+
+            addBridgeArchitecture(parentMesh, width, length) {
+                // Guarda-corpo entre a pista e a calçada
+                const leftBarrier = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.35, length, 0.9),
+                    new THREE.MeshStandardMaterial({ color: 0xccd1dc, metalness: 0.6, roughness: 0.3 })
+                );
+                leftBarrier.position.set(-width / 2, 0, 0.45);
+                parentMesh.add(leftBarrier);
+
+                // =============================================================
+                // CHÃO SÓLIDO / CALÇADA COSTEIRA DAS PALMEIRAS (NADA FLUTUA NO AR!)
+                // =============================================================
+                const sidewalkWidth = 4.2;
+                const sidewalkCenterX = -width / 2 - sidewalkWidth / 2; // -7.25 - 2.1 = -9.35
+
+                // Piso da calçada elevada
+                const sidewalkGeo = new THREE.PlaneGeometry(sidewalkWidth, length);
+                const sidewalkMat = new THREE.MeshStandardMaterial({
+                    color: 0x5a545e, // Concreto texturizado de calçadão costeiro
+                    roughness: 0.8,
+                    metalness: 0.15
+                });
+                const sidewalk = new THREE.Mesh(sidewalkGeo, sidewalkMat);
+                sidewalk.position.set(sidewalkCenterX, 0, 0.15); // Meio-fio no nível da pista
+                sidewalk.receiveShadow = true;
+                parentMesh.add(sidewalk);
+
+                // Mureta de fundação sólida descendo até a água (preenche todo o espaço até o mar)
+                const foundationGeo = new THREE.BoxGeometry(sidewalkWidth, length, 4.4);
+                const foundationMat = new THREE.MeshStandardMaterial({
+                    color: 0x3d3845,
+                    roughness: 0.9,
+                    metalness: 0.1
+                });
+                const foundation = new THREE.Mesh(foundationGeo, foundationMat);
+                foundation.position.set(sidewalkCenterX, 0, -2.1);
+                parentMesh.add(foundation);
+
+                // Guarda-corpo externo na beirada da calçada (de frente para o mar)
+                const outerBarrier = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.3, length, 0.9),
+                    new THREE.MeshStandardMaterial({ color: 0xb5bac7, metalness: 0.6, roughness: 0.3 })
+                );
+                outerBarrier.position.set(sidewalkCenterX - sidewalkWidth / 2 + 0.15, 0, 0.6);
+                parentMesh.add(outerBarrier);
+
+                // Canteiros circulares de pedra com terra fértil na base de cada coqueiro
+                for (let pz = -length / 2 + 10; pz < length / 2; pz += 22) {
+                    const planterRing = new THREE.Mesh(
+                        new THREE.CylinderGeometry(1.3, 1.4, 0.35, 16).rotateX(Math.PI / 2),
+                        new THREE.MeshStandardMaterial({ color: 0x7c7368, roughness: 0.85 })
+                    );
+                    planterRing.position.set(sidewalkCenterX, pz, 0.32);
+                    parentMesh.add(planterRing);
+
+                    const soil = new THREE.Mesh(
+                        new THREE.CircleGeometry(1.2, 16),
+                        new THREE.MeshStandardMaterial({ color: 0x2b1c14, roughness: 0.95 })
+                    );
+                    soil.position.set(sidewalkCenterX, pz, 0.5);
+                    parentMesh.add(soil);
+                }
+
+                // Estrutura coberta/pórtico moderno na lateral direita
+                const rightWall = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.5, length, 2.2),
+                    new THREE.MeshStandardMaterial({ color: 0x383547, metalness: 0.8, roughness: 0.25 })
+                );
+                rightWall.position.set(width / 2 + 0.2, 0, 1.1);
+                parentMesh.add(rightWall);
+
+                // Vigas superiores da estrutura da direita
+                for (let b = -length / 2 + 5; b < length / 2; b += 10) {
+                    const beam = new THREE.Mesh(
+                        new THREE.BoxGeometry(2.4, 0.3, 0.2),
+                        new THREE.MeshStandardMaterial({ color: 0x5a556e, metalness: 0.8 })
+                    );
+                    beam.position.set(width / 2 - 0.8, b, 2.2);
+                    parentMesh.add(beam);
+                }
+
+                // Faixas brancas limpas da rodovia
+                const laneDividerX = [-2.4, 2.4];
+                const dashGeo = new THREE.PlaneGeometry(0.18, 5.2);
+                const dashMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+                laneDividerX.forEach(posX => {
+                    for (let z = -length / 2 + 3; z < length / 2; z += 9) {
+                        const dash = new THREE.Mesh(dashGeo, dashMat);
+                        dash.position.set(posX, z, 0.02);
+                        parentMesh.add(dash);
+                    }
+                });
+
+                // Pilares sobre o mar
+                const pillarGeo = new THREE.CylinderGeometry(0.8, 0.8, 4.2, 10);
+                const pillarMat = new THREE.MeshStandardMaterial({ color: 0x828796, roughness: 0.6 });
+                [-width / 2 + 1, width / 2 - 1].forEach(px => {
+                    const pillar = new THREE.Mesh(pillarGeo, pillarMat);
+                    pillar.rotation.x = Math.PI / 2;
+                    pillar.position.set(px, 0, -2.1);
+                    parentMesh.add(pillar);
+                });
+            }
+
+            createPalmTree() {
+                const group = new THREE.Group();
+                const trunkGeo = new THREE.CylinderGeometry(0.18, 0.3, 7.5, 6);
+                const trunkMat = new THREE.MeshStandardMaterial({ color: 0x3d271d, roughness: 0.9 });
+                const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+                trunk.position.y = 3.75;
+                trunk.rotation.z = -0.06;
+                group.add(trunk);
+
+                const leafMat = new THREE.MeshStandardMaterial({ color: 0x1f3b23, roughness: 0.6, side: THREE.DoubleSide });
+                for (let j = 0; j < 6; j++) {
+                    const leafGeo = new THREE.ConeGeometry(0.85, 3.8, 4);
+                    leafGeo.rotateX(Math.PI / 2.8);
+                    const leaf = new THREE.Mesh(leafGeo, leafMat);
+                    leaf.position.set(0, 7.4, 0);
+                    leaf.rotation.y = (j / 6) * Math.PI * 2;
+                    group.add(leaf);
+                }
+                return group;
+            }
+
+            // =================================================================
+            // CARRO DO JOGADOR: TESLA ROADSTER BRANCO METÁLICO
+            // =================================================================
+            buildRoadsterVehicle() {
+                this.truckGroup = new THREE.Group();
+
+                const carPaintMat = new THREE.MeshStandardMaterial({
+                    color: 0xf1f3f7,
+                    roughness: 0.18,
+                    metalness: 0.92,
+                    flatShading: true
+                });
+
+                const darkRoofMat = new THREE.MeshStandardMaterial({ color: 0x0f1118, roughness: 0.05, metalness: 0.95 });
+                const rearLedMat = new THREE.MeshBasicMaterial({ color: 0xff0033 });
+                const wheelMat = new THREE.MeshStandardMaterial({ color: 0x16171d, roughness: 0.7 });
+                const rimMat = new THREE.MeshStandardMaterial({ color: 0x3b3e4f, roughness: 0.3, metalness: 0.8 });
+
+                // 1. Chassi esportivo
+                const baseGeo = new THREE.BoxGeometry(2.0, 0.44, 4.2);
+                const baseMesh = new THREE.Mesh(baseGeo, carPaintMat);
+                baseMesh.position.y = 0.42;
+                baseMesh.castShadow = true;
+                this.truckGroup.add(baseMesh);
+
+                // 2. Cabine aerodinâmica com teto escuro
+                const cabinGeo = new THREE.BoxGeometry(1.65, 0.52, 2.3);
+                const cabin = new THREE.Mesh(cabinGeo, darkRoofMat);
+                cabin.position.set(0, 0.88, -0.15);
+                cabin.rotation.x = -0.12;
+                this.truckGroup.add(cabin);
+
+                // 3. Spoiler traseiro com LED vermelho linear
+                const spoilerGeo = new THREE.BoxGeometry(1.85, 0.08, 0.35);
+                const spoiler = new THREE.Mesh(spoilerGeo, carPaintMat);
+                spoiler.position.set(0, 0.78, 2.05);
+                this.truckGroup.add(spoiler);
+
+                const rearLed = new THREE.Mesh(new THREE.BoxGeometry(1.85, 0.06, 0.08), rearLedMat);
+                rearLed.position.set(0, 0.74, 2.18);
+                this.truckGroup.add(rearLed);
+
+                const rearGlow = new THREE.PointLight(0xff0033, 1.2, 5);
+                rearGlow.position.set(0, 0.74, 2.25);
+                this.truckGroup.add(rearGlow);
+
+                // 4. Rodas
+                this.wheels = [];
+                const wheelGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.32, 16).rotateZ(Math.PI / 2);
+                const wheelPositions = [
+                    [-1.0, 0.42, -1.3],
+                    [ 1.0, 0.42, -1.3],
+                    [-1.0, 0.42,  1.3],
+                    [ 1.0, 0.42,  1.3]
+                ];
+
+                wheelPositions.forEach(pos => {
+                    const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                    wheel.position.set(...pos);
+                    wheel.castShadow = true;
+                    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.34, 6).rotateZ(Math.PI / 2), rimMat);
+                    wheel.add(cap);
+                    this.truckGroup.add(wheel);
+                    this.wheels.push(wheel);
+                });
+
+                this.scene.add(this.truckGroup);
+                this.truckGroup.position.set(this.playerX, this.playerY, 0);
+            }
+
+            // Nuvem cônica de fumaça na traseira
+            emitRearSmokeCloud() {
+                const count = this.isFlying ? 3 : 2;
+                for (let i = 0; i < count; i++) {
+                    const pGeo = new THREE.SphereGeometry(0.22 + Math.random() * 0.15, 6, 6);
+                    const pMat = new THREE.MeshBasicMaterial({
+                        color: this.isFlying ? 0xe2f8ff : 0xffffff,
+                        transparent: true,
+                        opacity: 0.7
+                    });
+                    const particle = new THREE.Mesh(pGeo, pMat);
+                    const offsetX = (Math.random() - 0.5) * 0.9;
+                    const offsetY = (Math.random() - 0.5) * 0.3;
+                    particle.position.set(
+                        this.truckGroup.position.x + offsetX,
+                        this.truckGroup.position.y + 0.45 + offsetY,
+                        this.truckGroup.position.z + 2.2
+                    );
+
+                    particle.velocity = new THREE.Vector3(
+                        (Math.random() - 0.5) * 0.4,
+                        Math.random() * 0.2,
+                        this.currentSpeed * 0.4 + Math.random() * 8.0
+                    );
+                    particle.life = 0.45;
+                    particle.maxLife = 0.45;
+
+                    this.scene.add(particle);
+                    this.smokeParticles.push(particle);
+                }
+            }
+
+            createLateralAirPuff(origin, direction) {
+                for (let i = 0; i < 8; i++) {
+                    const pGeo = new THREE.SphereGeometry(0.12 + Math.random() * 0.08, 5, 5);
+                    const pMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
+                    const p = new THREE.Mesh(pGeo, pMat);
+                    p.position.copy(origin);
+                    p.velocity = new THREE.Vector3(
+                        direction.x * (8.0 + Math.random() * 6.0),
+                        (Math.random() - 0.5) * 1.5,
+                        (Math.random() - 0.5) * 2.0
+                    );
+                    p.life = 0.24;
+                    p.maxLife = 0.24;
+                    this.scene.add(p);
+                    this.airPuffParticles.push(p);
+                }
+            }
+
+            // =================================================================
+            // TRÂNSITO (CARROS SEDAN LARANJA, PRATA E CINZA)
+            // =================================================================
+            spawnTrafficCar() {
+                const freeLane = Math.floor(Math.random() * 3);
+                const lanesToSpawn = [0, 1, 2].filter(l => l !== freeLane);
+                const count = Math.random() < 0.55 ? 2 : 1;
+
+                for (let i = 0; i < count; i++) {
+                    const laneIndex = lanesToSpawn[i];
+                    const laneX = LANES[laneIndex];
+
+                    const carGroup = new THREE.Group();
+                    const colors = [0xd97736, 0xdfe3ea, 0x1e2029, 0xb83838];
+                    const chosenColor = colors[Math.floor(Math.random() * colors.length)];
+
+                    const bodyMat = new THREE.MeshStandardMaterial({ color: chosenColor, metalness: 0.8, roughness: 0.25 });
+                    const glassMat = new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 0.1 });
+
+                    const b1 = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.55, 4.0), bodyMat);
+                    b1.position.y = 0.48;
+                    b1.castShadow = true;
+                    carGroup.add(b1);
+
+                    const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.5, 2.0), glassMat);
+                    cabin.position.set(0, 0.9, -0.2);
+                    carGroup.add(cabin);
+
+                    const hl1 = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.12, 0.1), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+                    hl1.position.set(-0.65, 0.52, 2.05);
+                    const hl2 = hl1.clone();
+                    hl2.position.x = 0.65;
+                    carGroup.add(hl1);
+                    carGroup.add(hl2);
+
+                    const spawnZ = -160 - (Math.random() * 40);
+                    carGroup.position.set(laneX, 0, spawnZ);
+
+                    carGroup.trafficSpeed = Math.random() * 16 + 20;
+                    carGroup.boxHeight = 1.4;
+                    carGroup.obstacleType = "ground_car";
+
+                    this.scene.add(carGroup);
+                    this.trafficCars.push(carGroup);
+                }
+            }
+
+            // =================================================================
+            // RAMPAS FUTURISTAS DE SALTO ACROBÁTICO (BARREL ROLL & AIR STUNTS)
+            // =================================================================
+            createRamp(laneX, zPos) {
+                const rampGroup = new THREE.Group();
+                const width = 3.2;
+                const length = 11.0;
+                const height = 2.2;
+                const halfW = width / 2;
+                const halfL = length / 2;
+
+                rampGroup.halfW = halfW;
+                rampGroup.halfL = halfL;
+                rampGroup.rampHeight = height;
+                rampGroup.hasContact = false;
+
+                // Prisma triangular preciso via BufferGeometry
+                const vertices = new Float32Array([
+                    // Superfície de subida (Incline Slope)
+                    -halfW, 0.04,  halfL,
+                     halfW, 0.04,  halfL,
+                     halfW, height, -halfL,
+                    -halfW, 0.04,  halfL,
+                     halfW, height, -halfL,
+                    -halfW, height, -halfL,
+
+                    // Parede vertical traseira (Back Wall)
+                     halfW, 0, -halfL,
+                    -halfW, 0, -halfL,
+                    -halfW, height, -halfL,
+                     halfW, 0, -halfL,
+                    -halfW, height, -halfL,
+                     halfW, height, -halfL,
+
+                    // Lateral esquerda
+                    -halfW, 0, -halfL,
+                    -halfW, 0,  halfL,
+                    -halfW, height, -halfL,
+
+                    // Lateral direita
+                     halfW, 0,  halfL,
+                     halfW, 0, -halfL,
+                     halfW, height, -halfL
+                ]);
+
+                const rampGeo = new THREE.BufferGeometry();
+                rampGeo.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+                rampGeo.computeVertexNormals();
+
+                const rampMat = new THREE.MeshStandardMaterial({
+                    color: 0x1f2330,
+                    roughness: 0.35,
+                    metalness: 0.85
+                });
+
+                const rampBody = new THREE.Mesh(rampGeo, rampMat);
+                rampBody.castShadow = true;
+                rampBody.receiveShadow = true;
+                rampGroup.add(rampBody);
+
+                // Trilhos luminosos de Neon Laranja nas bordas
+                const slopeHyp = Math.sqrt(length * length + height * height);
+                const slopeAngle = -Math.atan2(height, length);
+                const railMat = new THREE.MeshBasicMaterial({ color: 0xff8800 });
+                const railGeo = new THREE.BoxGeometry(0.14, 0.14, slopeHyp);
+
+                const leftRail = new THREE.Mesh(railGeo, railMat);
+                leftRail.position.set(-halfW + 0.07, height / 2 + 0.05, 0);
+                leftRail.rotation.x = slopeAngle;
+                rampGroup.add(leftRail);
+
+                const rightRail = new THREE.Mesh(railGeo, railMat);
+                rightRail.position.set(halfW - 0.07, height / 2 + 0.05, 0);
+                rightRail.rotation.x = slopeAngle;
+                rampGroup.add(rightRail);
+
+                // Lip de salto em Neon Ciano no topo
+                const lipMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
+                const lipMesh = new THREE.Mesh(new THREE.BoxGeometry(width, 0.14, 0.16), lipMat);
+                lipMesh.position.set(0, height + 0.04, -halfL);
+                rampGroup.add(lipMesh);
+
+                // Setas indicativas de impulsão (Chevrons >>>)
+                rampGroup.chevrons = [];
+                const chevronGeo = new THREE.BoxGeometry(1.6, 0.04, 0.45);
+                [-0.32, 0.0, 0.32].forEach((offsetFactor) => {
+                    const chMat = new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.85 });
+                    const ch = new THREE.Mesh(chevronGeo, chMat);
+                    const progress = 0.5 + offsetFactor;
+                    const zPosLocal = halfL - progress * length;
+                    const yPosLocal = progress * height + 0.06;
+                    ch.position.set(0, yPosLocal, zPosLocal);
+                    ch.rotation.x = slopeAngle;
+                    rampGroup.add(ch);
+                    rampGroup.chevrons.push(ch);
+                });
+
+                // Luz guia no topo da rampa
+                const beaconLight = new THREE.PointLight(0xffaa00, 1.2, 7);
+                beaconLight.position.set(0, height + 0.3, -halfL);
+                rampGroup.add(beaconLight);
+
+                rampGroup.position.set(laneX, 0, zPos);
+                this.scene.add(rampGroup);
+                this.ramps.push(rampGroup);
+                return rampGroup;
+            }
+
+            spawnRamp() {
+                const laneIndex = Math.floor(Math.random() * 3);
+                const laneX = LANES[laneIndex];
+                const spawnZ = -175 - (Math.random() * 25);
+                this.createRamp(laneX, spawnZ);
+
+                // Gera carro logo atrás da rampa para proporcionar salto épico sobre o veículo
+                if (Math.random() < 0.65) {
+                    const carGroup = new THREE.Group();
+                    const colors = [0xd97736, 0xdfe3ea, 0xb83838];
+                    const chosenColor = colors[Math.floor(Math.random() * colors.length)];
+                    const bodyMat = new THREE.MeshStandardMaterial({ color: chosenColor, metalness: 0.8, roughness: 0.25 });
+                    const glassMat = new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 0.1 });
+
+                    const b1 = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.55, 4.0), bodyMat);
+                    b1.position.y = 0.48;
+                    carGroup.add(b1);
+
+                    const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.5, 2.0), glassMat);
+                    cabin.position.set(0, 0.9, -0.2);
+                    carGroup.add(cabin);
+
+                    carGroup.position.set(laneX, 0, spawnZ - 20);
+                    carGroup.trafficSpeed = Math.random() * 12 + 18;
+                    carGroup.boxHeight = 1.4;
+                    carGroup.obstacleType = "ground_car";
+
+                    this.scene.add(carGroup);
+                    this.trafficCars.push(carGroup);
+                }
+            }
+
+            // =================================================================
+            // OBSTÁCULOS NO CÉU (PÁSSAROS, AVIÕES, CABOS)
+            // =================================================================
+            spawnSkyObstacle() {
+                const laneIndex = Math.floor(Math.random() * 3);
+                const laneX = LANES[laneIndex];
+                const spawnZ = -170 - (Math.random() * 30);
+                const randType = Math.random();
+
+                if (randType < 0.4) {
+                    const flockGroup = new THREE.Group();
+                    flockGroup.obstacleType = "birds";
+                    flockGroup.wings = [];
+
+                    const birdCount = 3 + Math.floor(Math.random() * 3);
+                    const birdMat = new THREE.MeshStandardMaterial({ color: 0x22222a, roughness: 0.8 });
+
+                    for (let b = 0; b < birdCount; b++) {
+                        const bird = new THREE.Group();
+                        const body = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.6, 5).rotateX(Math.PI / 2), birdMat);
+                        bird.add(body);
+
+                        const wingGeo = new THREE.BoxGeometry(0.7, 0.03, 0.22);
+                        const leftWing = new THREE.Mesh(wingGeo, birdMat);
+                        leftWing.position.x = -0.35;
+                        const rightWing = new THREE.Mesh(wingGeo, birdMat);
+                        rightWing.position.x = 0.35;
+                        bird.add(leftWing);
+                        bird.add(rightWing);
+
+                        bird.leftWing = leftWing;
+                        bird.rightWing = rightWing;
+                        flockGroup.wings.push(leftWing, rightWing);
+
+                        bird.position.set((b - 1.5) * 0.9, (b % 2) * 0.3, b * 0.8);
+                        flockGroup.add(bird);
+                    }
+
+                    flockGroup.position.set(laneX, FLIGHT_Y + (Math.random() * 0.8 - 0.4), spawnZ);
+                    flockGroup.flySpeed = Math.random() * 8 + 6;
+                    this.scene.add(flockGroup);
+                    this.skyObstacles.push(flockGroup);
+
+                } else if (randType < 0.72) {
+                    const planeGroup = new THREE.Group();
+                    planeGroup.obstacleType = "plane";
+
+                    const planeMat = new THREE.MeshStandardMaterial({ color: 0xdce2ec, metalness: 0.85, roughness: 0.2 });
+                    const wingMat = new THREE.MeshStandardMaterial({ color: 0x1f232e, metalness: 0.9 });
+
+                    const fuselage = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.35, 6.2, 10).rotateX(Math.PI / 2), planeMat);
+                    planeGroup.add(fuselage);
+
+                    const wings = new THREE.Mesh(new THREE.BoxGeometry(6.4, 0.1, 1.4), wingMat);
+                    wings.position.set(0, 0.1, 0.2);
+                    planeGroup.add(wings);
+
+                    planeGroup.position.set(laneX, FLIGHT_Y, spawnZ);
+                    planeGroup.flySpeed = Math.random() * 20 + 25;
+                    this.scene.add(planeGroup);
+                    this.skyObstacles.push(planeGroup);
+
+                } else {
+                    const cableGroup = new THREE.Group();
+                    cableGroup.obstacleType = "powerlines";
+
+                    const poleMat = new THREE.MeshStandardMaterial({ color: 0x6e7587, metalness: 0.8 });
+                    const cableMat = new THREE.MeshBasicMaterial({ color: 0x222222 });
+
+                    [-7.2, 7.2].forEach(px => {
+                        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.2, 8.5, 8), poleMat);
+                        pole.position.set(px, 4.2, 0);
+                        cableGroup.add(pole);
+                    });
+
+                    [-0.5, 0, 0.5].forEach(dy => {
+                        const wire = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 14.8, 6).rotateZ(Math.PI / 2), cableMat);
+                        wire.position.set(0, FLIGHT_Y + dy, 0);
+                        cableGroup.add(wire);
+                    });
+
+                    cableGroup.position.set(0, 0, spawnZ);
+                    cableGroup.flySpeed = 0;
+                    this.scene.add(cableGroup);
+                    this.skyObstacles.push(cableGroup);
+                }
+            }
+
+            // =================================================================
+            // COLETÁVEIS (MOEDAS E CORAÇÕES)
+            // =================================================================
+            spawnCollectible() {
+                const laneIndex = Math.floor(Math.random() * 3);
+                const laneX = LANES[laneIndex];
+                const spawnZ = -150 - (Math.random() * 20);
+
+                const rand = Math.random();
+
+                if (rand < 0.04 && this.lives < this.maxLives) {
+                    const heartGroup = new THREE.Group();
+                    const heartShape = new THREE.Shape();
+                    const x = 0, y = 0;
+                    heartShape.moveTo(x + 0.25, y + 0.25);
+                    heartShape.bezierCurveTo(x + 0.25, y + 0.25, x + 0.2, y, x, y);
+                    heartShape.bezierCurveTo(x - 0.3, y, x - 0.3, y + 0.35, x - 0.3, y + 0.35);
+                    heartShape.bezierCurveTo(x - 0.3, y + 0.55, x - 0.1, y + 0.77, x + 0.25, y + 0.95);
+                    heartShape.bezierCurveTo(x + 0.6, y + 0.77, x + 0.8, y + 0.55, x + 0.8, y + 0.35);
+                    heartShape.bezierCurveTo(x + 0.8, y + 0.35, x + 0.8, y, x + 0.5, y);
+                    heartShape.bezierCurveTo(x + 0.35, y, x + 0.25, y + 0.25, x + 0.25, y + 0.25);
+
+                    const heartGeo = new THREE.ExtrudeGeometry(heartShape, { steps: 1, depth: 0.22, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.05 });
+                    heartGeo.center();
+                    const heartMat = new THREE.MeshStandardMaterial({ color: 0xff2a5a, emissive: 0xff1744, emissiveIntensity: 0.6 });
+                    const heartMesh = new THREE.Mesh(heartGeo, heartMat);
+                    heartMesh.rotation.z = Math.PI;
+                    heartMesh.scale.set(1.4, 1.4, 1.4);
+                    heartGroup.add(heartMesh);
+
+                    heartGroup.position.set(laneX, 1.4, spawnZ);
+                    heartGroup.itemType = "heart";
+                    this.scene.add(heartGroup);
+                    this.collectibles.push(heartGroup);
+
+                } else {
+                    const count = 4;
+                    const coinY = this.isFlying ? FLIGHT_Y : 1.2;
+                    const coinGeo = new THREE.CylinderGeometry(0.36, 0.36, 0.08, 14).rotateX(Math.PI / 2);
+                    const coinMat = new THREE.MeshStandardMaterial({ color: 0xffb703, emissive: 0xfb8500, emissiveIntensity: 0.45, metalness: 0.9 });
+
+                    for (let c = 0; c < count; c++) {
+                        const coin = new THREE.Mesh(coinGeo, coinMat);
+                        coin.position.set(laneX, coinY, spawnZ - (c * 4.5));
+                        coin.itemType = "coin";
+                        this.scene.add(coin);
+                        this.collectibles.push(coin);
+                    }
+                }
+            }
+
+            // =================================================================
+            // CONTROLES RESPONSIVOS (TECLADO, TOUCH BUTTONS E SWIPE)
+            // =================================================================
+            initControls() {
+                // Teclado
+                window.addEventListener("keydown", (e) => {
+                    if (!this.isRunning || this.isPaused) return;
+
+                    switch (e.key) {
+                        case "ArrowLeft":
+                        case "a":
+                        case "A":
+                            this.changeLane(-1);
+                            break;
+                        case "ArrowRight":
+                        case "d":
+                        case "D":
+                            this.changeLane(1);
+                            break;
+                        case " ":
+                        case "Shift":
+                        case "ArrowUp":
+                        case "w":
+                        case "W":
+                            this.toggleFlight();
+                            break;
+                        case "ArrowDown":
+                        case "s":
+                        case "S":
+                            this.slamDown();
+                            break;
+                    }
+                });
+
+                // Botões Touchscreen na tela para celular
+                const bindTouchBtn = (element, action) => {
+                    if (!element) return;
+                    element.addEventListener("touchstart", (e) => {
+                        e.preventDefault();
+                        action();
+                    }, { passive: false });
+                    element.addEventListener("click", (e) => {
+                        e.preventDefault();
+                        action();
+                    });
+                };
+
+                bindTouchBtn(this.btnLeft, () => this.changeLane(-1));
+                bindTouchBtn(this.btnRight, () => this.changeLane(1));
+                bindTouchBtn(this.btnSlam, () => this.slamDown());
+                bindTouchBtn(this.boostTouchBtn, () => this.toggleFlight());
+
+                // Suporte a Swipe na tela
+                let touchStartX = 0;
+                let touchStartY = 0;
+                let touchStartTime = 0;
+
+                window.addEventListener("touchstart", (e) => {
+                    if (e.target.closest("button")) return; // Não interfere nos botões
+                    const touch = e.touches[0];
+                    touchStartX = touch.clientX;
+                    touchStartY = touch.clientY;
+                    touchStartTime = Date.now();
+                }, { passive: true });
+
+                window.addEventListener("touchend", (e) => {
+                    if (!this.isRunning || this.isPaused || e.target.closest("button")) return;
+                    const touch = e.changedTouches[0];
+                    const deltaX = touch.clientX - touchStartX;
+                    const deltaY = touch.clientY - touchStartY;
+                    const deltaTime = Date.now() - touchStartTime;
+
+                    if (deltaTime < 400) {
+                        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                            if (deltaX > 25) this.changeLane(1);
+                            else if (deltaX < -25) this.changeLane(-1);
+                        } else {
+                            if (deltaY < -25) this.toggleFlight();
+                            else if (deltaY > 25) this.slamDown();
+                        }
+                    }
+                }, { passive: true });
+            }
+
+            changeLane(dir) {
+                const targetLane = this.currentLane + dir;
+                if (targetLane >= 0 && targetLane <= 2) {
+                    this.currentLane = targetLane;
+                    this.sound.playLaneChange();
+
+                    if (this.isFlying) {
+                        this.sound.playAirPuff();
+                        const truckPos = this.truckGroup.position;
+                        if (dir > 0) {
+                            const puffOrigin = truckPos.clone().add(new THREE.Vector3(-1.0, 0.4, 0));
+                            this.createLateralAirPuff(puffOrigin, new THREE.Vector3(-1, 0, 0));
+                        } else {
+                            const puffOrigin = truckPos.clone().add(new THREE.Vector3(1.0, 0.4, 0));
+                            this.createLateralAirPuff(puffOrigin, new THREE.Vector3(1, 0, 0));
+                        }
+                    }
+                }
+            }
+
+            toggleFlight() {
+                if (!this.isFlying) {
+                    if (this.airLiters > 20) {
+                        this.isFlying = true;
+                        this.sound.playAirPuff();
+                        this.triggerActionPopup("ROCKET BOOST!");
+                    } else {
+                        this.sound.playSlam();
+                        this.triggerActionPopup("AR ESGOTADO!");
+                    }
+                } else {
+                    this.isFlying = false;
+                    this.triggerActionPopup("POUSANDO...");
+                }
+            }
+
+            slamDown() {
+                if (this.isFlying) {
+                    this.isFlying = false;
+                    this.triggerActionPopup("FAST SLAM");
+                }
+                if (this.isRampJumping) {
+                    this.isRampJumping = false;
+                    this.truckGroup.rotation.z = 0;
+                    this.truckGroup.rotation.x = 0;
+                }
+                if (this.playerY > GROUND_Y) {
+                    this.velocityY = SLAM_FORCE;
+                    this.sound.playSlam();
+                }
+            }
+
+            triggerActionPopup(text) {
+                this.actionPopup.textContent = text;
+                this.actionPopup.classList.add("show");
+                clearTimeout(this.popupTimeout);
+                this.popupTimeout = setTimeout(() => {
+                    this.actionPopup.classList.remove("show");
+                }, 1200);
+            }
+
+            // =================================================================
+            // EVENTOS DE INTERFACE
+            // =================================================================
+            initEventListeners() {
+                this.startBtn.addEventListener("click", () => {
+                    this.sound.init();
+                    this.startGame();
+                });
+
+                this.restartBtn.addEventListener("click", () => {
+                    this.sound.init();
+                    this.startGame();
+                });
+
+                this.soundBtn.addEventListener("click", () => {
+                    this.sound.init();
+                    const enabled = this.sound.enabled;
+                    this.sound.enabled = !enabled;
+                    this.soundBtn.textContent = !enabled ? "🔊" : "🔇";
+                });
+
+                this.pauseBtn.addEventListener("click", () => {
+                    if (!this.isRunning) return;
+                    this.isPaused = !this.isPaused;
+                    this.pauseBtn.textContent = this.isPaused ? "▶" : "⏸";
+                    if (!this.isPaused) {
+                        this.lastTime = performance.now();
+                        requestAnimationFrame((t) => this.gameLoop(t));
+                    }
+                });
+            }
+
+            startGame() {
+                this.startScreen.classList.remove("active");
+                this.gameoverScreen.classList.remove("active");
+
+                this.isRunning = true;
+                this.isPaused = false;
+                this.scoreDistance = 0;
+                this.scorePoints = 0;
+                this.coinsCollected = 0;
+                this.lives = 1;
+                this.invulnerableTimer = 0;
+                this.currentSpeed = this.baseSpeed;
+                this.currentLane = 1;
+                this.playerX = LANES[1];
+                this.playerY = GROUND_Y;
+                this.velocityY = 0;
+                this.isFlying = false;
+                this.airLiters = this.maxAirLiters;
+                this.isRampJumping = false;
+                this.rampSpinProgress = 0;
+                this.trickAwarded = false;
+                this.rampSpawnTimer = 3.5;
+
+                this.trafficCars.forEach(car => this.scene.remove(car));
+                this.trafficCars = [];
+                this.ramps.forEach(ramp => this.scene.remove(ramp));
+                this.ramps = [];
+                this.skyObstacles.forEach(sky => this.scene.remove(sky));
+                this.skyObstacles = [];
+                this.collectibles.forEach(col => this.scene.remove(col));
+                this.collectibles = [];
+                this.smokeParticles.forEach(p => this.scene.remove(p));
+                this.smokeParticles = [];
+                this.airPuffParticles.forEach(p => this.scene.remove(p));
+                this.airPuffParticles = [];
+
+                this.updateHeartsUI();
+                this.updateHUD();
+
+                this.lastTime = performance.now();
+                requestAnimationFrame((t) => this.gameLoop(t));
+            }
+
+            gameOver(reason = "COLISÃO NO TRÁFEGO DA PONTE") {
+                this.isRunning = false;
+                this.sound.stopEngine();
+                this.sound.playCrash();
+                this.sound.playGameOver();
+
+                this.flashDamage();
+
+                const savedBest = parseInt(localStorage.getItem("roadster_dash_best") || "0", 10);
+                const finalScore = Math.floor(this.scorePoints);
+                const newBest = Math.max(savedBest, finalScore);
+                localStorage.setItem("roadster_dash_best", newBest.toString());
+
+                this.goReason.textContent = reason;
+                this.goScore.textContent = finalScore.toLocaleString();
+                this.goDist.textContent = `${Math.floor(this.scoreDistance)} m`;
+                this.goBest.textContent = newBest.toLocaleString();
+
+                setTimeout(() => {
+                    this.gameoverScreen.classList.add("active");
+                }, 400);
+            }
+
+            flashDamage() {
+                this.damageFlash.style.opacity = "1";
+                setTimeout(() => {
+                    this.damageFlash.style.opacity = "0";
+                }, 260);
+            }
+
+            addHeart() {
+                if (this.lives < this.maxLives) {
+                    this.lives++;
+                    this.sound.playHeart();
+                    this.updateHeartsUI();
+                    this.triggerActionPopup("+1 VIDA!");
+                }
+            }
+
+            takeDamage(reason) {
+                if (this.invulnerableTimer > 0) return;
+
+                this.lives--;
+                this.sound.playCrash();
+                this.flashDamage();
+                this.updateHeartsUI();
+
+                if (this.lives <= 0) {
+                    this.gameOver(reason);
+                } else {
+                    this.invulnerableTimer = 1.8;
+                }
+            }
+
+            updateHeartsUI() {
+                this.heartIcons.forEach((icon, index) => {
+                    if (index < this.lives) {
+                        icon.classList.remove("empty");
+                    } else {
+                        icon.classList.add("empty");
+                    }
+                });
+            }
+
+            // =================================================================
+            // LOOP DO JOGO E FÍSICA
+            // =================================================================
+            gameLoop(currentTime) {
+                if (!this.isRunning || this.isPaused) return;
+
+                const deltaTime = Math.min((currentTime - this.lastTime) / 1000, 0.05);
+                this.lastTime = currentTime;
+
+                this.update(deltaTime);
+                this.renderer.render(this.scene, this.camera);
+
+                requestAnimationFrame((t) => this.gameLoop(t));
+            }
+
+            update(delta) {
+                // Progressão de Velocidade Acelerada e Intensa
+                this.currentSpeed = Math.min(this.maxSpeed, this.baseSpeed + (this.scoreDistance * 0.032));
+                this.scoreDistance += this.currentSpeed * delta;
+                this.scorePoints += (this.currentSpeed * 1.8) * delta;
+
+                this.sound.updateEngine(this.currentSpeed, this.isFlying);
+
+                // 1. GERENCIAMENTO DA BARRA DE AR (10 SEGMENTOS)
+                if (this.isFlying) {
+                    this.airLiters -= this.airDrainRate * delta;
+                    if (this.airLiters <= 0) {
+                        this.airLiters = 0;
+                        this.isFlying = false;
+                        this.triggerActionPopup("AR ESGOTADO!");
+                    }
+                } else {
+                    if (this.airLiters < this.maxAirLiters) {
+                        this.airLiters = Math.min(this.maxAirLiters, this.airLiters + this.airRechargeRate * delta);
+                    }
+                }
+
+                // Atualizar segmentos da barra de ar (10 blocos)
+                const activeSegments = Math.round((this.airLiters / this.maxAirLiters) * 10);
+                this.airSegments.forEach((seg, idx) => {
+                    if (idx < activeSegments) {
+                        seg.classList.remove("depleted");
+                    } else {
+                        seg.classList.add("depleted");
+                    }
+                });
+                this.airLitersEl.textContent = `${Math.floor(this.airLiters)} L`;
+
+                // 2. Nuvem cônica de fumaça branca na traseira
+                this.emitRearSmokeCloud();
+
+                // 3. Deslocamento contínuo da rodovia e palmeiras
+                const moveDist = this.currentSpeed * delta;
+                this.roadSegments.forEach(seg => {
+                    seg.position.z += moveDist;
+                    if (seg.position.z > 40) {
+                        seg.position.z -= 70 * this.roadSegments.length;
+                    }
+                });
+
+                this.palmTrees.forEach(p => {
+                    p.position.z += moveDist;
+                    if (p.position.z > 30) {
+                        p.position.z -= 28 * 22;
+                    }
+                });
+
+                // 4. Movimentação do Carro na Faixa X
+                const targetX = LANES[this.currentLane];
+                const dx = targetX - this.playerX;
+                const expLerp = 1.0 - Math.pow(0.0001, delta);
+                this.playerX += dx * expLerp;
+                this.truckGroup.position.x = this.playerX;
+
+                // Inclinação lateral ao esterçar (Roll / Pitch)
+                const maxTilt = this.isFlying ? -0.16 : -0.06;
+                const tiltZ = dx * maxTilt;
+                if (!this.isRampJumping) {
+                    this.truckGroup.rotation.z = THREE.MathUtils.lerp(this.truckGroup.rotation.z, tiltZ, 0.22);
+                }
+                this.truckGroup.rotation.y = dx * 0.035;
+
+                // 5. ATUALIZAÇÃO E FÍSICA DAS RAMPAS
+                let onRampThisFrame = false;
+                for (let i = this.ramps.length - 1; i >= 0; i--) {
+                    const ramp = this.ramps[i];
+                    ramp.position.z += this.currentSpeed * delta;
+
+                    // Animação pulsante nas setas neon da rampa
+                    if (ramp.chevrons) {
+                        const pulse = (Math.sin(performance.now() * 0.01) + 1) * 0.5;
+                        ramp.chevrons.forEach(ch => {
+                            ch.material.opacity = 0.65 + pulse * 0.35;
+                        });
+                    }
+
+                    // Checa alinhamento com a faixa da rampa
+                    const distToRampX = Math.abs(this.truckGroup.position.x - ramp.position.x);
+                    if (distToRampX < ramp.halfW) {
+                        const relZ = 0 - ramp.position.z;
+
+                        // Se o carro está sobre o comprimento da rampa
+                        if (relZ <= ramp.halfL && relZ >= -ramp.halfL) {
+                            const progress = (ramp.halfL - relZ) / (2 * ramp.halfL);
+                            const surfaceY = GROUND_Y + (progress * ramp.rampHeight);
+
+                            if (!this.isFlying && this.playerY <= surfaceY + 0.75) {
+                                this.playerY = surfaceY;
+                                this.truckGroup.position.y = this.playerY;
+                                this.truckGroup.rotation.x = -0.22;
+                                ramp.hasContact = true;
+                                onRampThisFrame = true;
+                            }
+                        } else if (ramp.hasContact && relZ < -ramp.halfL && relZ > -ramp.halfL - 3.5) {
+                            // DECOLAGEM NA CRISTA DA RAMPA!
+                            ramp.hasContact = false;
+                            if (!this.isFlying && !this.isRampJumping) {
+                                this.isRampJumping = true;
+                                this.rampSpinProgress = 0;
+                                this.trickAwarded = false;
+                                this.velocityY = 25.0 + (this.currentSpeed - this.baseSpeed) * 0.09;
+                                this.sound.playRampLaunch();
+                                this.triggerActionPopup("RAMP LAUNCH! +300");
+                                this.scorePoints += 300;
+                            }
+                        }
+                    }
+
+                    if (ramp.position.z > 35) {
+                        this.scene.remove(ramp);
+                        this.ramps.splice(i, 1);
+                    }
+                }
+
+                // 6. ALTURA Y E ACROBACIAS AÉREAS (BARREL ROLL)
+                if (this.isFlying) {
+                    this.playerY += (FLIGHT_Y - this.playerY) * (9.0 * delta);
+                    this.truckGroup.position.y = this.playerY;
+                } else if (onRampThisFrame) {
+                    // Altura já cravada na superfície da rampa
+                } else if (this.isRampJumping) {
+                    this.velocityY += GRAVITY * delta;
+                    this.playerY += this.velocityY * delta;
+
+                    // Giro acrobático 360° no ar (Barrel Roll do Roadster)
+                    this.rampSpinProgress += delta * 8.6;
+                    if (this.rampSpinProgress < Math.PI * 2) {
+                        this.truckGroup.rotation.z = this.rampSpinProgress;
+                    } else {
+                        this.truckGroup.rotation.z = 0;
+                        if (!this.trickAwarded) {
+                            this.trickAwarded = true;
+                            this.triggerActionPopup("BARREL ROLL! +180");
+                            this.scorePoints += 180;
+                            this.sound.playTrickScore();
+                        }
+                    }
+                    this.truckGroup.rotation.x = -this.velocityY * 0.015;
+
+                    // Aterrissagem com bônus de ar e pontuação perfeita
+                    if (this.playerY <= GROUND_Y) {
+                        this.playerY = GROUND_Y;
+                        this.velocityY = 0;
+                        this.truckGroup.rotation.x = 0;
+                        this.truckGroup.rotation.z = 0;
+                        this.isRampJumping = false;
+                        this.triggerActionPopup("PERFECT LANDING! +400");
+                        this.scorePoints += 400;
+                        this.sound.playCoin();
+                        this.sound.playSlam();
+                        this.airLiters = Math.min(this.maxAirLiters, this.airLiters + 35);
+                    }
+                    this.truckGroup.position.y = this.playerY;
+                } else {
+                    if (this.playerY > GROUND_Y) {
+                        this.velocityY += GRAVITY * delta;
+                        this.playerY += this.velocityY * delta;
+                        if (this.playerY <= GROUND_Y) {
+                            this.playerY = GROUND_Y;
+                            this.velocityY = 0;
+                            this.truckGroup.rotation.x = 0;
+                        } else {
+                            this.truckGroup.rotation.x = -this.velocityY * 0.02;
+                        }
+                    } else {
+                        this.playerY += (GROUND_Y - this.playerY) * (14.0 * delta);
+                    }
+                    this.truckGroup.position.y = this.playerY;
+                }
+
+                // Rotação das rodas proporcional à alta velocidade
+                const wheelRotation = (this.currentSpeed * delta) / 0.42;
+                this.wheels.forEach(w => w.rotation.x -= wheelRotation);
+
+                if (this.invulnerableTimer > 0) {
+                    this.invulnerableTimer -= delta;
+                    this.truckGroup.visible = Math.floor(performance.now() / 80) % 2 === 0;
+                } else {
+                    this.truckGroup.visible = true;
+                }
+
+                // 7. SPAWNERS DINÂMICOS COM DIFICULDADE CRESCENTE
+                this.trafficSpawnTimer -= delta;
+                if (this.trafficSpawnTimer <= 0) {
+                    this.spawnTrafficCar();
+                    this.trafficSpawnTimer = Math.max(0.65, 1.8 - (this.scoreDistance * 0.0006));
+                }
+
+                this.rampSpawnTimer -= delta;
+                if (this.rampSpawnTimer <= 0) {
+                    this.spawnRamp();
+                    this.rampSpawnTimer = Math.random() * 3.5 + 4.5;
+                }
+
+                this.skySpawnTimer -= delta;
+                if (this.skySpawnTimer <= 0) {
+                    this.spawnSkyObstacle();
+                    this.skySpawnTimer = Math.random() * 1.2 + 1.8;
+                }
+
+                this.collectibleSpawnTimer -= delta;
+                if (this.collectibleSpawnTimer <= 0) {
+                    this.spawnCollectible();
+                    this.collectibleSpawnTimer = 1.2;
+                }
+
+                // 8. Atualizar Tráfego Terrestre
+                for (let i = this.trafficCars.length - 1; i >= 0; i--) {
+                    const car = this.trafficCars[i];
+                    car.position.z += (this.currentSpeed + car.trafficSpeed) * delta;
+
+                    // Se estiver em salto alto de rampa ou voando, o carro pula por cima do tráfego sem colidir!
+                    if (this.invulnerableTimer <= 0 && this.playerY < car.boxHeight) {
+                        const distToCarX = Math.abs(this.truckGroup.position.x - car.position.x);
+                        const distToCarZ = Math.abs(this.truckGroup.position.z - car.position.z);
+
+                        if (distToCarX < 1.7 && distToCarZ < 3.4) {
+                            this.takeDamage("COLISÃO COM VEÍCULO NO TRÁFEGO");
+                        }
+                    }
+
+                    if (car.position.z > 30) {
+                        this.scene.remove(car);
+                        this.trafficCars.splice(i, 1);
+                    }
+                }
+
+                // 9. Atualizar Obstáculos Aéreos
+                for (let i = this.skyObstacles.length - 1; i >= 0; i--) {
+                    const sky = this.skyObstacles[i];
+                    sky.position.z += (this.currentSpeed + sky.flySpeed) * delta;
+
+                    if (sky.obstacleType === "birds" && sky.wings) {
+                        const flap = Math.sin(performance.now() * 0.015) * 0.5;
+                        sky.wings.forEach(w => w.rotation.z = flap);
+                    }
+
+                    if (this.invulnerableTimer <= 0 && this.playerY > 2.5) {
+                        const distZ = Math.abs(this.truckGroup.position.z - sky.position.z);
+                        const distY = Math.abs(this.playerY - sky.position.y);
+                        
+                        if (sky.obstacleType === "powerlines") {
+                            if (distZ < 1.2 && distY < 1.2) {
+                                this.sound.playZap();
+                                this.takeDamage("CHOQUE NOS FIOS DE ALTA TENSÃO");
+                            }
+                        } else {
+                            const distX = Math.abs(this.truckGroup.position.x - sky.position.x);
+                            const hitDistX = sky.obstacleType === "plane" ? 3.0 : 1.5;
+                            if (distX < hitDistX && distZ < 2.5 && distY < 1.6) {
+                                const reason = sky.obstacleType === "plane" ? "COLISÃO COM AERONAVE NO CÉU" : "COLISÃO COM BANDO DE PÁSSAROS";
+                                this.takeDamage(reason);
+                            }
+                        }
+                    }
+
+                    if (sky.position.z > 30) {
+                        this.scene.remove(sky);
+                        this.skyObstacles.splice(i, 1);
+                    }
+                }
+
+                // 10. Atualizar Coletáveis
+                for (let i = this.collectibles.length - 1; i >= 0; i--) {
+                    const item = this.collectibles[i];
+                    item.position.z += this.currentSpeed * delta;
+                    item.rotation.y += 2.5 * delta;
+
+                    const dist = this.truckGroup.position.distanceTo(item.position);
+                    if (dist < 2.2) {
+                        if (item.itemType === "coin") {
+                            this.coinsCollected++;
+                            this.scorePoints += 150;
+                            this.sound.playCoin();
+                        } else if (item.itemType === "heart") {
+                            this.addHeart();
+                        }
+
+                        this.scene.remove(item);
+                        this.collectibles.splice(i, 1);
+                        continue;
+                    }
+
+                    if (item.position.z > 25) {
+                        this.scene.remove(item);
+                        this.collectibles.splice(i, 1);
+                    }
+                }
+
+                // 11. Atualizar Partículas de Fumaça Traseira
+                for (let i = this.smokeParticles.length - 1; i >= 0; i--) {
+                    const p = this.smokeParticles[i];
+                    p.position.addScaledVector(p.velocity, delta);
+                    p.life -= delta;
+                    p.scale.addScalar(delta * 2.8);
+                    p.material.opacity = (p.life / p.maxLife) * 0.7;
+
+                    if (p.life <= 0) {
+                        this.scene.remove(p);
+                        this.smokeParticles.splice(i, 1);
+                    }
+                }
+
+                // Partículas de ar lateral
+                for (let i = this.airPuffParticles.length - 1; i >= 0; i--) {
+                    const p = this.airPuffParticles[i];
+                    p.position.addScaledVector(p.velocity, delta);
+                    p.life -= delta;
+                    p.material.opacity = (p.life / p.maxLife) * 0.8;
+
+                    if (p.life <= 0) {
+                        this.scene.remove(p);
+                        this.airPuffParticles.splice(i, 1);
+                    }
+                }
+
+                // 12. Câmera Adaptativa com Efeito de Alta Velocidade (FOV Dinâmico)
+                const isPortrait = window.innerHeight > window.innerWidth;
+                const camFollowX = isPortrait ? 0.32 : 0.42;
+                const camFollowY = isPortrait ? (this.isFlying ? 7.8 : 4.8) : (this.isFlying ? 7.6 : 4.2);
+
+                const speedRatio = Math.min(1.0, (this.currentSpeed - this.baseSpeed) / (this.maxSpeed - this.baseSpeed));
+                const baseFov = isPortrait ? 75 : 60;
+                this.camera.fov = THREE.MathUtils.lerp(this.camera.fov, baseFov + speedRatio * 14, 0.08);
+                this.camera.updateProjectionMatrix();
+
+                this.camera.position.x += (this.playerX * camFollowX - this.camera.position.x) * (7.5 * delta);
+                this.camera.position.y += (camFollowY - this.camera.position.y) * (5.5 * delta);
+                this.camera.lookAt(this.playerX * 0.15, this.playerY + 0.8, -12);
+
+                this.updateHUD();
+            }
+
+            updateHUD() {
+                this.hudDistance.textContent = `${Math.floor(this.scoreDistance)} m`;
+                this.hudScore.textContent = Math.floor(this.scorePoints).toLocaleString();
+                if (this.hudSpeed) {
+                    const speedKmH = Math.floor(this.currentSpeed * 1.6);
+                    this.hudSpeed.textContent = `${speedKmH} KM/H`;
+                }
+                
+                const rocketProgress = (this.airLiters / this.maxAirLiters) * 100;
+                this.rocketSubFill.style.width = `${rocketProgress}%`;
+            }
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            new RoadsterDashGame();
+        });
+
+    })();
+    </script>
 </body>
 </html>
-
