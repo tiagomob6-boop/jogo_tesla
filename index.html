@@ -1018,6 +1018,237 @@
             line-height: 1.35;
         }
 
+        /* Indicador de Mega Boost no HUD */
+        .hud-megaboost-indicator {
+            display: inline-flex;
+            flex-direction: column;
+            gap: 3px;
+            background: rgba(16, 185, 129, 0.28);
+            border: 1px solid #10b981;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #34d399;
+            text-shadow: 0 0 8px rgba(52, 211, 153, 0.85);
+            animation: megaBoostPulse 0.9s infinite alternate;
+        }
+
+        @keyframes megaBoostPulse {
+            0% { box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
+            100% { box-shadow: 0 0 18px rgba(16, 185, 129, 0.95), 0 0 30px rgba(6, 182, 212, 0.6); }
+        }
+
+        /* Estilos do Modal de Missões Diárias */
+        .missions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 4px;
+            margin-top: 10px;
+        }
+
+        .mission-card {
+            background: rgba(18, 12, 28, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .mission-card.completed {
+            border-color: #fbbf24;
+            background: rgba(251, 191, 36, 0.1);
+            box-shadow: 0 0 14px rgba(251, 191, 36, 0.25);
+        }
+
+        .mission-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mission-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mission-icon {
+            font-size: 1.5rem;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+        }
+
+        .mission-title-text {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .mission-desc-text {
+            font-size: 0.75rem;
+            color: #cbd5e1;
+        }
+
+        .mission-reward-badge {
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: #fbbf24;
+            background: rgba(251, 191, 36, 0.15);
+            padding: 4px 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(251, 191, 36, 0.35);
+        }
+
+        .mission-progress-bar-wrap {
+            width: 100%;
+            height: 7px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .mission-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #38bdf8, #22d3ee);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .mission-card.completed .mission-progress-fill {
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+        }
+
+        .mission-bottom-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mission-count-text {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #94a3b8;
+        }
+
+        .btn-claim-reward {
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: none;
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            color: #1c1917;
+            font-size: 0.75rem;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(245, 158, 11, 0.5);
+            animation: pulseClaim 1s infinite alternate;
+        }
+
+        @keyframes pulseClaim {
+            0% { transform: scale(1.0); }
+            100% { transform: scale(1.05); }
+        }
+
+        .badge-claimed {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #4ade80;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Estilos do Modal de Configurações & Pause */
+        .settings-box {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin: 12px 0;
+            text-align: left;
+        }
+
+        .setting-item {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .setting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .setting-title {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .setting-val {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: #38bdf8;
+        }
+
+        .setting-slider {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .setting-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #22d3ee;
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.8);
+            cursor: pointer;
+        }
+
+        .setting-toggle-btn {
+            padding: 5px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            font-size: 0.78rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .setting-toggle-btn.active {
+            background: rgba(34, 197, 94, 0.25);
+            border-color: #22c55e;
+            color: #4ade80;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.35);
+        }
+
         /* Leaderboard Table */
         .leaderboard-box {
             width: 100%;
@@ -1170,6 +1401,10 @@
                         <div>🛡️ ESCUDO: <span id="hud-shield-timer">5.0s</span></div>
                         <div class="hud-shield-bar"><div class="hud-shield-fill" id="hud-shield-fill"></div></div>
                     </div>
+                    <div class="hud-megaboost-indicator" id="hud-megaboost-indicator" style="display: none;">
+                        <div>⚡ MEGA BOOST: <span id="hud-megaboost-timer">4.0s</span></div>
+                        <div class="hud-shield-bar"><div class="hud-shield-fill" id="hud-megaboost-fill" style="background: linear-gradient(90deg, #10b981, #06b6d4);"></div></div>
+                    </div>
                     <div class="hearts-box">
                         <span class="heart-badge" id="heart-1">❤️</span>
                         <span class="heart-badge empty" id="heart-2">❤️</span>
@@ -1268,10 +1503,14 @@
 
             <button class="action-btn" id="start-btn" style="width: 100%;">INICIAR CORRIDA</button>
 
-            <div class="menu-btn-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+            <div class="menu-btn-grid" style="grid-template-columns: 1fr 1fr; gap: 8px;">
                 <button class="secondary-btn" id="open-garage-btn">🚗 Garagem</button>
                 <button class="secondary-btn" id="open-pilot-btn">🧑‍🚀 Pilotos</button>
+                <button class="secondary-btn" id="open-missions-btn">📜 Missões</button>
                 <button class="secondary-btn" id="open-leaderboard-btn">🏆 Ranking</button>
+            </div>
+            <div style="margin-top: 8px; display: flex; justify-content: center;">
+                <button class="secondary-btn" id="open-settings-btn" style="padding: 6px 18px; font-size: 0.8rem;">⚙️ Ajustes & Áudio</button>
             </div>
         </div>
     </div>
@@ -1303,9 +1542,10 @@
 
             <button class="action-btn" id="restart-btn" style="width: 100%;">JOGAR NOVAMENTE</button>
 
-            <div class="menu-btn-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+            <div class="menu-btn-grid" style="grid-template-columns: 1fr 1fr; gap: 8px;">
                 <button class="secondary-btn" id="go-garage-btn">🚗 Garagem</button>
                 <button class="secondary-btn" id="go-pilot-btn">🧑‍🚀 Pilotos</button>
+                <button class="secondary-btn" id="go-missions-btn">📜 Missões</button>
                 <button class="secondary-btn" id="go-leaderboard-btn">🏆 Ranking</button>
             </div>
         </div>
@@ -1400,6 +1640,65 @@
         </div>
     </div>
 
+    <!-- MODAL DE MISSÕES DIÁRIAS / DESAFIOS -->
+    <div class="modal-screen" id="missions-modal">
+        <div class="glass-box modal-large-box">
+            <div style="border-bottom: 1px solid rgba(255, 255, 255, 0.15); padding-bottom: 10px;">
+                <h2 class="game-title" style="font-size: 1.7rem; margin-bottom: 2px;">MISSÕES DIÁRIAS</h2>
+                <div class="game-subtitle" style="margin-bottom: 0;">DESAFIOS RENOVADOS TODOS OS DIAS // RECOMPENSAS EM MOEDAS</div>
+            </div>
+
+            <div class="missions-list" id="missions-list-container">
+                <!-- Renderizado dinamicamente pelo JS -->
+            </div>
+
+            <button class="action-btn" id="close-missions-btn" style="width: 100%; margin-top: 14px;">FECHAR MISSÕES</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE PAUSE & CONFIGURAÇÕES DE ÁUDIO -->
+    <div class="modal-screen" id="pause-settings-modal">
+        <div class="glass-box" style="max-width: 440px;">
+            <h2 class="game-title" style="font-size: 1.7rem; margin-bottom: 2px;" id="pause-modal-title">JOGO PAUSADO</h2>
+            <div class="game-subtitle">AJUSTES DE ÁUDIO & CONTROLES</div>
+
+            <div class="settings-box">
+                <!-- Volume SFX -->
+                <div class="setting-item">
+                    <div class="setting-header">
+                        <span class="setting-title">🔊 Efeitos Sonoros (SFX)</span>
+                        <span class="setting-val" id="sfx-val-label">100%</span>
+                    </div>
+                    <input type="range" min="0" max="100" value="100" class="setting-slider" id="sfx-volume-slider" />
+                </div>
+
+                <!-- Locutor Arcade -->
+                <div class="setting-item">
+                    <div class="setting-header">
+                        <span class="setting-title">🎙️ Locutor Arcade (Voz)</span>
+                        <button type="button" class="setting-toggle-btn active" id="announcer-toggle-btn">LIGADO</button>
+                    </div>
+                    <input type="range" min="0" max="100" value="90" class="setting-slider" id="announcer-volume-slider" />
+                </div>
+
+                <!-- Feedback Háptico (Vibração no Celular) -->
+                <div class="setting-item">
+                    <div class="setting-header">
+                        <span class="setting-title">📳 Vibração no Celular</span>
+                        <button type="button" class="setting-toggle-btn active" id="haptics-toggle-btn">LIGADO</button>
+                    </div>
+                    <div style="font-size: 0.72rem; color: #94a3b8;">Sinta os impactos, colisões, saltos e raspões no aparelho.</div>
+                </div>
+            </div>
+
+            <button class="action-btn" id="resume-game-btn" style="width: 100%; margin-top: 6px;">CONTINUAR CORRIDA</button>
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+                <button class="secondary-btn" id="restart-from-pause-btn" style="flex: 1; font-size: 0.8rem;">REINICIAR</button>
+                <button class="secondary-btn" id="menu-from-pause-btn" style="flex: 1; font-size: 0.8rem;">MENU INICIAL</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ================================================================= -->
     <!-- MOTOR THREE.JS RESPONSIVO E COM CHÃO PARA OS COQUEIROS           -->
     <!-- ================================================================= -->
@@ -1414,6 +1713,7 @@
             constructor() {
                 this.ctx = null;
                 this.enabled = true;
+                this.sfxVolume = 1.0;
                 this.engineOsc = null;
                 this.engineGain = null;
             }
@@ -1447,7 +1747,7 @@
                 if (!this.ctx || !this.enabled || !this.engineOsc) return;
                 const baseFreq = isFlying ? 120 : (55 + speed * 0.85);
                 this.engineOsc.frequency.setTargetAtTime(baseFreq, this.ctx.currentTime, 0.08);
-                const targetGain = isFlying ? 0.03 : 0.012;
+                const targetGain = (isFlying ? 0.03 : 0.012) * this.sfxVolume;
                 this.engineGain.gain.setTargetAtTime(targetGain, this.ctx.currentTime, 0.08);
             }
 
@@ -1458,13 +1758,13 @@
             }
 
             playTone(freq, type, duration, gainLevel = 0.1) {
-                if (!this.enabled || !this.ctx) return;
+                if (!this.enabled || !this.ctx || this.sfxVolume <= 0) return;
                 try {
                     const osc = this.ctx.createOscillator();
                     const gain = this.ctx.createGain();
                     osc.type = type;
                     osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-                    gain.gain.setValueAtTime(gainLevel, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(gainLevel * this.sfxVolume, this.ctx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
                     osc.connect(gain);
                     gain.connect(this.ctx.destination);
@@ -1474,7 +1774,7 @@
             }
 
             playAirPuff() {
-                if (!this.enabled || !this.ctx) return;
+                if (!this.enabled || !this.ctx || this.sfxVolume <= 0) return;
                 try {
                     const bufferSize = this.ctx.sampleRate * 0.14;
                     const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
@@ -1488,7 +1788,7 @@
                     filter.type = "bandpass";
                     filter.frequency.setValueAtTime(1400, this.ctx.currentTime);
                     const gain = this.ctx.createGain();
-                    gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.08 * this.sfxVolume, this.ctx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.14);
                     noise.connect(filter);
                     filter.connect(gain);
@@ -1506,7 +1806,7 @@
             }
 
             playCoin() {
-                if (!this.enabled || !this.ctx) return;
+                if (!this.enabled || !this.ctx || this.sfxVolume <= 0) return;
                 const notes = [1046.50, 1318.51];
                 notes.forEach((f, i) => {
                     setTimeout(() => this.playTone(f, "sine", 0.09, 0.05), i * 45);
@@ -1514,7 +1814,7 @@
             }
 
             playHeart() {
-                if (!this.enabled || !this.ctx) return;
+                if (!this.enabled || !this.ctx || this.sfxVolume <= 0) return;
                 const notes = [523.25, 659.25, 783.99, 1046.50];
                 notes.forEach((f, i) => {
                     setTimeout(() => this.playTone(f, "triangle", 0.14, 0.08), i * 50);
@@ -1526,7 +1826,7 @@
             }
 
             playCrash() {
-                if (!this.enabled || !this.ctx) return;
+                if (!this.enabled || !this.ctx || this.sfxVolume <= 0) return;
                 const bufferSize = this.ctx.sampleRate * 0.4;
                 const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
                 const data = buffer.getChannelData(0);
@@ -1536,7 +1836,7 @@
                 const noise = this.ctx.createBufferSource();
                 noise.buffer = buffer;
                 const gain = this.ctx.createGain();
-                gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+                gain.gain.setValueAtTime(0.25 * this.sfxVolume, this.ctx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.35);
                 noise.connect(gain);
                 gain.connect(this.ctx.destination);
@@ -1544,7 +1844,7 @@
             }
 
             playGameOver() {
-                if (!this.enabled || !this.ctx) return;
+                if (!this.enabled || !this.ctx || this.sfxVolume <= 0) return;
                 const notes = [330, 293, 261, 220];
                 notes.forEach((f, i) => {
                     setTimeout(() => this.playTone(f, "triangle", 0.35, 0.09), i * 140);
@@ -1552,14 +1852,14 @@
             }
 
             playRampLaunch() {
-                if (!this.enabled || !this.ctx) return;
+                if (!this.enabled || !this.ctx || this.sfxVolume <= 0) return;
                 try {
                     const osc = this.ctx.createOscillator();
                     const gain = this.ctx.createGain();
                     osc.type = "sawtooth";
                     osc.frequency.setValueAtTime(180, this.ctx.currentTime);
                     osc.frequency.exponentialRampToValueAtTime(750, this.ctx.currentTime + 0.28);
-                    gain.gain.setValueAtTime(0.13, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.13 * this.sfxVolume, this.ctx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.32);
                     osc.connect(gain);
                     gain.connect(this.ctx.destination);
@@ -1569,7 +1869,7 @@
             }
 
             playTrickScore() {
-                if (!this.enabled || !this.ctx) return;
+                if (!this.enabled || !this.ctx || this.sfxVolume <= 0) return;
                 const notes = [659.25, 880.00, 1174.66];
                 notes.forEach((f, i) => {
                     setTimeout(() => this.playTone(f, "sine", 0.08, 0.06), i * 55);
@@ -1577,7 +1877,7 @@
             }
 
             playSpeedUp() {
-                if (!this.enabled || !this.ctx) return;
+                if (!this.enabled || !this.ctx || this.sfxVolume <= 0) return;
                 const notes = [440, 554.37, 659.25, 880];
                 notes.forEach((f, i) => {
                     setTimeout(() => this.playTone(f, "sawtooth", 0.12, 0.08), i * 65);
@@ -1585,7 +1885,7 @@
             }
 
             playBuyCar() {
-                if (!this.enabled || !this.ctx) return;
+                if (!this.enabled || !this.ctx || this.sfxVolume <= 0) return;
                 const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
                 notes.forEach((f, i) => {
                     setTimeout(() => this.playTone(f, "sine", 0.12, 0.08), i * 60);
@@ -1593,7 +1893,7 @@
             }
 
             playShield() {
-                if (!this.enabled || !this.ctx) return;
+                if (!this.enabled || !this.ctx || this.sfxVolume <= 0) return;
                 const notes = [392.00, 523.25, 659.25, 783.99, 1046.50, 1318.51];
                 notes.forEach((f, i) => {
                     setTimeout(() => this.playTone(f, "sine", 0.16, 0.07), i * 42);
@@ -1601,9 +1901,39 @@
             }
 
             playShieldSmash() {
-                if (!this.enabled || !this.ctx) return;
+                if (!this.enabled || !this.ctx || this.sfxVolume <= 0) return;
                 this.playTone(140, "sawtooth", 0.22, 0.22);
                 this.playTone(480, "triangle", 0.28, 0.16);
+            }
+
+            playMegaBoost() {
+                if (!this.enabled || !this.ctx || this.sfxVolume <= 0) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = "sawtooth";
+                    osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(980, this.ctx.currentTime + 0.35);
+                    gain.gain.setValueAtTime(0.18 * this.sfxVolume, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.38);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.38);
+
+                    const notes = [659.25, 880.00, 1046.50, 1318.51];
+                    notes.forEach((f, i) => {
+                        setTimeout(() => this.playTone(f, "sine", 0.12, 0.07), 40 + i * 40);
+                    });
+                } catch(e) {}
+            }
+
+            playMissionComplete() {
+                if (!this.enabled || !this.ctx || this.sfxVolume <= 0) return;
+                const fanfare = [523.25, 659.25, 783.99, 1046.50];
+                fanfare.forEach((f, i) => {
+                    setTimeout(() => this.playTone(f, "triangle", 0.22, 0.09), i * 75);
+                });
             }
         }
 
@@ -1715,6 +2045,17 @@
             }
         };
 
+        // =====================================================================
+        // MISSÕES DIÁRIAS / DESAFIOS CYBERPUNK
+        // =====================================================================
+        const DAILY_MISSION_DEFS = [
+            { id: 'coins_50', type: 'coins', target: 50, reward: 75, icon: '🪙', title: 'Caçador de Moedas', desc: 'Colete 50 moedas em corridas hoje' },
+            { id: 'smash_3', type: 'shield_smash', target: 3, reward: 100, icon: '🛡️', title: 'Demolição com Escudo', desc: 'Destrua 3 carros de trânsito usando o escudo' },
+            { id: 'near_miss_5', type: 'near_miss', target: 5, reward: 60, icon: '⚡', title: 'Reflexos Cyberpunk', desc: 'Faça 5 raspões (Near Miss) no tráfego' },
+            { id: 'stunts_3', type: 'stunt', target: 3, reward: 80, icon: '🛹', title: 'Acrobata dos Céus', desc: 'Realize 3 manobras acrobáticas em rampas' },
+            { id: 'speed_3', type: 'speed_level', target: 3, reward: 90, icon: '⏱️', title: 'Velocidade Extrema', desc: 'Sobreviva até alcançar o Nível 3 de velocidade' }
+        ];
+
         // Rota base da API REST (compatível com Render e Local)
         const API_URL = (window.location.hostname === "localhost" || window.location.port === "3000" || window.location.hostname.includes("onrender.com"))
             ? ""
@@ -1734,7 +2075,16 @@
         // =====================================================================
         class RoadsterDashGame {
             constructor() {
+                // Configurações salvas (Volume SFX, Locutor Arcade, Vibração Háptica)
+                let savedSettings = { sfxVolume: 100, announcer: true, announcerVolume: 90, haptics: true };
+                try {
+                    const rawS = localStorage.getItem("roadster_settings");
+                    if (rawS) savedSettings = { ...savedSettings, ...JSON.parse(rawS) };
+                } catch(e) {}
+                this.settings = savedSettings;
+
                 this.sound = new SoundSystem();
+                this.sound.sfxVolume = (this.settings.sfxVolume || 100) / 100;
                 this.canvas = document.getElementById("game-canvas");
                 
                 // HUD
@@ -1781,6 +2131,11 @@
                 this.hudShieldTimer = document.getElementById("hud-shield-timer");
                 this.hudShieldFill = document.getElementById("hud-shield-fill");
 
+                // Mega Boost Indicator
+                this.hudMegaBoostIndicator = document.getElementById("hud-megaboost-indicator");
+                this.hudMegaBoostTimer = document.getElementById("hud-megaboost-timer");
+                this.hudMegaBoostFill = document.getElementById("hud-megaboost-fill");
+
                 // Telas e Menus
                 this.startScreen = document.getElementById("start-screen");
                 this.gameoverScreen = document.getElementById("gameover-screen");
@@ -1826,6 +2181,27 @@
                 this.leaderboardListContainer = document.getElementById("leaderboard-list-container");
                 this.closeLeaderboardBtn = document.getElementById("close-leaderboard-btn");
 
+                // Modal de Missões Diárias
+                this.missionsModal = document.getElementById("missions-modal");
+                this.missionsListContainer = document.getElementById("missions-list-container");
+                this.openMissionsBtn = document.getElementById("open-missions-btn");
+                this.goMissionsBtn = document.getElementById("go-missions-btn");
+                this.closeMissionsBtn = document.getElementById("close-missions-btn");
+
+                // Modal de Pause e Configurações de Áudio
+                this.pauseSettingsModal = document.getElementById("pause-settings-modal");
+                this.pauseModalTitle = document.getElementById("pause-modal-title");
+                this.sfxVolumeSlider = document.getElementById("sfx-volume-slider");
+                this.sfxValLabel = document.getElementById("sfx-val-label");
+                this.announcerToggleBtn = document.getElementById("announcer-toggle-btn");
+                this.announcerVolumeSlider = document.getElementById("announcer-volume-slider");
+                this.hapticsToggleBtn = document.getElementById("haptics-toggle-btn");
+                this.resumeGameBtn = document.getElementById("resume-game-btn");
+                this.restartFromPauseBtn = document.getElementById("restart-from-pause-btn");
+                this.menuFromPauseBtn = document.getElementById("menu-from-pause-btn");
+                this.openSettingsBtn = document.getElementById("open-settings-btn");
+                this.goSettingsBtn = document.getElementById("go-settings-btn");
+
                 // Estado do Jogo
                 this.isRunning = false;
                 this.isPaused = false;
@@ -1841,6 +2217,16 @@
                 this.shieldTimer = 0;
                 this.shieldMaxDuration = 5.0;
                 this.shieldBubble = null;
+
+                // Sistema de Mega Boost / Ar Infinito (4s)
+                this.megaBoostTimer = 0;
+                this.megaBoostMaxDuration = 4.0;
+
+                // Ciclo Dia/Noite Synthwave
+                this.currentNightFactor = 0;
+                this.sunGroup = null;
+                this.moonGroup = null;
+                this.starField = null;
 
                 // Sistema de Piloto Selecionado
                 this.selectedPilot = localStorage.getItem("roadster_selected_pilot") || "aria";
@@ -1903,12 +2289,14 @@
                 this.skySpawnTimer = 0;
                 this.collectibleSpawnTimer = 0;
 
+                this.initDailyMissions();
                 this.initThree();
                 this.buildAtmosphericWorld();
                 this.buildPlayerVehicle(this.selectedCar);
                 this.initControls();
                 this.initEventListeners();
                 this.renderPilotCards();
+                this.renderMissions();
                 this.initUserData();
             }
 
@@ -1991,6 +2379,7 @@
                 sunLight.shadow.mapSize.width = 1024;
                 sunLight.shadow.mapSize.height = 1024;
                 this.scene.add(sunLight);
+                this.sunLight = sunLight;
 
                 // LUZ DE PREENCHIMENTO atrás da câmera: ilumina a traseira do carro
                 const fillLight = new THREE.DirectionalLight(0xffe4ee, 1.3);
@@ -1998,17 +2387,21 @@
                 fillLight.target.position.set(0, 0.5, 0);
                 this.scene.add(fillLight);
                 this.scene.add(fillLight.target);
+                this.fillLight = fillLight;
 
                 // Luz de contorno lateral (rim light rosa/lilás)
                 const rimLight = new THREE.DirectionalLight(0xd59cff, 0.6);
                 rimLight.position.set(18, 6, 4);
                 this.scene.add(rimLight);
+                this.rimLight = rimLight;
 
                 const ambientLight = new THREE.AmbientLight(0xc98a9a, 0.55);
                 this.scene.add(ambientLight);
+                this.ambientLight = ambientLight;
 
                 const hemiLight = new THREE.HemisphereLight(0xf6a3b8, 0x2a2848, 0.7);
                 this.scene.add(hemiLight);
+                this.hemiLight = hemiLight;
 
                 window.addEventListener("resize", () => {
                     this.updateCameraLayout();
@@ -2068,6 +2461,63 @@
                     sunGroup.add(m);
                 });
                 this.scene.add(sunGroup);
+                this.sunGroup = sunGroup;
+
+                // 1b. Lua Synthwave Neon com anéis de halo e frisos de horizonte noturno
+                this.moonGroup = new THREE.Group();
+                const moonLayers = [
+                    { r: 24, color: 0xf472b6, opacity: 1.0, blend: THREE.NormalBlending, z: -308 },
+                    { r: 38, color: 0xa855f7, opacity: 0.65, blend: THREE.AdditiveBlending, z: -309 },
+                    { r: 62, color: 0x38bdf8, opacity: 0.35, blend: THREE.AdditiveBlending, z: -310 },
+                    { r: 95, color: 0x4f46e5, opacity: 0.18, blend: THREE.AdditiveBlending, z: -311 }
+                ];
+                moonLayers.forEach(l => {
+                    const m = new THREE.Mesh(
+                        new THREE.CircleGeometry(l.r, 48),
+                        new THREE.MeshBasicMaterial({
+                            color: l.color,
+                            transparent: l.opacity < 1.0,
+                            opacity: l.opacity,
+                            blending: l.blend,
+                            fog: false,
+                            depthWrite: false
+                        })
+                    );
+                    m.position.set(50, -50, l.z);
+                    this.moonGroup.add(m);
+                });
+                for (let si = -16; si <= 16; si += 6) {
+                    const slat = new THREE.Mesh(
+                        new THREE.PlaneGeometry(48, 2.2),
+                        new THREE.MeshBasicMaterial({ color: 0x070318, fog: false, depthWrite: false })
+                    );
+                    slat.position.set(50, -50 + si, -307);
+                    this.moonGroup.add(slat);
+                }
+                this.scene.add(this.moonGroup);
+
+                // 1c. Campo Estelar Cintilante (500 estrelas synthwave)
+                const starCount = 500;
+                const starPositions = new Float32Array(starCount * 3);
+                for (let i = 0; i < starCount; i++) {
+                    const theta = Math.random() * Math.PI * 2;
+                    const phi = Math.random() * (Math.PI * 0.45);
+                    const rad = 540;
+                    starPositions[i * 3] = rad * Math.sin(phi) * Math.cos(theta);
+                    starPositions[i * 3 + 1] = Math.max(15, rad * Math.cos(phi));
+                    starPositions[i * 3 + 2] = rad * Math.sin(phi) * Math.sin(theta);
+                }
+                const starGeo = new THREE.BufferGeometry();
+                starGeo.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
+                const starMat = new THREE.PointsMaterial({
+                    color: 0xffffff,
+                    size: 2.2,
+                    transparent: true,
+                    opacity: 0.0,
+                    fog: false
+                });
+                this.starField = new THREE.Points(starGeo, starMat);
+                this.scene.add(this.starField);
 
                 // 2. Oceano com reflexo suave
                 const oceanGeo = new THREE.PlaneGeometry(1200, 1200);
@@ -2301,6 +2751,103 @@
             // =================================================================
             // VEÍCULOS 3D CUSTOMIZADOS: CADA CARRO COM SILHUETA PRÓPRIA
             // =================================================================
+
+            // Textura Hexagonal Colmeia 3D com Bordas Douradas e Linhas Isométricas (Idêntica à foto enviada)
+            getHoneycombShieldTexture() {
+                if (this._honeycombTex) return this._honeycombTex;
+                const canvas = document.createElement("canvas");
+                canvas.width = 512;
+                canvas.height = 512;
+                const ctx = canvas.getContext("2d");
+
+                // Fundo azul escuro cósmico / espacial translúcido
+                const bgGrad = ctx.createRadialGradient(256, 256, 50, 256, 256, 360);
+                bgGrad.addColorStop(0, "#08193a");
+                bgGrad.addColorStop(0.5, "#030e24");
+                bgGrad.addColorStop(1, "#010612");
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, 512, 512);
+
+                const s = 44; // Raio do hexágono
+                const h = s * Math.sqrt(3);
+                const w = s * 1.5;
+
+                const drawHex = (cx, cy) => {
+                    const pts = [];
+                    for (let i = 0; i < 6; i++) {
+                        const a = (i * Math.PI) / 3;
+                        pts.push({ x: cx + s * Math.cos(a), y: cy + s * Math.sin(a) });
+                    }
+
+                    // Preenchimento interno translúcido azul profundo com facetas de energia
+                    const hexGrad = ctx.createRadialGradient(cx, cy, 3, cx, cy, s);
+                    hexGrad.addColorStop(0, "rgba(14, 165, 233, 0.35)");
+                    hexGrad.addColorStop(0.55, "rgba(2, 60, 130, 0.55)");
+                    hexGrad.addColorStop(1, "rgba(1, 16, 45, 0.88)");
+                    ctx.fillStyle = hexGrad;
+                    ctx.beginPath();
+                    ctx.moveTo(pts[0].x, pts[0].y);
+                    for (let i = 1; i < 6; i++) ctx.lineTo(pts[i].x, pts[i].y);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Linhas isométricas internas do cubo 3D (conforme foto enviada pelo usuário)
+                    ctx.strokeStyle = "rgba(56, 189, 248, 0.65)";
+                    ctx.lineWidth = 1.8;
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy); ctx.lineTo(pts[0].x, pts[0].y);
+                    ctx.moveTo(cx, cy); ctx.lineTo(pts[2].x, pts[2].y);
+                    ctx.moveTo(cx, cy); ctx.lineTo(pts[4].x, pts[4].y);
+                    ctx.stroke();
+
+                    // Sub-linhas concêntricas hexagonais internas em ciano brilhante
+                    ctx.strokeStyle = "rgba(34, 211, 238, 0.45)";
+                    ctx.lineWidth = 1.1;
+                    ctx.beginPath();
+                    for (let i = 0; i < 6; i++) {
+                        const a = (i * Math.PI) / 3;
+                        const subX = cx + (s * 0.52) * Math.cos(a);
+                        const subY = cy + (s * 0.52) * Math.sin(a);
+                        if (i === 0) ctx.moveTo(subX, subY);
+                        else ctx.lineTo(subX, subY);
+                    }
+                    ctx.closePath();
+                    ctx.stroke();
+
+                    // Borda externa hexagonal dourada reluzente / ouro âmbar (exactamente como na imagem!)
+                    ctx.save();
+                    ctx.shadowColor = "#f59e0b";
+                    ctx.shadowBlur = 8;
+                    ctx.strokeStyle = "rgba(251, 191, 36, 0.95)";
+                    ctx.lineWidth = 3.6;
+                    ctx.beginPath();
+                    ctx.moveTo(pts[0].x, pts[0].y);
+                    for (let i = 1; i < 6; i++) ctx.lineTo(pts[i].x, pts[i].y);
+                    ctx.closePath();
+                    ctx.stroke();
+
+                    // Destaque branco-dourado no núcleo da linha
+                    ctx.strokeStyle = "rgba(254, 243, 199, 0.85)";
+                    ctx.lineWidth = 1.2;
+                    ctx.stroke();
+                    ctx.restore();
+                };
+
+                for (let x = -s; x < 512 + s * 2; x += w) {
+                    const col = Math.round(x / w);
+                    const yOffset = (col % 2 === 0) ? 0 : h / 2;
+                    for (let y = -h; y < 512 + h * 2; y += h) {
+                        drawHex(x, y + yOffset);
+                    }
+                }
+
+                const tex = new THREE.CanvasTexture(canvas);
+                tex.wrapS = THREE.RepeatWrapping;
+                tex.wrapT = THREE.RepeatWrapping;
+                tex.repeat.set(3, 2);
+                this._honeycombTex = tex;
+                return tex;
+            }
 
             // Textura radial suave (usada em brilhos de faróis, chamas e fumaça)
             getSoftTexture() {
@@ -2680,17 +3227,20 @@
                     );
                 }
 
-                // Bolha de Força do Escudo Protetor (Forcefield translúcido pulsante em volta do carro)
-                const shieldBubbleGeo = new THREE.SphereGeometry(2.35, 24, 16);
-                shieldBubbleGeo.scale(1.08, 0.65, 1.36);
+                // Bolha de Força do Escudo Protetor (Forcefield Hexagonal Colmeia com bordas douradas e linhas 3D)
+                const shieldBubbleGeo = new THREE.SphereGeometry(2.4, 32, 20);
+                shieldBubbleGeo.scale(1.1, 0.68, 1.38);
+                const honeycombTex = this.getHoneycombShieldTexture();
                 const shieldBubbleMat = new THREE.MeshStandardMaterial({
-                    color: 0x00f0ff,
-                    emissive: 0x00d4ff,
-                    emissiveIntensity: 0.85,
+                    map: honeycombTex,
+                    emissiveMap: honeycombTex,
+                    color: 0xffffff,
+                    emissive: 0xffffff,
+                    emissiveIntensity: 0.95,
                     transparent: true,
                     opacity: 0.0,
-                    roughness: 0.1,
-                    metalness: 0.85,
+                    roughness: 0.25,
+                    metalness: 0.7,
                     side: THREE.DoubleSide,
                     depthWrite: false
                 });
@@ -3101,59 +3651,90 @@
                     this.scene.add(heartGroup);
                     this.collectibles.push(heartGroup);
 
-                } else if (rand >= 0.05 && rand < 0.18 && this.shieldTimer <= 0) {
-                    // Escudo Protetor de Invencibilidade (5s)
+                } else if (rand >= 0.05 && rand < 0.16 && this.shieldTimer <= 0) {
+                    // Escudo Protetor Hexagonal Colmeia 3D (Textura e anéis dourados como na foto)
                     const shieldGroup = new THREE.Group();
+                    const shieldTex = this.getHoneycombShieldTexture();
                     
-                    const shieldShape = new THREE.Shape();
-                    shieldShape.moveTo(0, 0.65);
-                    shieldShape.lineTo(0.55, 0.35);
-                    shieldShape.lineTo(0.55, -0.2);
-                    shieldShape.lineTo(0, -0.65);
-                    shieldShape.lineTo(-0.55, -0.2);
-                    shieldShape.lineTo(-0.55, 0.35);
-                    shieldShape.closePath();
-
-                    const shieldGeo = new THREE.ExtrudeGeometry(shieldShape, {
-                        steps: 1, depth: 0.16, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.05
+                    const shieldOrbGeo = new THREE.DodecahedronGeometry(0.72, 1);
+                    const shieldOrbMat = new THREE.MeshStandardMaterial({
+                        map: shieldTex,
+                        emissiveMap: shieldTex,
+                        emissive: 0xffffff,
+                        emissiveIntensity: 0.9,
+                        color: 0xffffff,
+                        roughness: 0.2,
+                        metalness: 0.8,
+                        transparent: true,
+                        opacity: 0.92
                     });
-                    shieldGeo.center();
+                    const orb = new THREE.Mesh(shieldOrbGeo, shieldOrbMat);
+                    shieldGroup.add(orb);
 
-                    const shieldMat = new THREE.MeshStandardMaterial({
-                        color: 0x00f0ff,
-                        emissive: 0x0099ff,
-                        emissiveIntensity: 0.55,
+                    // Anel orbital de proteção hexagonal dourado
+                    const ringGeo = new THREE.TorusGeometry(0.95, 0.05, 8, 32);
+                    const ringMat = new THREE.MeshStandardMaterial({
+                        color: 0xfbbf24,
+                        emissive: 0xf59e0b,
+                        emissiveIntensity: 0.85,
                         metalness: 0.9,
-                        roughness: 0.25
+                        roughness: 0.2
                     });
-                    const shieldMesh = new THREE.Mesh(shieldGeo, shieldMat);
-                    shieldGroup.add(shieldMesh);
-
-                    // Emblema interno de cruz luminosa
-                    const starGeo = new THREE.BoxGeometry(0.16, 0.52, 0.22);
-                    const starMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-                    const s1 = new THREE.Mesh(starGeo, starMat);
-                    const s2 = s1.clone();
-                    s2.rotation.z = Math.PI / 2;
-                    shieldGroup.add(s1);
-                    shieldGroup.add(s2);
-
-                    // Anel orbital de proteção
-                    const ringGeo = new THREE.TorusGeometry(0.85, 0.04, 8, 24);
-                    const ringMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
                     const ring = new THREE.Mesh(ringGeo, ringMat);
                     ring.rotation.x = Math.PI / 3;
                     shieldGroup.add(ring);
                     shieldGroup.ring = ring;
 
-                    // Halo suave de brilho ciano
-                    const glow = this.makeGlow(0x00f0ff, 1.3, 0.35);
+                    // Halo de brilho âmbar/ciano
+                    const glow = this.makeGlow(0xf59e0b, 1.4, 0.35);
                     shieldGroup.add(glow);
 
                     shieldGroup.position.set(laneX, 1.4, spawnZ);
                     shieldGroup.itemType = "shield";
                     this.scene.add(shieldGroup);
                     this.collectibles.push(shieldGroup);
+
+                } else if (rand >= 0.16 && rand < 0.26 && this.megaBoostTimer <= 0) {
+                    // Item Raro: Mega Boost / Ar Infinito (Cápsula de Plasma de Fusão Verde/Ciano)
+                    const boostGroup = new THREE.Group();
+                    const capsuleGeo = new THREE.CylinderGeometry(0.24, 0.24, 0.85, 16);
+                    const capsuleMat = new THREE.MeshStandardMaterial({
+                        color: 0x10b981,
+                        emissive: 0x34d399,
+                        emissiveIntensity: 0.95,
+                        metalness: 0.85,
+                        roughness: 0.15
+                    });
+                    const capsule = new THREE.Mesh(capsuleGeo, capsuleMat);
+                    capsule.rotation.z = Math.PI / 4;
+                    boostGroup.add(capsule);
+
+                    // Núcleo de fusão ciano hiper-luminoso
+                    const coreGeo = new THREE.SphereGeometry(0.32, 14, 14);
+                    const coreMat = new THREE.MeshBasicMaterial({ color: 0x06b6d4 });
+                    const core = new THREE.Mesh(coreGeo, coreMat);
+                    boostGroup.add(core);
+
+                    // Anéis de plasma em rotação cruzada
+                    const rGeo = new THREE.TorusGeometry(0.65, 0.045, 6, 24);
+                    const rMat = new THREE.MeshBasicMaterial({ color: 0x6ee7b7 });
+                    const ring1 = new THREE.Mesh(rGeo, rMat);
+                    ring1.rotation.x = Math.PI / 2;
+                    boostGroup.add(ring1);
+                    boostGroup.ring1 = ring1;
+
+                    const ring2 = new THREE.Mesh(rGeo, rMat);
+                    ring2.rotation.y = Math.PI / 2;
+                    boostGroup.add(ring2);
+                    boostGroup.ring2 = ring2;
+
+                    const glow = this.makeGlow(0x10b981, 1.5, 0.42);
+                    boostGroup.add(glow);
+
+                    boostGroup.position.set(laneX, 1.4, spawnZ);
+                    boostGroup.itemType = "megaboost";
+                    this.scene.add(boostGroup);
+                    this.collectibles.push(boostGroup);
 
                 } else {
                     const count = 4;
@@ -3434,15 +4015,96 @@
                     this.soundBtn.textContent = !enabled ? "🔊" : "🔇";
                 });
 
+                // Botão de Pause do HUD
                 this.pauseBtn.addEventListener("click", () => {
-                    if (!this.isRunning) return;
-                    this.isPaused = !this.isPaused;
-                    this.pauseBtn.textContent = this.isPaused ? "▶" : "⏸";
-                    if (!this.isPaused) {
-                        this.lastTime = performance.now();
-                        requestAnimationFrame((t) => this.gameLoop(t));
-                    }
+                    this.togglePause();
                 });
+
+                // Botões de Missões Diárias
+                const openMissionsModal = () => {
+                    this.sound.init();
+                    this.renderMissions();
+                    if (this.missionsModal) this.missionsModal.classList.add("active");
+                };
+                if (this.openMissionsBtn) this.openMissionsBtn.addEventListener("click", openMissionsModal);
+                if (this.goMissionsBtn) this.goMissionsBtn.addEventListener("click", openMissionsModal);
+                if (this.closeMissionsBtn) this.closeMissionsBtn.addEventListener("click", () => {
+                    if (this.missionsModal) this.missionsModal.classList.remove("active");
+                });
+
+                // Botões de Configurações e Áudio
+                const openSettingsModal = () => {
+                    this.sound.init();
+                    this.togglePause(true);
+                };
+                if (this.openSettingsBtn) this.openSettingsBtn.addEventListener("click", openSettingsModal);
+                if (this.goSettingsBtn) this.goSettingsBtn.addEventListener("click", openSettingsModal);
+
+                // Configurações: Volume SFX
+                if (this.sfxVolumeSlider) {
+                    this.sfxVolumeSlider.value = this.settings.sfxVolume ?? 100;
+                    if (this.sfxValLabel) this.sfxValLabel.textContent = `${this.sfxVolumeSlider.value}%`;
+                    this.sfxVolumeSlider.addEventListener("input", (e) => {
+                        const val = parseInt(e.target.value, 10);
+                        this.settings.sfxVolume = val;
+                        this.sound.sfxVolume = val / 100;
+                        if (this.sfxValLabel) this.sfxValLabel.textContent = `${val}%`;
+                        localStorage.setItem("roadster_settings", JSON.stringify(this.settings));
+                    });
+                }
+
+                // Configurações: Locutor Arcade
+                if (this.announcerToggleBtn) {
+                    const isAnnouncerOn = this.settings.announcer !== false;
+                    this.announcerToggleBtn.classList.toggle("active", isAnnouncerOn);
+                    this.announcerToggleBtn.textContent = isAnnouncerOn ? "LIGADO" : "DESLIGADO";
+                    this.announcerToggleBtn.addEventListener("click", () => {
+                        this.settings.announcer = !this.settings.announcer;
+                        this.announcerToggleBtn.classList.toggle("active", this.settings.announcer);
+                        this.announcerToggleBtn.textContent = this.settings.announcer ? "LIGADO" : "DESLIGADO";
+                        localStorage.setItem("roadster_settings", JSON.stringify(this.settings));
+                        if (this.settings.announcer) this.speakAnnouncer("Voice Online!", true);
+                    });
+                }
+                if (this.announcerVolumeSlider) {
+                    this.announcerVolumeSlider.value = this.settings.announcerVolume ?? 90;
+                    this.announcerVolumeSlider.addEventListener("input", (e) => {
+                        this.settings.announcerVolume = parseInt(e.target.value, 10);
+                        localStorage.setItem("roadster_settings", JSON.stringify(this.settings));
+                    });
+                }
+
+                // Configurações: Vibração Háptica
+                if (this.hapticsToggleBtn) {
+                    const isHapticsOn = this.settings.haptics !== false;
+                    this.hapticsToggleBtn.classList.toggle("active", isHapticsOn);
+                    this.hapticsToggleBtn.textContent = isHapticsOn ? "LIGADO" : "DESLIGADO";
+                    this.hapticsToggleBtn.addEventListener("click", () => {
+                        this.settings.haptics = !this.settings.haptics;
+                        this.hapticsToggleBtn.classList.toggle("active", this.settings.haptics);
+                        this.hapticsToggleBtn.textContent = this.settings.haptics ? "LIGADO" : "DESLIGADO";
+                        localStorage.setItem("roadster_settings", JSON.stringify(this.settings));
+                        if (this.settings.haptics) this.triggerHaptic("coin");
+                    });
+                }
+
+                // Ações do Modal de Pause
+                if (this.resumeGameBtn) {
+                    this.resumeGameBtn.addEventListener("click", () => this.togglePause(false));
+                }
+                if (this.restartFromPauseBtn) {
+                    this.restartFromPauseBtn.addEventListener("click", () => {
+                        this.togglePause(false);
+                        this.startGame();
+                    });
+                }
+                if (this.menuFromPauseBtn) {
+                    this.menuFromPauseBtn.addEventListener("click", () => {
+                        this.togglePause(false);
+                        this.isRunning = false;
+                        this.startScreen.classList.add("active");
+                    });
+                }
 
                 // Botões de Garagem
                 const openGarage = () => {
@@ -3524,6 +4186,26 @@
                 });
             }
 
+            togglePause(forceState = null) {
+                const nextState = forceState !== null ? forceState : !this.isPaused;
+                this.isPaused = nextState;
+                if (this.pauseBtn) this.pauseBtn.textContent = this.isPaused ? "▶" : "⏸";
+
+                if (this.isPaused) {
+                    this.sound.stopEngine();
+                    if (this.pauseSettingsModal) {
+                        this.pauseSettingsModal.classList.add("active");
+                        if (this.pauseModalTitle) this.pauseModalTitle.textContent = this.isRunning ? "JOGO PAUSADO" : "AJUSTES & ÁUDIO";
+                    }
+                } else {
+                    if (this.pauseSettingsModal) this.pauseSettingsModal.classList.remove("active");
+                    if (this.isRunning) {
+                        this.lastTime = performance.now();
+                        requestAnimationFrame((t) => this.gameLoop(t));
+                    }
+                }
+            }
+
             startGame() {
                 this.startScreen.classList.remove("active");
                 this.gameoverScreen.classList.remove("active");
@@ -3531,6 +4213,8 @@
                 this.leaderboardModal.classList.remove("active");
                 this.userModal.classList.remove("active");
                 if (this.pilotModal) this.pilotModal.classList.remove("active");
+                if (this.missionsModal) this.missionsModal.classList.remove("active");
+                if (this.pauseSettingsModal) this.pauseSettingsModal.classList.remove("active");
 
                 this.isRunning = true;
                 this.isPaused = false;
@@ -3543,6 +4227,10 @@
                 this.shieldMaxDuration = 5.0;
                 if (this.shieldBubble) this.shieldBubble.visible = false;
                 if (this.hudShieldIndicator) this.hudShieldIndicator.style.display = "none";
+
+                this.megaBoostTimer = 0;
+                if (this.hudMegaBoostIndicator) this.hudMegaBoostIndicator.style.display = "none";
+                this.initDailyMissions();
 
                 // Carrega perks do piloto ativo
                 this.activePilotPerks = (PILOT_CATALOG[this.selectedPilot] && PILOT_CATALOG[this.selectedPilot].perk) || PILOT_CATALOG.aria.perk;
@@ -3627,8 +4315,17 @@
                 localStorage.setItem("roadster_coins", this.totalCoins.toString());
 
                 const savedBest = parseInt(localStorage.getItem("roadster_dash_best") || "0", 10);
+                const isNewBest = finalScore > savedBest;
                 const newBest = Math.max(savedBest, finalScore);
                 localStorage.setItem("roadster_dash_best", newBest.toString());
+
+                this.triggerHaptic("crash");
+                if (isNewBest && finalScore > 0) {
+                    this.speakAnnouncer("New High Score!", true);
+                } else {
+                    this.speakAnnouncer("Game Over!", true);
+                }
+                if (this.hudMegaBoostIndicator) this.hudMegaBoostIndicator.style.display = "none";
 
                 this.goReason.textContent = reason;
                 this.goScore.textContent = finalScore.toLocaleString();
@@ -4176,7 +4873,7 @@
                 this.shieldTimer = this.shieldMaxDuration;
                 if (this.shieldBubble) {
                     this.shieldBubble.visible = true;
-                    this.shieldBubble.material.opacity = 0.55;
+                    this.shieldBubble.material.opacity = 0.85;
                 }
                 if (this.hudShieldIndicator) {
                     this.hudShieldIndicator.style.display = "inline-flex";
@@ -4184,7 +4881,265 @@
                     if (this.hudShieldFill) this.hudShieldFill.style.width = "100%";
                 }
                 this.sound.playShield();
-                this.triggerActionPopup(`🛡️ ESCUDO DE FORÇA (${this.shieldMaxDuration.toFixed(0)}s)!`);
+                this.speakAnnouncer("Shield Online!", true);
+                this.triggerHaptic("shield");
+                this.triggerActionPopup(`🛡️ ESCUDO COLMEIA 3D (${this.shieldMaxDuration.toFixed(0)}s)!`);
+            }
+
+            activateMegaBoost(duration = 4.0) {
+                this.megaBoostMaxDuration = duration;
+                this.megaBoostTimer = duration;
+                this.isFlying = true;
+                this.airLiters = this.maxAirLiters;
+                if (this.hudMegaBoostIndicator) {
+                    this.hudMegaBoostIndicator.style.display = "inline-flex";
+                    if (this.hudMegaBoostTimer) this.hudMegaBoostTimer.textContent = `${this.megaBoostTimer.toFixed(1)}s`;
+                    if (this.hudMegaBoostFill) this.hudMegaBoostFill.style.width = "100%";
+                }
+                this.sound.playMegaBoost();
+                this.speakAnnouncer("Mega Boost!", true);
+                this.triggerHaptic("megaboost");
+                this.triggerActionPopup(`⚡ MEGA BOOST: AR INFINITO (${duration}s)!`);
+            }
+
+            // =================================================================
+            // FEEDBACK HÁPTICO (VIBRAÇÃO EM SMARTPHONES VIA WEB VIBRATION API)
+            // =================================================================
+            triggerHaptic(type) {
+                if (!this.settings || this.settings.haptics === false) return;
+                if (!("vibrate" in navigator)) return;
+                try {
+                    switch (type) {
+                        case "crash":
+                        case "hit":
+                            navigator.vibrate([80, 45, 120]);
+                            break;
+                        case "shield":
+                            navigator.vibrate([60, 40, 80]);
+                            break;
+                        case "megaboost":
+                            navigator.vibrate([60, 30, 60, 30, 90]);
+                            break;
+                        case "nearmiss":
+                            navigator.vibrate([35]);
+                            break;
+                        case "coin":
+                            navigator.vibrate([15]);
+                            break;
+                        case "ramp":
+                            navigator.vibrate([50, 30, 70]);
+                            break;
+                        case "speedup":
+                            navigator.vibrate([40, 40, 40]);
+                            break;
+                    }
+                } catch(e) {}
+            }
+
+            // =================================================================
+            // VOZ SINTETIZADA DO LOCUTOR DE ARCADE (WEB SPEECH SYNTHESIS API)
+            // =================================================================
+            speakAnnouncer(text, priority = false) {
+                if (!this.settings || this.settings.announcer === false) return;
+                if (!("speechSynthesis" in window)) return;
+                try {
+                    if (priority) {
+                        window.speechSynthesis.cancel();
+                    } else if (window.speechSynthesis.speaking) {
+                        return; // Evita falas acumuladas secundárias
+                    }
+                    const utter = new SpeechSynthesisUtterance(text);
+                    const vol = (this.settings.announcerVolume ?? 90) / 100;
+                    utter.volume = Math.max(0, Math.min(1.0, vol));
+                    utter.rate = 1.25; // Ritmo ágil e dinâmico de arcade
+                    utter.pitch = 1.12; // Tom vibrante e enérgico
+                    utter.lang = "en-US";
+                    window.speechSynthesis.speak(utter);
+                } catch(e) {}
+            }
+
+            // =================================================================
+            // GERENCIAMENTO DE MISSÕES DIÁRIAS / DESAFIOS
+            // =================================================================
+            initDailyMissions() {
+                const todayStr = new Date().toISOString().slice(0, 10);
+                this.missionsKey = `roadster_missions_${todayStr}`;
+                let saved = {};
+                try {
+                    const raw = localStorage.getItem(this.missionsKey);
+                    if (raw) saved = JSON.parse(raw);
+                } catch(e) {}
+                this.missionsState = saved || {};
+                DAILY_MISSION_DEFS.forEach(m => {
+                    if (!this.missionsState[m.id]) {
+                        this.missionsState[m.id] = { progress: 0, claimed: false };
+                    }
+                });
+                this.saveMissionsState();
+            }
+
+            saveMissionsState() {
+                if (!this.missionsKey) return;
+                localStorage.setItem(this.missionsKey, JSON.stringify(this.missionsState));
+            }
+
+            trackMissionProgress(type, amount = 1) {
+                let updated = false;
+                DAILY_MISSION_DEFS.forEach(m => {
+                    if (m.type === type) {
+                        const st = this.missionsState[m.id];
+                        if (st && !st.claimed && st.progress < m.target) {
+                            if (type === 'speed_level') {
+                                st.progress = Math.max(st.progress, amount);
+                            } else {
+                                st.progress += amount;
+                            }
+                            if (st.progress >= m.target) {
+                                st.progress = m.target;
+                                this.triggerActionPopup(`📜 MISSÃO CONCLUÍDA: ${m.title}!`);
+                                this.sound.playMissionComplete();
+                                this.speakAnnouncer("Mission Complete!");
+                                this.triggerHaptic("speedup");
+                            }
+                            updated = true;
+                        }
+                    }
+                });
+                if (updated) {
+                    this.saveMissionsState();
+                    this.renderMissions();
+                }
+            }
+
+            renderMissions() {
+                const container = this.missionsListContainer;
+                if (!container) return;
+                container.innerHTML = "";
+
+                DAILY_MISSION_DEFS.forEach(m => {
+                    const st = (this.missionsState && this.missionsState[m.id]) || { progress: 0, claimed: false };
+                    const isDone = st.progress >= m.target;
+                    const pct = Math.min(100, Math.round((st.progress / m.target) * 100));
+
+                    const card = document.createElement("div");
+                    card.className = "mission-card";
+
+                    let btnHTML = "";
+                    if (st.claimed) {
+                        btnHTML = `<button class="btn-claim-reward btn-claimed" disabled>RESGATADO</button>`;
+                    } else if (isDone) {
+                        btnHTML = `<button class="btn-claim-reward" data-id="${m.id}">RESGATAR 🪙 +${m.reward}</button>`;
+                    } else {
+                        btnHTML = `<span style="font-size: 0.72rem; color: #94a3b8; font-weight: 700;">${st.progress}/${m.target}</span>`;
+                    }
+
+                    card.innerHTML = `
+                        <div class="mission-header">
+                            <span class="mission-title">${m.icon} ${m.title}</span>
+                            <span class="mission-reward">🪙 +${m.reward}</span>
+                        </div>
+                        <div class="mission-desc">${m.desc}</div>
+                        <div class="mission-progress-bar">
+                            <div class="mission-progress-fill" style="width: ${pct}%;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 6px;">
+                            ${btnHTML}
+                        </div>
+                    `;
+
+                    const claimBtn = card.querySelector(".btn-claim-reward:not(.btn-claimed)");
+                    if (claimBtn) {
+                        claimBtn.addEventListener("click", () => this.claimMissionReward(m.id));
+                    }
+
+                    container.appendChild(card);
+                });
+            }
+
+            claimMissionReward(missionId) {
+                const def = DAILY_MISSION_DEFS.find(m => m.id === missionId);
+                const st = this.missionsState && this.missionsState[missionId];
+                if (!def || !st || st.claimed || st.progress < def.target) return;
+
+                st.claimed = true;
+                this.saveMissionsState();
+                this.totalCoins += def.reward;
+                this.saveAccountData(this.currentUser);
+                this.sound.playCoin();
+                this.updateUserUI();
+                this.renderMissions();
+                this.triggerActionPopup(`+${def.reward} MOEDAS RESGATADAS!`);
+            }
+
+            // =================================================================
+            // CICLO DIA / NOITE DINÂMICO SYNTHWAVE (SUNSET TO MIDNIGHT)
+            // =================================================================
+            updateDayNightCycle(delta) {
+                if (!this.skyMaterial) return;
+                // Transiciona gradualmente com base na distância (Ciclo completo a cada 3.200m)
+                const cycleDist = 3200;
+                const progress = (this.scoreDistance % cycleDist) / cycleDist;
+                
+                // 0.0 - 0.38: Pôr do sol clássico synthwave
+                // 0.38 - 0.54: Crepúsculo transicionando para meia-noite
+                // 0.54 - 0.84: Noite estrelada profunda com lua neon brilhante
+                // 0.84 - 1.0: Alvorecer retornando ao pôr do sol
+                let targetNight = 0;
+                if (progress >= 0.38 && progress < 0.54) {
+                    targetNight = (progress - 0.38) / 0.16;
+                } else if (progress >= 0.54 && progress < 0.84) {
+                    targetNight = 1.0;
+                } else if (progress >= 0.84) {
+                    targetNight = 1.0 - (progress - 0.84) / 0.16;
+                }
+
+                this.currentNightFactor = THREE.MathUtils.lerp(this.currentNightFactor, targetNight, 0.04);
+                const nf = this.currentNightFactor;
+
+                // Cores do Céu
+                const sunTop = new THREE.Color(0x3a2a6e);
+                const sunMid = new THREE.Color(0xc76a9c);
+                const sunHor = new THREE.Color(0xf2a07e);
+
+                const nightTop = new THREE.Color(0x060214);
+                const nightMid = new THREE.Color(0x190733);
+                const nightHor = new THREE.Color(0x380f54);
+
+                this.skyMaterial.uniforms.topColor.value.lerpColors(sunTop, nightTop, nf);
+                this.skyMaterial.uniforms.midColor.value.lerpColors(sunMid, nightMid, nf);
+                this.skyMaterial.uniforms.horizonColor.value.lerpColors(sunHor, nightHor, nf);
+
+                // Fog e Background
+                const sunFog = new THREE.Color(0xf2a07e);
+                const nightFog = new THREE.Color(0x220938);
+                const curFog = new THREE.Color().lerpColors(sunFog, nightFog, nf);
+                this.scene.fog.color.copy(curFog);
+                this.scene.background.copy(curFog);
+
+                // Posição do Sol (desce no mar) e da Lua (sobe no horizonte)
+                if (this.sunGroup) {
+                    this.sunGroup.position.y = THREE.MathUtils.lerp(0, -65, nf);
+                }
+                if (this.moonGroup) {
+                    this.moonGroup.position.y = THREE.MathUtils.lerp(-60, 68, nf);
+                    this.moonGroup.rotation.z += 0.05 * delta;
+                }
+
+                // Estrelas piscando suavemente no céu noturno
+                if (this.starField) {
+                    const twinkle = 0.82 + Math.sin(performance.now() * 0.003) * 0.18;
+                    this.starField.material.opacity = nf * twinkle * 0.95;
+                }
+
+                // Iluminação ambiente e direcional ajustada
+                if (this.sunLight) {
+                    this.sunLight.intensity = THREE.MathUtils.lerp(1.5, 0.45, nf);
+                    this.sunLight.color.lerpColors(new THREE.Color(0xffb98a), new THREE.Color(0x818cf8), nf);
+                }
+                if (this.ambientLight) {
+                    this.ambientLight.intensity = THREE.MathUtils.lerp(0.55, 0.38, nf);
+                    this.ambientLight.color.lerpColors(new THREE.Color(0xc98a9a), new THREE.Color(0x581c87), nf);
+                }
             }
 
             smashTrafficCar(car) {
@@ -4204,6 +5159,9 @@
                 this.addScoreEvent("SHIELD SMASH!", pts, true);
                 this.sound.playShieldSmash();
                 this.sound.playCrash();
+                this.speakAnnouncer("Shield Smash!");
+                this.triggerHaptic("hit");
+                this.trackMissionProgress('shield_smash', 1);
             }
 
             renderPilotCards() {
@@ -4270,6 +5228,7 @@
                 this.lives--;
                 this.sound.playCrash();
                 this.flashDamage();
+                this.triggerHaptic("hit");
                 this.updateHeartsUI();
                 this.resetStreak();
 
@@ -4321,6 +5280,31 @@
                     this.maxSpeed += 15.0;
                     this.sound.playSpeedUp();
                     this.triggerActionPopup(`⚡ SPEED UP! NÍVEL ${this.speedLevel}`);
+                    this.speakAnnouncer("Speed Level Up!", true);
+                    this.triggerHaptic("speedup");
+                    this.trackMissionProgress('speed_level', this.speedLevel);
+                }
+
+                // Ciclo Dia/Noite Synthwave Dinâmico (Sunset to Midnight)
+                this.updateDayNightCycle(delta);
+
+                // Gerenciamento do Item Raro Mega Boost (Ar Infinito e Hiper-Aceleração)
+                if (this.megaBoostTimer > 0) {
+                    this.megaBoostTimer -= delta;
+                    this.isFlying = true;
+                    this.airLiters = this.maxAirLiters; // Não consome ar durante o Mega Boost!
+                    if (this.hudMegaBoostIndicator) {
+                        this.hudMegaBoostIndicator.style.display = "inline-flex";
+                        if (this.hudMegaBoostTimer) this.hudMegaBoostTimer.textContent = `${this.megaBoostTimer.toFixed(1)}s`;
+                        if (this.hudMegaBoostFill) {
+                            const pct = Math.max(0, (this.megaBoostTimer / this.megaBoostMaxDuration) * 100);
+                            this.hudMegaBoostFill.style.width = `${pct}%`;
+                        }
+                    }
+                    if (this.megaBoostTimer <= 0) {
+                        this.megaBoostTimer = 0;
+                        if (this.hudMegaBoostIndicator) this.hudMegaBoostIndicator.style.display = "none";
+                    }
                 }
 
                 // Progressão de Velocidade Acelerada e Intensa
@@ -4334,11 +5318,13 @@
 
                 // 1. GERENCIAMENTO DA BARRA DE AR (10 SEGMENTOS)
                 if (this.isFlying) {
-                    this.airLiters -= this.airDrainRate * delta;
-                    if (this.airLiters <= 0) {
-                        this.airLiters = 0;
-                        this.isFlying = false;
-                        this.triggerActionPopup("AR ESGOTADO!");
+                    if (this.megaBoostTimer <= 0) {
+                        this.airLiters -= this.airDrainRate * delta;
+                        if (this.airLiters <= 0) {
+                            this.airLiters = 0;
+                            this.isFlying = false;
+                            this.triggerActionPopup("AR ESGOTADO!");
+                        }
                     }
                 } else {
                     if (this.airLiters < this.maxAirLiters) {
@@ -4473,6 +5459,8 @@
                             this.trickAwarded = true;
                             this.addScoreEvent("BARREL ROLL", 180);
                             this.sound.playTrickScore();
+                            this.triggerHaptic("ramp");
+                            this.trackMissionProgress('stunt', 1);
                         }
                     }
                     this.truckGroup.rotation.x = -this.velocityY * 0.015;
@@ -4551,18 +5539,21 @@
                     if (this.playerShadow) this.playerShadow.visible = true;
                 }
 
-                // Atualização e Contagem do Escudo de Invencibilidade
+                // Atualização e Contagem do Escudo de Invencibilidade (Colmeia 3D)
                 if (this.shieldTimer > 0) {
                     this.shieldTimer -= delta;
                     if (this.shieldBubble) {
                         this.shieldBubble.visible = true;
-                        this.shieldBubble.rotation.y += 2.8 * delta;
-                        this.shieldBubble.rotation.z += 1.6 * delta;
+                        this.shieldBubble.rotation.y += 0.85 * delta;
+                        if (this._honeycombTex) {
+                            this._honeycombTex.offset.x += 0.14 * delta;
+                            this._honeycombTex.offset.y += 0.07 * delta;
+                        }
                         if (this.shieldTimer < 1.5) {
                             const blink = Math.floor(performance.now() / 90) % 2 === 0;
-                            this.shieldBubble.material.opacity = blink ? 0.65 : 0.15;
+                            this.shieldBubble.material.opacity = blink ? 0.95 : 0.25;
                         } else {
-                            this.shieldBubble.material.opacity = 0.42 + Math.sin(performance.now() * 0.008) * 0.18;
+                            this.shieldBubble.material.opacity = 0.82 + Math.sin(performance.now() * 0.007) * 0.12;
                         }
                     }
                     if (this.hudShieldIndicator) {
@@ -4683,6 +5674,9 @@
                         if (this.invulnerableTimer <= 0 && !this.isFlying && this.playerY < car.boxHeight + 0.5 && dX >= 1.7 && dX < 4.3) {
                             const pts = (this.activePilotPerks && this.activePilotPerks.nearMissBonus) || 75;
                             this.addScoreEvent("NEAR MISS", pts);
+                            this.speakAnnouncer("Near Miss!");
+                            this.triggerHaptic("nearmiss");
+                            this.trackMissionProgress('near_miss', 1);
                             if (this.activePilotPerks && this.activePilotPerks.nearMissAir) {
                                 this.airLiters = Math.min(this.maxAirLiters, this.airLiters + this.activePilotPerks.nearMissAir);
                             }
@@ -4762,6 +5756,10 @@
                     } else if (item.itemType === "shield") {
                         item.rotation.y += 2.8 * delta;
                         if (item.ring) item.ring.rotation.z += 3.2 * delta;
+                    } else if (item.itemType === "megaboost") {
+                        item.rotation.y += 2.8 * delta;
+                        if (item.ring1) item.ring1.rotation.x += 3.5 * delta;
+                        if (item.ring2) item.ring2.rotation.y += 3.5 * delta;
                     } else {
                         item.rotation.y += 2.5 * delta;
                     }
@@ -4775,11 +5773,16 @@
                             this.coinsEarnedThisRun += coinEarned;
                             this.addScoreEvent("COIN", 150);
                             this.sound.playCoin();
+                            this.triggerHaptic("coin");
+                            this.trackMissionProgress('coins', coinEarned);
                         } else if (item.itemType === "heart") {
                             this.addHeart();
                         } else if (item.itemType === "shield") {
                             this.activateShield(5.0);
                             this.addScoreEvent("SHIELD ONLINE", 250);
+                        } else if (item.itemType === "megaboost") {
+                            this.activateMegaBoost(4.0);
+                            this.addScoreEvent("MEGA BOOST", 350, true);
                         }
 
                         this.scene.remove(item);
