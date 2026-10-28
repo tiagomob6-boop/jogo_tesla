@@ -4,6 +4,7 @@ const WebSocket = require('ws');
 const cors = require('cors');
 const path = require('path');
 const { Pool } = require('pg');
+const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 require('dotenv').config();
 
 const app = express();
@@ -11,8 +12,59 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 const PORT = process.env.PORT || 3000;
 
+// Configuração do Mercado Pago
+const mpAccessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN || '';
+let mpClient = null;
+if (mpAccessToken) {
+    try {
+        mpClient = new MercadoPagoConfig({ accessToken: mpAccessToken });
+        console.log('💳 Mercado Pago inicializado com sucesso.');
+    } catch (e) {
+        console.warn('⚠️ Falha ao inicializar SDK do Mercado Pago:', e.message);
+    }
+} else {
+    console.log('ℹ️ MERCADO_PAGO_ACCESS_TOKEN não definido. Modo demonstração/teste ativado para a loja.');
+}
+
 app.use(cors());
 app.use(express.json());
+
+// =============================================================================
+// CATÁLOGO DE PACOTES DE MOEDAS (LOJA DE MOEDAS COM MERCADO PAGO)
+// =============================================================================
+const COIN_PACKAGES = {
+    pacote_500: {
+        id: 'pacote_500',
+        name: 'Pacote Básico de Moedas',
+        coins: 500,
+        price: 4.90,
+        desc: '500 Moedas para upgrades e novos pilotos'
+    },
+    pacote_1500: {
+        id: 'pacote_1500',
+        name: 'Pacote Neon Popular',
+        coins: 1500,
+        price: 9.90,
+        tag: 'Mais Vendido ⭐',
+        desc: '1.500 Moedas para desbloquear carros da garagem'
+    },
+    pacote_4000: {
+        id: 'pacote_4000',
+        name: 'Pacote Piloto Pro',
+        coins: 4000,
+        price: 19.90,
+        tag: '+25% Bônus 🔥',
+        desc: '4.000 Moedas para equipar os veículos mais rápidos'
+    },
+    pacote_10000: {
+        id: 'pacote_10000',
+        name: 'Cofre Hiperdrive Cyberpunk',
+        coins: 10000,
+        price: 39.90,
+        tag: '+50% Bônus 💎',
+        desc: '10.000 Moedas - Melhor custo-benefício de Sunset Highway!'
+    }
+};
 
 // =============================================================================
 // CATÁLOGO DE CARROS OFICIAIS (VALIDAÇÃO DE PREÇOS NO BACKEND)
@@ -713,6 +765,7 @@ wss.on('connection', (ws) => {
                     broadcastToRoom(room, {
                         type: 'rival_crashed',
                         playerId,
+                        dist: data.dist || 0,
                         reason: data.reason || 'Bateu no tráfego'
                     }, playerId);
                 }
@@ -751,6 +804,160 @@ app.get('/api/multiplayer/stats', (req, res) => {
 // Catálogo de carros para o frontend consultar
 app.get('/api/cars', (req, res) => {
     res.json({ success: true, catalog: CAR_CATALOG });
+});
+
+// =============================================================================
+// ENDPOINTS DE PAGAMENTO & COMPRA DE MOEDAS (MERCADO PAGO)
+// =============================================================================
+async function creditUserCoins(username, amount) {
+    const coinsToAdd = Math.max(0, parseInt(amount, 10) || 0);
+    if (!username || coinsToAdd <= 0) return null;
+
+    if (useDb && pool) {
+        try {
+            const res = await pool.query(`
+                UPDATE users
+                SET coins = coins + $1
+                WHERE LOWER(username) = LOWER($2)
+                RETURNING username, coins
+            `, [coinsToAdd, username]);
+            if (res.rows.length > 0) return res.rows[0];
+        } catch (e) {
+            console.error('Erro ao creditar moedas no DB:', e);
+        }
+    }
+
+    const user = memoryStore.users.get(username);
+    if (user) {
+        user.coins = (user.coins || 0) + coinsToAdd;
+        return { username, coins: user.coins };
+    }
+    return { username, coins: coinsToAdd };
+}
+
+// 1. Listar pacotes de moedas disponíveis
+app.get('/api/payment/packages', (req, res) => {
+    res.json({ success: true, packages: COIN_PACKAGES });
+});
+
+// 2. Criar Preferência de Pagamento Mercado Pago
+app.post('/api/payment/create-preference', async (req, res) => {
+    try {
+        const { packageId, username } = req.body;
+        const pkg = COIN_PACKAGES[packageId];
+        if (!pkg) {
+            return res.status(400).json({ success: false, error: 'Pacote de moedas inválido.' });
+        }
+
+        const safeUser = (username || 'Piloto').trim();
+        const orderId = 'mp_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+
+        // Se o token real do Mercado Pago estiver configurado:
+        if (mpClient) {
+            const preference = new Preference(mpClient);
+            const clientOrigin = req.headers.origin || 'https://tiagomob6-boop.github.io/jogo_tesla';
+            
+            const prefResponse = await preference.create({
+                body: {
+                    items: [
+                        {
+                            id: pkg.id,
+                            title: `Roadster Dash - ${pkg.name} (${pkg.coins} Moedas)`,
+                            description: pkg.desc,
+                            quantity: 1,
+                            currency_id: 'BRL',
+                            unit_price: Number(pkg.price)
+                        }
+                    ],
+                    payer: {
+                        name: safeUser
+                    },
+                    back_urls: {
+                        success: `${clientOrigin}?mp_status=approved&order_id=${orderId}&pkg=${pkg.id}`,
+                        pending: `${clientOrigin}?mp_status=pending&order_id=${orderId}`,
+                        failure: `${clientOrigin}?mp_status=failure&order_id=${orderId}`
+                    },
+                    auto_return: 'approved',
+                    external_reference: JSON.stringify({
+                        orderId,
+                        username: safeUser,
+                        packageId: pkg.id,
+                        coins: pkg.coins
+                    }),
+                    notification_url: `${req.protocol}://${req.get('host')}/api/payment/webhook`
+                }
+            });
+
+            return res.json({
+                success: true,
+                orderId,
+                mode: 'production',
+                init_point: prefResponse.init_point,
+                sandbox_init_point: prefResponse.sandbox_init_point,
+                package: pkg
+            });
+        }
+
+        // Modo Demonstração / Sandbox caso o usuário ainda não tenha configurado MERCADO_PAGO_ACCESS_TOKEN
+        const demoPix = `00020126580014br.gov.bcb.pix0136123e4567-e89b-12d3-a456-426614174000520400005303986540${pkg.price.toFixed(2)}5802BR5913Roadster Dash6009SAO PAULO62070503***6304ABCD`;
+        return res.json({
+            success: true,
+            orderId,
+            mode: 'demo',
+            pixCode: demoPix,
+            package: pkg,
+            message: 'Mercado Pago pronto para integração. Configure MERCADO_PAGO_ACCESS_TOKEN no .env para gerar cobranças reais.'
+        });
+    } catch (err) {
+        console.error('Erro ao criar preferência Mercado Pago:', err);
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// 3. Simulação ou Confirmação Direta de Pagamento (útil para testes imediatos)
+app.post('/api/payment/simulate', async (req, res) => {
+    try {
+        const { packageId, username } = req.body;
+        const pkg = COIN_PACKAGES[packageId];
+        if (!pkg) return res.status(400).json({ success: false, error: 'Pacote inválido.' });
+
+        const safeUser = (username || 'Piloto').trim();
+        const updated = await creditUserCoins(safeUser, pkg.coins);
+
+        return res.json({
+            success: true,
+            message: `Pagamento aprovado! +${pkg.coins} moedas creditadas.`,
+            coinsAdded: pkg.coins,
+            totalCoins: updated ? updated.coins : pkg.coins
+        });
+    } catch (err) {
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// 4. Webhook do Mercado Pago para Confirmação Automática de Pagamento
+app.post('/api/payment/webhook', async (req, res) => {
+    try {
+        const { type, data } = req.body;
+        if (type === 'payment' && data && data.id && mpClient) {
+            const payment = new Payment(mpClient);
+            const pInfo = await payment.get({ id: data.id });
+
+            if (pInfo && pInfo.status === 'approved' && pInfo.external_reference) {
+                try {
+                    const extRef = JSON.parse(pInfo.external_reference);
+                    if (extRef.username && extRef.coins) {
+                        await creditUserCoins(extRef.username, extRef.coins);
+                        console.log(`💰 Moedas creditadas via Mercado Pago: +${extRef.coins} para ${extRef.username}`);
+                    }
+                } catch (e) {}
+            }
+        }
+        res.sendStatus(200);
+    } catch (err) {
+        console.error('Erro no webhook do Mercado Pago:', err);
+        res.sendStatus(200);
+    }
 });
 
 // Servir arquivos estáticos (Frontend do jogo)

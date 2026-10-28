@@ -1509,6 +1509,156 @@
             gap: 6px;
         }
 
+        /* ===== ESTILOS DA LOJA DE MOEDAS & MERCADO PAGO ===== */
+        .coin-packages-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 14px 0;
+        }
+
+        .coin-package-card {
+            background: linear-gradient(145deg, rgba(20, 24, 40, 0.85), rgba(10, 14, 25, 0.95));
+            border: 2px solid rgba(251, 191, 36, 0.25);
+            border-radius: 16px;
+            padding: 16px 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+        }
+
+        .coin-package-card:hover {
+            transform: translateY(-3px);
+            border-color: #fbbf24;
+            box-shadow: 0 8px 25px rgba(251, 191, 36, 0.35);
+        }
+
+        .coin-package-card.popular {
+            border-color: #38bdf8;
+            background: linear-gradient(145deg, rgba(14, 45, 80, 0.85), rgba(10, 18, 38, 0.95));
+        }
+
+        .coin-package-card.popular:hover {
+            border-color: #38bdf8;
+            box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4);
+        }
+
+        .pkg-badge {
+            position: absolute;
+            top: -10px;
+            right: 10px;
+            background: linear-gradient(135deg, #06b6d4, #3b82f6);
+            color: #ffffff;
+            font-size: 0.68rem;
+            font-weight: 900;
+            padding: 3px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(6, 182, 212, 0.5);
+        }
+
+        .pkg-badge.gold {
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.5);
+        }
+
+        .pkg-icon {
+            font-size: 2.2rem;
+            margin-bottom: 6px;
+            filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.6));
+        }
+
+        .pkg-coins-amount {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #fde047;
+            text-shadow: 0 0 12px rgba(253, 224, 71, 0.6);
+            letter-spacing: -0.5px;
+        }
+
+        .pkg-title {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 4px 0 6px 0;
+        }
+
+        .pkg-desc {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            line-height: 1.35;
+            flex: 1;
+            margin-bottom: 12px;
+        }
+
+        .pkg-price-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: 1px solid #fbbf24;
+            color: #111827;
+            font-weight: 900;
+            font-size: 0.95rem;
+            padding: 10px 6px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 3px 12px rgba(245, 158, 11, 0.35);
+            font-family: inherit;
+        }
+
+        .pkg-price-btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 5px 18px rgba(245, 158, 11, 0.6);
+        }
+
+        .popular .pkg-price-btn {
+            background: linear-gradient(135deg, #06b6d4, #2563eb);
+            border-color: #38bdf8;
+            color: #ffffff;
+            box-shadow: 0 3px 12px rgba(6, 182, 212, 0.4);
+        }
+
+        /* Modal Checkout Mercado Pago */
+        .mp-checkout-box {
+            background: rgba(10, 16, 32, 0.92);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 14px;
+            padding: 16px;
+            margin: 12px 0;
+            text-align: center;
+        }
+
+        .mp-logo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 158, 227, 0.15);
+            border: 1px solid #009ee3;
+            color: #38bdf8;
+            font-weight: 800;
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+
+        .pix-code-container {
+            background: rgba(0, 0, 0, 0.55);
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 0.72rem;
+            word-break: break-all;
+            color: #cbd5e1;
+            margin: 10px 0;
+            user-select: all;
+        }
+
         /* Ajustes específicos para Celular */
         @media (max-width: 600px) {
             #hud { padding: 14px 14px 12px 14px; }
@@ -1671,12 +1821,11 @@
 
             <div class="menu-btn-grid" style="grid-template-columns: 1fr 1fr; gap: 8px;">
                 <button class="secondary-btn" id="open-garage-btn">🚗 Garagem</button>
+                <button class="secondary-btn" id="open-coin-shop-btn" style="border-color: #fbbf24; color: #fde047; box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);">🪙 Comprar Moedas</button>
                 <button class="secondary-btn" id="open-pilot-btn">🧑‍🚀 Pilotos</button>
                 <button class="secondary-btn" id="open-missions-btn">📜 Missões</button>
                 <button class="secondary-btn" id="open-leaderboard-btn">🏆 Ranking</button>
-            </div>
-            <div style="margin-top: 8px; display: flex; justify-content: center;">
-                <button class="secondary-btn" id="open-settings-btn" style="padding: 6px 18px; font-size: 0.8rem;">⚙️ Ajustes & Áudio</button>
+                <button class="secondary-btn" id="open-settings-btn">⚙️ Ajustes</button>
             </div>
         </div>
     </div>
@@ -1754,8 +1903,11 @@
                     <h2 class="game-title" style="font-size: 1.7rem; margin-bottom: 2px;">GARAGEM CYBERPUNK</h2>
                     <div class="game-subtitle" style="margin-bottom: 0;">DESBLOQUEIE VEÍCULOS COM SUAS MOEDAS</div>
                 </div>
-                <div class="hud-coins-display" style="font-size: 1.2rem; background: rgba(0,0,0,0.3); padding: 5px 12px; border-radius: 10px; border: 1px solid rgba(251,191,36,0.3);">
-                    🪙 <span id="garage-coins-val">0</span>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="hud-coins-display" style="font-size: 1.2rem; background: rgba(0,0,0,0.3); padding: 5px 12px; border-radius: 10px; border: 1px solid rgba(251,191,36,0.3);">
+                        🪙 <span id="garage-coins-val">0</span>
+                    </div>
+                    <button class="secondary-btn" id="garage-buy-coins-btn" style="padding: 6px 12px; font-size: 0.75rem; border-color: #fbbf24; color: #fde047;">➕ Obter Moedas</button>
                 </div>
             </div>
 
@@ -1989,6 +2141,69 @@
 
             <button class="action-btn" id="mp-play-again-btn" style="width: 100%;">DUELAR NOVAMENTE</button>
             <button class="secondary-btn" id="mp-back-menu-btn" style="width: 100%; margin-top: 8px;">MENU INICIAL</button>
+        </div>
+    </div>
+
+    <!-- MODAL DA LOJA DE MOEDAS VIP (MERCADO PAGO) -->
+    <div class="modal-screen" id="coin-shop-modal">
+        <div class="glass-box modal-large-box" style="max-width: 620px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.15); padding-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                <div>
+                    <h2 class="game-title" style="font-size: 1.8rem; margin-bottom: 2px; color: #fde047;">LOJA DE MOEDAS VIP</h2>
+                    <div class="game-subtitle" style="margin-bottom: 0;">INTEGRAÇÃO MERCADO PAGO // PIX INSTANTÂNEO & CARTÃO</div>
+                </div>
+                <div class="hud-coins-display" style="font-size: 1.15rem; background: rgba(0,0,0,0.35); padding: 5px 12px; border-radius: 10px; border: 1px solid rgba(251,191,36,0.4);">
+                    🪙 <span id="shop-user-coins">0</span>
+                </div>
+            </div>
+
+            <div style="font-size: 0.8rem; color: #cbd5e1; margin: 10px 0 6px 0; text-align: center;">
+                Adquira pacotes de moedas para desbloquear supercarros, blindagens e turbos imediatamente!
+            </div>
+
+            <div class="coin-packages-grid" id="coin-packages-container">
+                <!-- Pacotes de moedas renderizados via JS -->
+            </div>
+
+            <button class="action-btn" id="close-coin-shop-btn" style="width: 100%; margin-top: 10px;">FECHAR LOJA</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE CHECKOUT / PAGAMENTO MERCADO PAGO -->
+    <div class="modal-screen" id="mp-payment-modal">
+        <div class="glass-box" style="max-width: 480px;">
+            <div class="mp-logo-badge">💳 MERCADO PAGO CHECKOUT</div>
+            <h2 class="game-title" style="font-size: 1.6rem; margin-bottom: 2px;" id="pay-modal-title">FINALIZAR COMPRA</h2>
+            <div class="game-subtitle" id="pay-modal-subtitle">PAGAMENTO SEGURO COM PIX OU CARTÃO</div>
+
+            <div class="mp-checkout-box">
+                <div style="font-size: 0.78rem; color: #94a3b8; text-transform: uppercase;">Pacote Selecionado:</div>
+                <div style="font-size: 1.25rem; font-weight: 900; color: #fde047; margin: 4px 0;" id="pay-pkg-name">Pacote Neon (1.500 Moedas)</div>
+                <div style="font-size: 1.8rem; font-weight: 900; color: #ffffff; letter-spacing: -0.5px;" id="pay-pkg-price">R$ 9,90</div>
+                <div style="font-size: 0.75rem; color: #38bdf8; margin-top: 4px;">Piloto: <strong id="pay-pkg-username">Piloto</strong></div>
+
+                <div id="pay-pix-section" style="margin-top: 14px; text-align: center;">
+                    <div style="font-size: 0.78rem; font-weight: 800; color: #4ade80;">⚡ PAGAMENTO VIA PIX</div>
+                    <div style="font-size: 0.7rem; color: #94a3b8; margin: 4px 0;">Copie o código Pix abaixo ou abra no app do seu banco / Mercado Pago:</div>
+                    <div class="pix-code-container" id="pix-copy-paste-box">Carregando código Pix...</div>
+                    <button class="secondary-btn" id="copy-pix-btn" style="width: 100%; font-size: 0.8rem; padding: 8px;">📋 COPIAR CÓDIGO PIX</button>
+                </div>
+
+                <div id="pay-redirect-section" style="margin-top: 10px; display: none;">
+                    <a id="pay-mercadopago-link" target="_blank" class="action-btn" style="display: block; text-decoration: none; padding: 12px; font-size: 0.9rem; background: linear-gradient(135deg, #009ee3, #0284c7);">
+                        PAGAR NO MERCADO PAGO ➔
+                    </a>
+                </div>
+
+                <div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 14px; padding-top: 12px;">
+                    <div style="font-size: 0.72rem; color: #94a3b8; margin-bottom: 8px;">Simulação / Confirmação imediata para testes:</div>
+                    <button class="action-btn" id="pay-simulate-btn" style="width: 100%; font-size: 0.85rem; padding: 10px; background: linear-gradient(135deg, #10b981, #059669);">
+                        ✅ CONFIRMAR PAGAMENTO (SIMULAR APROVAÇÃO)
+                    </button>
+                </div>
+            </div>
+
+            <button class="secondary-btn" id="close-payment-modal-btn" style="width: 100%;">CANCELAR / VOLTAR</button>
         </div>
     </div>
 
@@ -2229,6 +2444,49 @@
                 });
             }
         }
+
+        // =====================================================================
+        // CATÁLOGO DE PACOTES DE MOEDAS (LOJA DE MOEDAS & MERCADO PAGO)
+        // =====================================================================
+        const COIN_PACKAGES = {
+            pacote_500: {
+                id: 'pacote_500',
+                name: 'Pacote Básico de Moedas',
+                coins: 500,
+                price: 4.90,
+                tag: 'Básico',
+                icon: '🪙',
+                desc: '500 Moedas para upgrades de ar e blindagem de vida.'
+            },
+            pacote_1500: {
+                id: 'pacote_1500',
+                name: 'Pacote Neon Popular',
+                coins: 1500,
+                price: 9.90,
+                tag: 'Mais Vendido ⭐',
+                icon: '💰',
+                popular: true,
+                desc: '1.500 Moedas para desbloquear o Rusty Rod e Cybertruck!'
+            },
+            pacote_4000: {
+                id: 'pacote_4000',
+                name: 'Pacote Piloto Pro',
+                coins: 4000,
+                price: 19.90,
+                tag: '+25% Bônus 🔥',
+                icon: '💎',
+                desc: '4.000 Moedas para desbloquear e tunar os supercarros.'
+            },
+            pacote_10000: {
+                id: 'pacote_10000',
+                name: 'Cofre Hiperdrive Cyberpunk',
+                coins: 10000,
+                price: 39.90,
+                tag: '+50% Bônus 👑',
+                icon: '👑',
+                desc: '10.000 Moedas - Compre todos os carros e upgrades com facilidade!'
+            }
+        };
 
         // =====================================================================
         // CATÁLOGO OFICIAL DE CARROS
@@ -2585,6 +2843,7 @@
                     isFlying: false,
                     isJumping: false,
                     dist: 0,
+                    finalDist: 0,
                     speed: 78,
                     lives: 3,
                     crashed: false,
@@ -2592,6 +2851,41 @@
                     shieldTimer: 0
                 };
                 this.p2Keys = { left: false, right: false, boost: false, slam: false };
+
+                // Controle de Eliminação no Multiplayer (O sobrevivente continua correndo!)
+                this.p1Crashed = false;
+                this.p1FinalDist = 0;
+                this.rivalCrashed = false;
+                this.rivalFinalDist = 0;
+
+                // Faróis Noturnos do Carro (Ativação Automática ao Escurecer)
+                this.headlightsGroup = null;
+                this.headlightBeams = [];
+                this.headlightFlares = [];
+                this.mpRivalHeadlightBeams = [];
+                this.mpRivalHeadlightFlares = [];
+
+                // Referências UI da Loja de Moedas & Mercado Pago
+                this.coinShopModal = document.getElementById("coin-shop-modal");
+                this.openCoinShopBtn = document.getElementById("open-coin-shop-btn");
+                this.garageBuyCoinsBtn = document.getElementById("garage-buy-coins-btn");
+                this.closeCoinShopBtn = document.getElementById("close-coin-shop-btn");
+                this.shopUserCoins = document.getElementById("shop-user-coins");
+                this.coinPackagesContainer = document.getElementById("coin-packages-container");
+
+                this.mpPaymentModal = document.getElementById("mp-payment-modal");
+                this.closePaymentModalBtn = document.getElementById("close-payment-modal-btn");
+                this.payModalTitle = document.getElementById("pay-modal-title");
+                this.payModalSubtitle = document.getElementById("pay-modal-subtitle");
+                this.payPkgName = document.getElementById("pay-pkg-name");
+                this.payPkgPrice = document.getElementById("pay-pkg-price");
+                this.payPkgUsername = document.getElementById("pay-pkg-username");
+                this.pixCopyPasteBox = document.getElementById("pix-copy-paste-box");
+                this.copyPixBtn = document.getElementById("copy-pix-btn");
+                this.payRedirectSection = document.getElementById("pay-redirect-section");
+                this.payMercadoPagoLink = document.getElementById("pay-mercadopago-link");
+                this.paySimulateBtn = document.getElementById("pay-simulate-btn");
+                this.currentPendingPackage = null;
 
                 // Sistema de Piloto Selecionado
                 this.selectedPilot = localStorage.getItem("roadster_selected_pilot") || "aria";
@@ -2664,6 +2958,7 @@
                 this.renderMissions();
                 this.initUserData();
                 this.initMultiplayer();
+                this.initCoinShop();
             }
 
             // =================================================================
@@ -3596,26 +3891,56 @@
                 }
 
                 // Bolha de Força do Escudo Protetor (Mais compacto, rente à lataria e com alta transparência para visualização perfeita do carro)
-                const shieldBubbleGeo = new THREE.SphereGeometry(1.82, 32, 20);
-                shieldBubbleGeo.scale(1.04, 0.62, 1.28);
+                const shieldBubbleGeo = new THREE.SphereGeometry(1.5, 32, 20);
+                shieldBubbleGeo.scale(0.98, 0.55, 1.22);
                 const honeycombTex = this.getHoneycombShieldTexture();
                 const shieldBubbleMat = new THREE.MeshStandardMaterial({
                     map: honeycombTex,
                     emissiveMap: honeycombTex,
-                    color: 0xffffff,
-                    emissive: 0xffffff,
-                    emissiveIntensity: 0.85,
+                    color: 0x88ccff,
+                    emissive: 0x38bdf8,
+                    emissiveIntensity: 0.65,
                     transparent: true,
                     opacity: 0.0,
-                    roughness: 0.15,
-                    metalness: 0.85,
+                    roughness: 0.1,
+                    metalness: 0.3,
                     side: THREE.DoubleSide,
-                    depthWrite: false
+                    depthWrite: false,
+                    blending: THREE.AdditiveBlending
                 });
                 this.shieldBubble = new THREE.Mesh(shieldBubbleGeo, shieldBubbleMat);
-                this.shieldBubble.position.set(0, 0.56, 0);
+                this.shieldBubble.position.set(0, 0.52, 0);
                 this.shieldBubble.visible = this.shieldTimer > 0;
                 this.truckGroup.add(this.shieldBubble);
+
+                // Faróis Dianteiros do Carro (Ativam e Projetam Feixe de Luz Cônico na Estrada à Noite)
+                this.headlightBeams = [];
+                this.headlightFlares = [];
+                this.headlightsGroup = new THREE.Group();
+
+                const beamGeo = new THREE.CylinderGeometry(0.12, 1.85, 22.0, 16, 1, true);
+                beamGeo.rotateX(Math.PI / 2);
+                const beamMat = new THREE.MeshBasicMaterial({
+                    color: 0xfff6cf,
+                    transparent: true,
+                    opacity: 0.0,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false,
+                    side: THREE.DoubleSide
+                });
+
+                [-0.72, 0.72].forEach(x => {
+                    const beam = new THREE.Mesh(beamGeo, beamMat.clone());
+                    beam.position.set(x, 0.52, -12.5);
+                    this.headlightsGroup.add(beam);
+                    this.headlightBeams.push(beam);
+
+                    const flare = this.makeGlow(0xfff8d6, 1.5, 0.0);
+                    flare.position.set(x, 0.52, -2.35);
+                    this.headlightsGroup.add(flare);
+                    this.headlightFlares.push(flare);
+                });
+                this.truckGroup.add(this.headlightsGroup);
 
                 this.scene.add(this.truckGroup);
                 this.truckGroup.position.set(this.playerX, this.playerY, 0);
@@ -4636,7 +4961,17 @@
                         break;
 
                     case "rival_crashed":
-                        this.finishDuel(true, `O Rival ${this.mpRivalData.name} colidiu no trânsito!`);
+                        this.rivalCrashed = true;
+                        this.rivalFinalDist = Math.max(1, Math.floor(data.dist || this.mpRivalData.dist || 0));
+                        if (this.mpNameP2) {
+                            this.mpNameP2.textContent = `${this.mpRivalData.name || 'Rival'} 💥 (${this.rivalFinalDist}m)`;
+                        }
+                        if (this.p1Crashed) {
+                            this.finishDuel();
+                        } else {
+                            this.triggerActionPopup(`⚡ RIVAL BATEU AOS ${this.rivalFinalDist}m! CONTINUE ACELERANDO!`);
+                            this.speakAnnouncer("Rival Down! Keep Going!", true);
+                        }
                         break;
 
                     case "player_left":
@@ -4778,6 +5113,33 @@
                 this.mpRivalTag = this.createNameTagSprite(nickname, accentHex);
                 G.add(this.mpRivalTag);
 
+                // Faróis Noturnos do Rival
+                this.mpRivalHeadlightBeams = [];
+                this.mpRivalHeadlightFlares = [];
+                const rivalHlGroup = new THREE.Group();
+                const rBeamGeo = new THREE.CylinderGeometry(0.12, 1.85, 22.0, 16, 1, true);
+                rBeamGeo.rotateX(Math.PI / 2);
+                const rBeamMat = new THREE.MeshBasicMaterial({
+                    color: 0xfff6cf,
+                    transparent: true,
+                    opacity: 0.0,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false,
+                    side: THREE.DoubleSide
+                });
+                [-0.65, 0.65].forEach(x => {
+                    const beam = new THREE.Mesh(rBeamGeo, rBeamMat.clone());
+                    beam.position.set(x, 0.48, -12.5);
+                    rivalHlGroup.add(beam);
+                    this.mpRivalHeadlightBeams.push(beam);
+
+                    const flare = this.makeGlow(0xfff8d6, 1.5, 0.0);
+                    flare.position.set(x, 0.48, -2.2);
+                    rivalHlGroup.add(flare);
+                    this.mpRivalHeadlightFlares.push(flare);
+                });
+                G.add(rivalHlGroup);
+
                 G.position.set(LANES[2], GROUND_Y, -2.0);
                 this.scene.add(G);
                 this.mpRivalVehicle = G;
@@ -4795,6 +5157,15 @@
                 const rivalName = rivalInfo.name || (mode === 'local2p' ? 'Piloto 2' : (mode === 'ai' ? 'Cyber Ghost IA' : 'Rival'));
                 const rivalCar = rivalInfo.car || 'phantom';
                 this.buildRivalVehicle(rivalCar, rivalName, mode === 'local2p');
+
+                // Reset de estado dos competidores (sobrevivência até o fim)
+                this.p1Crashed = false;
+                this.p1FinalDist = 0;
+                this.rivalCrashed = false;
+                this.rivalFinalDist = 0;
+                this.p2.crashed = false;
+                this.p2.finalDist = 0;
+                this.aiPostCrashTimer = 0;
 
                 // Configuração P2 (Local Versus)
                 this.p2.lane = 2;
@@ -4897,40 +5268,80 @@
                                 this.sound.playCrash();
                                 if (this.p2.lives <= 0) {
                                     this.p2.crashed = true;
-                                    this.finishDuel(true, 'Piloto 2 colidiu no tráfego!');
-                                    return;
+                                    this.p2.finalDist = Math.max(1, Math.floor(this.p2.dist));
+                                    if (this.mpNameP2) {
+                                        this.mpNameP2.textContent = `P2 💥 (${this.p2.finalDist}m)`;
+                                    }
+                                    if (this.p1Crashed) {
+                                        this.finishDuel();
+                                        return;
+                                    } else {
+                                        this.triggerActionPopup(`⚡ PILOTO 2 BATEU AOS ${this.p2.finalDist}m! PILOTO 1 CONTINUA!`);
+                                        this.speakAnnouncer("Player 2 Down! Keep Going!", true);
+                                    }
                                 }
                             }
                         }
                     }
-                    rivalDist = this.p2.dist;
+                    rivalDist = this.p2.crashed ? this.p2.finalDist : this.p2.dist;
                 }
 
                 // 2. MODO DUELO CONTRA CYBER IA
                 else if (this.mpMode === 'ai') {
-                    // IA segue a corrida com velocidade dinâmica
-                    const distDiff = this.mpRivalData.dist - this.scoreDistance;
-                    let targetAiSpeed = this.currentSpeed;
-                    if (distDiff < -15) targetAiSpeed += 6;
-                    else if (distDiff > 25) targetAiSpeed -= 5;
+                    if (!this.rivalCrashed) {
+                        // IA segue a corrida com velocidade dinâmica
+                        const distDiff = this.mpRivalData.dist - this.scoreDistance;
+                        let targetAiSpeed = this.currentSpeed;
+                        if (distDiff < -15) targetAiSpeed += 6;
+                        else if (distDiff > 25) targetAiSpeed -= 5;
 
-                    this.mpRivalData.speed += (targetAiSpeed - this.mpRivalData.speed) * 3.0 * delta;
-                    this.mpRivalData.dist += this.mpRivalData.speed * delta;
+                        this.mpRivalData.speed += (targetAiSpeed - this.mpRivalData.speed) * 3.0 * delta;
+                        this.mpRivalData.dist += this.mpRivalData.speed * delta;
 
-                    // IA de desvio de tráfego
-                    const relativeZ = this.truckGroup.position.z + (this.mpRivalData.dist - this.scoreDistance);
-                    for (const car of this.trafficCars) {
-                        const dZ = car.position.z - relativeZ;
-                        if (dZ < 0 && dZ > -35.0 && Math.abs(this.mpRivalData.x - car.position.x) < 1.6) {
-                            const altLanes = LANES.filter(lx => Math.abs(lx - car.position.x) > 1.8);
-                            if (altLanes.length > 0) {
-                                this.mpRivalData.x = altLanes[Math.floor(Math.random() * altLanes.length)];
+                        // IA de desvio de tráfego
+                        const relativeZ = this.truckGroup.position.z + (this.mpRivalData.dist - this.scoreDistance);
+                        for (const car of this.trafficCars) {
+                            const dZ = car.position.z - relativeZ;
+                            if (dZ < 0 && dZ > -35.0 && Math.abs(this.mpRivalData.x - car.position.x) < 1.6) {
+                                const altLanes = LANES.filter(lx => Math.abs(lx - car.position.x) > 1.8);
+                                if (altLanes.length > 0) {
+                                    this.mpRivalData.x = altLanes[Math.floor(Math.random() * altLanes.length)];
+                                }
                             }
+                            // Colisão da IA
+                            if (Math.abs(car.position.x - this.mpRivalData.x) < 1.4 && Math.abs(dZ) < 3.0) {
+                                this.rivalCrashed = true;
+                                this.rivalFinalDist = Math.max(1, Math.floor(this.mpRivalData.dist));
+                                this.sound.playCrash();
+                                if (this.mpNameP2) {
+                                    this.mpNameP2.textContent = `Cyber IA 💥 (${this.rivalFinalDist}m)`;
+                                }
+                                if (this.p1Crashed) {
+                                    this.finishDuel();
+                                    return;
+                                } else {
+                                    this.triggerActionPopup(`⚡ CYBER IA BATEU AOS ${this.rivalFinalDist}m! CONTINUE!`);
+                                    this.speakAnnouncer("Rival Down! Keep Going!", true);
+                                }
+                                break;
+                            }
+                        }
+
+                        this.mpRivalVehicle.position.set(this.mpRivalData.x, GROUND_Y, relativeZ);
+                    }
+
+                    // Se P1 bateu e IA ainda está viva, limite o tempo da IA para finalizar o duelo
+                    if (this.p1Crashed && !this.rivalCrashed) {
+                        this.aiPostCrashTimer = (this.aiPostCrashTimer || 0) + delta;
+                        if (this.aiPostCrashTimer > 4.5) {
+                            this.rivalCrashed = true;
+                            this.rivalFinalDist = Math.max(1, Math.floor(this.mpRivalData.dist));
+                            this.finishDuel();
+                            return;
                         }
                     }
 
-                    this.mpRivalVehicle.position.set(this.mpRivalData.x, GROUND_Y, relativeZ);
-                    rivalDist = this.mpRivalData.dist;
+                    rivalDist = this.rivalCrashed ? this.rivalFinalDist : this.mpRivalData.dist;
                 }
 
                 // 3. MODO ONLINE (WEBSOCKET REAL-TIME)
@@ -4942,7 +5353,7 @@
                     this.mpRivalVehicle.position.z = relativeZ;
 
                     // Envio de telemetria local via WebSocket (~25Hz)
-                    if (this.mpWs && this.mpWs.readyState === WebSocket.OPEN) {
+                    if (this.mpWs && this.mpWs.readyState === WebSocket.OPEN && !this.p1Crashed) {
                         this.mpTelemetryTimer += delta;
                         if (this.mpTelemetryTimer >= 0.04) {
                             this.mpTelemetryTimer = 0;
@@ -4961,15 +5372,16 @@
                             }));
                         }
                     }
-                    rivalDist = this.mpRivalData.dist;
+                    rivalDist = this.rivalCrashed ? this.rivalFinalDist : this.mpRivalData.dist;
                 }
 
                 // Atualização dos números no Banner HUD
-                if (this.mpDistP1) this.mpDistP1.textContent = `${Math.floor(this.scoreDistance)}m`;
+                const displayP1Dist = this.p1Crashed ? this.p1FinalDist : Math.floor(this.scoreDistance);
+                if (this.mpDistP1) this.mpDistP1.textContent = `${displayP1Dist}m`;
                 if (this.mpDistP2) this.mpDistP2.textContent = `${Math.floor(rivalDist)}m`;
 
                 if (this.mpGapLabel) {
-                    const gap = Math.floor(this.scoreDistance - rivalDist);
+                    const gap = Math.floor(displayP1Dist - rivalDist);
                     if (gap >= 0) {
                         this.mpGapLabel.className = "mp-gap-indicator";
                         this.mpGapLabel.textContent = `+${gap}m À FRENTE`;
@@ -4980,32 +5392,71 @@
                 }
             }
 
-            finishDuel(won, message) {
+            finishDuel(forceWon, customMessage) {
                 this.isRunning = false;
                 this.sound.stopEngine();
+
+                const p1Dist = this.p1FinalDist || Math.floor(this.scoreDistance);
+                const p2Dist = (this.mpMode === 'local2p') 
+                    ? (this.p2.finalDist || Math.floor(this.p2.dist)) 
+                    : (this.rivalFinalDist || Math.floor(this.mpRivalData.dist));
+
+                let won = false;
+                let isDraw = false;
+                let title = "";
+                let message = "";
+
+                if (forceWon !== undefined && customMessage) {
+                    won = forceWon;
+                    message = customMessage;
+                    title = won ? "🏆 VITÓRIA!" : "💀 DERROTA!";
+                } else {
+                    if (p1Dist > p2Dist) {
+                        won = true;
+                        const diff = p1Dist - p2Dist;
+                        title = (this.mpMode === 'local2p') ? "🏆 VITÓRIA DO PILOTO 1!" : "🏆 VITÓRIA ÉPICA!";
+                        message = `Piloto 1 percorreu ${p1Dist}m (+${diff}m a mais que o adversário)!`;
+                    } else if (p2Dist > p1Dist) {
+                        won = false;
+                        const diff = p2Dist - p1Dist;
+                        title = (this.mpMode === 'local2p') ? "🏆 VITÓRIA DO PILOTO 2!" : "💀 DERROTA!";
+                        message = (this.mpMode === 'local2p') 
+                            ? `Piloto 2 resistiu mais e alcançou ${p2Dist}m (+${diff}m)!` 
+                            : `O Rival resistiu mais e alcançou ${p2Dist}m (+${diff}m)!`;
+                    } else {
+                        isDraw = true;
+                        won = false;
+                        title = "🤝 EMPATE!";
+                        message = `Ambos os pilotos bateram na mesma distância: ${p1Dist}m!`;
+                    }
+                }
+
                 if (won) {
                     this.sound.playMissionComplete();
                     this.speakAnnouncer("Victory!", true);
+                    this.totalCoins += 100;
+                    localStorage.setItem("roadster_coins", this.totalCoins.toString());
+                    this.triggerHaptic("win");
+                } else if (isDraw) {
+                    this.sound.playMissionComplete();
+                    this.totalCoins += 50;
+                    localStorage.setItem("roadster_coins", this.totalCoins.toString());
                 } else {
                     this.sound.playGameOver();
                     this.speakAnnouncer("Game Over!", true);
-                }
-
-                const earnedCoins = won ? 100 : 0;
-                if (won) {
-                    this.totalCoins += earnedCoins;
-                    localStorage.setItem("roadster_coins", this.totalCoins.toString());
+                    this.triggerHaptic("crash");
                 }
 
                 if (this.mpFinishModal) {
                     this.mpFinishModal.classList.add("active");
-                    if (this.mpFinishTitle) this.mpFinishTitle.textContent = won ? "🏆 VITÓRIA!" : "💥 DERROTA!";
+                    if (this.mpFinishTitle) this.mpFinishTitle.textContent = title;
                     if (this.mpFinishSubtitle) this.mpFinishSubtitle.textContent = message;
-                    if (this.mpFinishDistP1) this.mpFinishDistP1.textContent = `${Math.floor(this.scoreDistance)} m`;
-                    const rivalDist = this.mpMode === 'local2p' ? this.p2.dist : this.mpRivalData.dist;
-                    if (this.mpFinishDistP2) this.mpFinishDistP2.textContent = `${Math.floor(rivalDist)} m`;
+                    if (this.mpFinishDistP1) this.mpFinishDistP1.textContent = `${p1Dist} m`;
+                    if (this.mpFinishDistP2) this.mpFinishDistP2.textContent = `${p2Dist} m`;
                     if (this.mpRewardBox) {
-                        this.mpRewardBox.style.display = won ? "block" : "none";
+                        this.mpRewardBox.style.display = (won || isDraw) ? "block" : "none";
+                        const rewardCoinEl = this.mpRewardBox.querySelector("strong");
+                        if (rewardCoinEl) rewardCoinEl.textContent = won ? "+100 MOEDAS" : "+50 MOEDAS";
                     }
                 }
             }
@@ -5327,10 +5778,37 @@
 
             gameOver(reason = "COLISÃO NO TRÁFEGO DA PONTE") {
                 if (this.isMultiplayer) {
-                    if (this.mpMode === "online" && this.mpWs && this.mpWs.readyState === WebSocket.OPEN) {
-                        this.mpWs.send(JSON.stringify({ type: "player_crashed", reason }));
+                    if (!this.p1Crashed) {
+                        this.p1Crashed = true;
+                        this.p1FinalDist = Math.max(1, Math.floor(this.scoreDistance));
+                        this.sound.playCrash();
+                        this.flashDamage();
+                        this.triggerHaptic("crash");
+
+                        if (this.mpNameP1) {
+                            const p1Label = (this.mpMode === 'local2p') ? "P1" : (this.currentUser || "Você");
+                            this.mpNameP1.textContent = `${p1Label} 💥 (${this.p1FinalDist}m)`;
+                        }
+
+                        if (this.mpMode === "online" && this.mpWs && this.mpWs.readyState === WebSocket.OPEN) {
+                            this.mpWs.send(JSON.stringify({ 
+                                type: "player_crashed", 
+                                dist: this.p1FinalDist, 
+                                reason 
+                            }));
+                        }
+
+                        const rivalAlreadyCrashed = (this.mpMode === 'local2p') ? this.p2.crashed : this.rivalCrashed;
+                        if (rivalAlreadyCrashed) {
+                            this.finishDuel();
+                            return;
+                        } else {
+                            const rivalName = (this.mpMode === 'local2p') ? "PILOTO 2" : (this.mpRivalData.name || "RIVAL");
+                            this.triggerActionPopup(`💥 VOCÊ BATEU AOS ${this.p1FinalDist}m! ${rivalName} CONTINUA!`);
+                            this.speakAnnouncer("You crashed! Rival still racing!", true);
+                            return;
+                        }
                     }
-                    this.finishDuel(false, reason);
                     return;
                 }
 
@@ -5908,7 +6386,7 @@
                 this.shieldTimer = this.shieldMaxDuration;
                 if (this.shieldBubble) {
                     this.shieldBubble.visible = true;
-                    this.shieldBubble.material.opacity = 0.45;
+                    this.shieldBubble.material.opacity = 0.28;
                 }
                 if (this.hudShieldIndicator) {
                     this.hudShieldIndicator.style.display = "inline-flex";
@@ -6174,6 +6652,20 @@
                 if (this.ambientLight) {
                     this.ambientLight.intensity = THREE.MathUtils.lerp(0.55, 0.38, nf);
                     this.ambientLight.color.lerpColors(new THREE.Color(0xc98a9a), new THREE.Color(0x581c87), nf);
+                }
+
+                // Faróis Dianteiros do Carro Ligados Automaticamente à Noite
+                if (this.headlightBeams && this.headlightBeams.length > 0) {
+                    const hlFactor = THREE.MathUtils.clamp((nf - 0.08) / 0.42, 0, 1);
+                    const beamOpacity = hlFactor * 0.72;
+                    this.headlightBeams.forEach(b => b.material.opacity = beamOpacity);
+                    this.headlightFlares.forEach(f => f.material.opacity = hlFactor * 0.95);
+                }
+                if (this.mpRivalHeadlightBeams && this.mpRivalHeadlightBeams.length > 0) {
+                    const hlFactor = THREE.MathUtils.clamp((nf - 0.08) / 0.42, 0, 1);
+                    const beamOpacity = hlFactor * 0.72;
+                    this.mpRivalHeadlightBeams.forEach(b => b.material.opacity = beamOpacity);
+                    this.mpRivalHeadlightFlares.forEach(f => f.material.opacity = hlFactor * 0.95);
                 }
             }
 
@@ -6587,9 +7079,9 @@
                         }
                         if (this.shieldTimer < 1.5) {
                             const blink = Math.floor(performance.now() / 90) % 2 === 0;
-                            this.shieldBubble.material.opacity = blink ? 0.55 : 0.12;
+                            this.shieldBubble.material.opacity = blink ? 0.35 : 0.08;
                         } else {
-                            this.shieldBubble.material.opacity = 0.40 + Math.sin(performance.now() * 0.007) * 0.06;
+                            this.shieldBubble.material.opacity = 0.22 + Math.sin(performance.now() * 0.007) * 0.05;
                         }
                     }
                     if (this.hudShieldIndicator) {
@@ -6874,9 +7366,19 @@
                 this.camera.fov = THREE.MathUtils.lerp(this.camera.fov, baseFov + speedRatio * 14, 0.08);
                 this.camera.updateProjectionMatrix();
 
-                this.camera.position.x += (this.playerX * camFollowX - this.camera.position.x) * (7.5 * delta);
+                let targetCamX = this.playerX * camFollowX;
+                let targetCamLookX = this.playerX * 0.15;
+                let targetCamLookY = this.playerY + 0.8;
+
+                if (this.isMultiplayer && this.p1Crashed && this.mpRivalVehicle) {
+                    targetCamX = this.mpRivalVehicle.position.x * camFollowX;
+                    targetCamLookX = this.mpRivalVehicle.position.x * 0.15;
+                    targetCamLookY = this.mpRivalVehicle.position.y + 0.8;
+                }
+
+                this.camera.position.x += (targetCamX - this.camera.position.x) * (7.5 * delta);
                 this.camera.position.y += (camFollowY - this.camera.position.y) * (5.5 * delta);
-                this.camera.lookAt(this.playerX * 0.15, this.playerY + 0.8, -12);
+                this.camera.lookAt(targetCamLookX, targetCamLookY, -12);
 
                 if (this.isMultiplayer) {
                     this.updateMultiplayer(delta);
@@ -6904,6 +7406,233 @@
                 
                 const rocketProgress = (this.airLiters / this.maxAirLiters) * 100;
                 this.rocketSubFill.style.width = `${rocketProgress}%`;
+            }
+
+            // =================================================================
+            // LOJA VIP DE MOEDAS COM MERCADO PAGO (PIX E CARTÃO)
+            // =================================================================
+            initCoinShop() {
+                this.coinShopModal = document.getElementById("coin-shop-modal");
+                this.closeCoinShopBtn = document.getElementById("close-coin-shop-btn");
+                this.coinPackagesContainer = document.getElementById("coin-packages-container");
+                this.shopUserBalance = document.getElementById("shop-user-balance");
+                this.mpPaymentModal = document.getElementById("mp-payment-modal");
+                this.closeMpModalBtn = document.getElementById("close-mp-modal-btn");
+                this.mpPkgName = document.getElementById("mp-pkg-name");
+                this.mpPkgPrice = document.getElementById("mp-pkg-price");
+                this.mpCheckoutLink = document.getElementById("mp-checkout-link");
+                this.mpPixCode = document.getElementById("mp-pix-code");
+                this.copyPixBtn = document.getElementById("copy-pix-btn");
+                this.simulatePaymentBtn = document.getElementById("simulate-payment-btn");
+                this.mpPaymentStatus = document.getElementById("mp-payment-status");
+                this.openCoinShopBtn = document.getElementById("open-coin-shop-btn");
+                this.garageBuyCoinsBtn = document.getElementById("garage-buy-coins-btn");
+
+                if (this.openCoinShopBtn) {
+                    this.openCoinShopBtn.addEventListener("click", () => {
+                        this.sound.playCoin();
+                        this.openCoinShop();
+                    });
+                }
+
+                if (this.garageBuyCoinsBtn) {
+                    this.garageBuyCoinsBtn.addEventListener("click", () => {
+                        this.sound.playCoin();
+                        if (this.garageModal) this.garageModal.classList.remove("active");
+                        this.openCoinShop();
+                    });
+                }
+
+                if (this.closeCoinShopBtn) {
+                    this.closeCoinShopBtn.addEventListener("click", () => {
+                        if (this.coinShopModal) this.coinShopModal.classList.remove("active");
+                    });
+                }
+
+                if (this.closeMpModalBtn) {
+                    this.closeMpModalBtn.addEventListener("click", () => {
+                        if (this.mpPaymentModal) this.mpPaymentModal.classList.remove("active");
+                    });
+                }
+
+                if (this.copyPixBtn && this.mpPixCode) {
+                    this.copyPixBtn.addEventListener("click", () => {
+                        const code = this.mpPixCode.textContent || "";
+                        if (navigator.clipboard && code) {
+                            navigator.clipboard.writeText(code).then(() => {
+                                this.copyPixBtn.textContent = "COPIADO! ✅";
+                                setTimeout(() => { if (this.copyPixBtn) this.copyPixBtn.textContent = "COPIAR CÓDIGO PIX"; }, 2500);
+                            }).catch(() => {
+                                this.copyPixBtn.textContent = "SELECIONADO!";
+                            });
+                        }
+                    });
+                }
+
+                if (this.simulatePaymentBtn) {
+                    this.simulatePaymentBtn.addEventListener("click", () => {
+                        this.simulatePaymentApproval();
+                    });
+                }
+            }
+
+            openCoinShop() {
+                if (this.shopUserBalance) {
+                    this.shopUserBalance.textContent = this.totalCoins.toLocaleString();
+                }
+                this.renderCoinShopCards();
+                if (this.coinShopModal) {
+                    this.coinShopModal.classList.add("active");
+                }
+            }
+
+            renderCoinShopCards() {
+                if (!this.coinPackagesContainer) return;
+                this.coinPackagesContainer.innerHTML = "";
+
+                COIN_PACKAGES.forEach(pkg => {
+                    const card = document.createElement("div");
+                    card.className = "coin-package-card";
+                    card.innerHTML = `
+                        ${pkg.badge ? `<div class="pkg-badge">${pkg.badge}</div>` : ""}
+                        <div class="pkg-icon">${pkg.icon}</div>
+                        <div class="pkg-coins">${pkg.coins.toLocaleString()} MOEDAS</div>
+                        <div class="pkg-tag">${pkg.tag}</div>
+                        <button class="pkg-price-btn" data-pkg="${pkg.id}">
+                            💳 R$ ${pkg.priceBRL.toFixed(2).replace('.', ',')}
+                        </button>
+                    `;
+
+                    const btn = card.querySelector(".pkg-price-btn");
+                    if (btn) {
+                        btn.addEventListener("click", () => {
+                            this.sound.playCoin();
+                            this.openPaymentCheckout(pkg.id);
+                        });
+                    }
+                    this.coinPackagesContainer.appendChild(card);
+                });
+            }
+
+            async openPaymentCheckout(packageId) {
+                const pkg = COIN_PACKAGES.find(p => p.id === packageId);
+                if (!pkg) return;
+
+                this.selectedCheckoutPackage = pkg;
+
+                if (this.mpPkgName) this.mpPkgName.textContent = `${pkg.coins.toLocaleString()} Moedas (${pkg.tag})`;
+                if (this.mpPkgPrice) this.mpPkgPrice.textContent = `R$ ${pkg.priceBRL.toFixed(2).replace('.', ',')}`;
+                if (this.mpPaymentStatus) {
+                    this.mpPaymentStatus.className = "status-msg";
+                    this.mpPaymentStatus.textContent = "Conectando ao gateway Mercado Pago...";
+                }
+
+                if (this.mpPaymentModal) this.mpPaymentModal.classList.add("active");
+
+                const loc = window.location;
+                const isLocal = loc.hostname === "localhost" || loc.hostname === "127.0.0.1";
+                const apiBase = isLocal ? `http://${loc.hostname}:${loc.port || 3000}` : "https://jogo-tesla.onrender.com";
+
+                try {
+                    const res = await fetch(`${apiBase}/api/payment/create-preference`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            packageId: pkg.id,
+                            username: this.currentUser || "Piloto"
+                        })
+                    });
+
+                    const data = await res.json();
+                    if (data.success) {
+                        if (this.mpCheckoutLink) {
+                            this.mpCheckoutLink.href = data.init_point || "#";
+                            this.mpCheckoutLink.target = "_blank";
+                            this.mpCheckoutLink.style.display = "block";
+                        }
+                        if (this.mpPixCode) {
+                            this.mpPixCode.textContent = data.pixCode || "00020126580014br.gov.bcb.pix0136pix-mercadopago-roadsterdash-coins5204000053039865802BR5916ROADSTER DASH6009SAO PAULO";
+                        }
+                        if (this.mpPaymentStatus) {
+                            this.mpPaymentStatus.className = "status-msg success";
+                            this.mpPaymentStatus.textContent = data.mode === "live" 
+                                ? "Link de pagamento seguro gerado com sucesso!" 
+                                : "Modo Demonstração / Teste Ativo! Use o simulador abaixo para aprovar:";
+                        }
+                    } else {
+                        throw new Error(data.error || "Falha ao gerar preferência");
+                    }
+                } catch(err) {
+                    // Fallback offline / sem conexão backend
+                    if (this.mpPixCode) {
+                        this.mpPixCode.textContent = `00020126580014br.gov.bcb.pix0136pix-roadsterdash-${pkg.id}520400005303986540${pkg.priceBRL.toFixed(2)}5802BR5916ROADSTER DASH`;
+                    }
+                    if (this.mpCheckoutLink) {
+                        this.mpCheckoutLink.href = "https://www.mercadopago.com.br";
+                    }
+                    if (this.mpPaymentStatus) {
+                        this.mpPaymentStatus.className = "status-msg";
+                        this.mpPaymentStatus.textContent = "Ambiente offline. Você pode testar e aprovar instantaneamente clicando em SIMULAR APROVAÇÃO!";
+                    }
+                }
+            }
+
+            async simulatePaymentApproval() {
+                if (!this.selectedCheckoutPackage) return;
+                const pkg = this.selectedCheckoutPackage;
+
+                if (this.mpPaymentStatus) {
+                    this.mpPaymentStatus.className = "status-msg";
+                    this.mpPaymentStatus.textContent = "Processando confirmação Pix / Cartão...";
+                }
+
+                const loc = window.location;
+                const isLocal = loc.hostname === "localhost" || loc.hostname === "127.0.0.1";
+                const apiBase = isLocal ? `http://${loc.hostname}:${loc.port || 3000}` : "https://jogo-tesla.onrender.com";
+
+                try {
+                    const res = await fetch(`${apiBase}/api/payment/simulate`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            packageId: pkg.id,
+                            username: this.currentUser || "Piloto"
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.success && data.newBalance !== undefined) {
+                        this.totalCoins = data.newBalance;
+                    } else {
+                        this.totalCoins += pkg.coins;
+                    }
+                } catch(e) {
+                    this.totalCoins += pkg.coins;
+                }
+
+                localStorage.setItem("roadster_coins", this.totalCoins.toString());
+                this.updateUserCoinsEverywhere();
+
+                if (this.mpPaymentStatus) {
+                    this.mpPaymentStatus.className = "status-msg success";
+                    this.mpPaymentStatus.textContent = `🎉 Pagamento Aprovado! +${pkg.coins.toLocaleString()} Moedas creditadas na sua conta!`;
+                }
+
+                this.sound.playMissionComplete();
+                this.speakAnnouncer("Payment Approved! Coins Added!", true);
+                this.triggerActionPopup(`+${pkg.coins.toLocaleString()} MOEDAS VIP!`);
+
+                setTimeout(() => {
+                    if (this.mpPaymentModal) this.mpPaymentModal.classList.remove("active");
+                    if (this.shopUserBalance) this.shopUserBalance.textContent = this.totalCoins.toLocaleString();
+                }, 1800);
+            }
+
+            updateUserCoinsEverywhere() {
+                if (this.hudCoins) this.hudCoins.textContent = (this.totalCoins + this.coinsEarnedThisRun).toLocaleString();
+                if (this.menuCoins) this.menuCoins.textContent = this.totalCoins.toLocaleString();
+                if (this.shopUserBalance) this.shopUserBalance.textContent = this.totalCoins.toLocaleString();
+                const garageCoins = document.getElementById("garage-coins");
+                if (garageCoins) garageCoins.textContent = this.totalCoins.toLocaleString();
             }
         }
 
