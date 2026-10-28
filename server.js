@@ -1,10 +1,14 @@
 const express = require('express');
+const http = require('http');
+const WebSocket = require('ws');
 const cors = require('cors');
 const path = require('path');
 const { Pool } = require('pg');
 require('dotenv').config();
 
 const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
@@ -490,6 +494,260 @@ app.get('/api/leaderboard', async (req, res) => {
     }
 });
 
+// =============================================================================
+// SERVIDOR MULTIPLAYER REAL-TIME VIA WEBSOCKET (SALAS & MATCHMAKING)
+// =============================================================================
+const mpRooms = new Map(); // roomCode -> { code, hostId, state: 'waiting'|'racing', players: Map }
+
+function generateRoomCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 4; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+}
+
+function getRoomSummary(room) {
+    const list = [];
+    for (const [id, p] of room.players.entries()) {
+        list.push({
+            id,
+            username: p.username,
+            selectedCar: p.selectedCar,
+            isHost: id === room.hostId,
+            isReady: !!p.isReady
+        });
+    }
+    return list;
+}
+
+function broadcastToRoom(room, msgObj, excludeId = null) {
+    const raw = JSON.stringify(msgObj);
+    for (const [id, p] of room.players.entries()) {
+        if (id !== excludeId && p.ws && p.ws.readyState === WebSocket.OPEN) {
+            p.ws.send(raw);
+        }
+    }
+}
+
+wss.on('connection', (ws) => {
+    let currentRoomCode = null;
+    let playerId = 'p_' + Math.random().toString(36).substring(2, 9);
+
+    ws.on('message', (message) => {
+        try {
+            const data = JSON.parse(message);
+
+            // 1. Criar Nova Sala Privada
+            if (data.type === 'create_room') {
+                let code = generateRoomCode();
+                while (mpRooms.has(code)) code = generateRoomCode();
+
+                const room = {
+                    code,
+                    hostId: playerId,
+                    createdAt: Date.now(),
+                    state: 'waiting',
+                    players: new Map()
+                };
+                room.players.set(playerId, {
+                    ws,
+                    id: playerId,
+                    username: data.username || 'Piloto',
+                    selectedCar: data.selectedCar || 'roadster',
+                    isReady: false
+                });
+                mpRooms.set(code, room);
+                currentRoomCode = code;
+
+                ws.send(JSON.stringify({
+                    type: 'room_created',
+                    roomCode: code,
+                    playerId,
+                    players: getRoomSummary(room)
+                }));
+            }
+
+            // 2. Entrar em Sala Existente com Código
+            else if (data.type === 'join_room') {
+                const code = (data.roomCode || '').trim().toUpperCase();
+                const room = mpRooms.get(code);
+                if (!room) {
+                    return ws.send(JSON.stringify({ type: 'error', message: 'Sala não encontrada. Verifique o código.' }));
+                }
+                if (room.players.size >= 4) {
+                    return ws.send(JSON.stringify({ type: 'error', message: 'Esta sala já está cheia (máximo 4 pilotos).' }));
+                }
+
+                currentRoomCode = code;
+                room.players.set(playerId, {
+                    ws,
+                    id: playerId,
+                    username: data.username || 'Piloto',
+                    selectedCar: data.selectedCar || 'roadster',
+                    isReady: true
+                });
+
+                ws.send(JSON.stringify({
+                    type: 'room_joined',
+                    roomCode: code,
+                    playerId,
+                    players: getRoomSummary(room)
+                }));
+
+                broadcastToRoom(room, {
+                    type: 'player_joined',
+                    playerId,
+                    username: data.username || 'Piloto',
+                    selectedCar: data.selectedCar || 'roadster',
+                    players: getRoomSummary(room)
+                }, playerId);
+            }
+
+            // 3. Partida Rápida (Matchmaking Automático)
+            else if (data.type === 'quick_match') {
+                let foundRoom = null;
+                for (const [c, r] of mpRooms.entries()) {
+                    if (r.state === 'waiting' && r.players.size === 1) {
+                        foundRoom = r;
+                        break;
+                    }
+                }
+
+                if (foundRoom) {
+                    currentRoomCode = foundRoom.code;
+                    foundRoom.players.set(playerId, {
+                        ws,
+                        id: playerId,
+                        username: data.username || 'Piloto',
+                        selectedCar: data.selectedCar || 'roadster',
+                        isReady: true
+                    });
+
+                    ws.send(JSON.stringify({
+                        type: 'match_found',
+                        roomCode: foundRoom.code,
+                        playerId,
+                        players: getRoomSummary(foundRoom)
+                    }));
+
+                    broadcastToRoom(foundRoom, {
+                        type: 'match_found',
+                        roomCode: foundRoom.code,
+                        players: getRoomSummary(foundRoom)
+                    }, playerId);
+
+                    // Dispara a largada da corrida
+                    foundRoom.state = 'racing';
+                    setTimeout(() => {
+                        broadcastToRoom(foundRoom, {
+                            type: 'race_start',
+                            countdown: 3
+                        });
+                    }, 500);
+                } else {
+                    let code = generateRoomCode();
+                    const room = {
+                        code,
+                        hostId: playerId,
+                        createdAt: Date.now(),
+                        state: 'waiting',
+                        players: new Map()
+                    };
+                    room.players.set(playerId, {
+                        ws,
+                        id: playerId,
+                        username: data.username || 'Piloto',
+                        selectedCar: data.selectedCar || 'roadster',
+                        isReady: true
+                    });
+                    mpRooms.set(code, room);
+                    currentRoomCode = code;
+
+                    ws.send(JSON.stringify({
+                        type: 'waiting_match',
+                        roomCode: code,
+                        playerId
+                    }));
+                }
+            }
+
+            // 4. Iniciar Corrida Manual (Host da Sala)
+            else if (data.type === 'start_race') {
+                const room = mpRooms.get(currentRoomCode);
+                if (room && room.hostId === playerId) {
+                    room.state = 'racing';
+                    broadcastToRoom(room, {
+                        type: 'race_start',
+                        countdown: 3
+                    });
+                }
+            }
+
+            // 5. Telemetria em Tempo Real (Posição, Distância, Pulo, Escudo)
+            else if (data.type === 'player_state') {
+                const room = mpRooms.get(currentRoomCode);
+                if (room && room.players.has(playerId)) {
+                    broadcastToRoom(room, {
+                        type: 'rival_update',
+                        playerId,
+                        username: data.username,
+                        selectedCar: data.selectedCar,
+                        x: data.x,
+                        y: data.y,
+                        lane: data.lane,
+                        dist: data.dist,
+                        speed: data.speed,
+                        isFlying: data.isFlying,
+                        shield: data.shield,
+                        score: data.score
+                    }, playerId);
+                }
+            }
+
+            // 6. Eliminação de Piloto / Batida
+            else if (data.type === 'player_crashed') {
+                const room = mpRooms.get(currentRoomCode);
+                if (room && room.players.has(playerId)) {
+                    broadcastToRoom(room, {
+                        type: 'rival_crashed',
+                        playerId,
+                        reason: data.reason || 'Bateu no tráfego'
+                    }, playerId);
+                }
+            }
+        } catch(e) {}
+    });
+
+    ws.on('close', () => {
+        if (currentRoomCode && mpRooms.has(currentRoomCode)) {
+            const room = mpRooms.get(currentRoomCode);
+            room.players.delete(playerId);
+            if (room.players.size === 0) {
+                mpRooms.delete(currentRoomCode);
+            } else {
+                broadcastToRoom(room, {
+                    type: 'player_left',
+                    playerId,
+                    players: getRoomSummary(room)
+                });
+            }
+        }
+    });
+});
+
+// Endpoint de estatísticas multiplayer
+app.get('/api/multiplayer/stats', (req, res) => {
+    let totalPlayers = 0;
+    for (const r of mpRooms.values()) totalPlayers += r.players.size;
+    res.json({
+        success: true,
+        activeRooms: mpRooms.size,
+        activePlayers: totalPlayers
+    });
+});
+
 // Catálogo de carros para o frontend consultar
 app.get('/api/cars', (req, res) => {
     res.json({ success: true, catalog: CAR_CATALOG });
@@ -502,8 +760,8 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚗 Roadster Dash Server rodando na porta ${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚗 Roadster Dash Server + WebSocket Multiplayer rodando na porta ${PORT}`);
     console.log(`👉 Acesse localmente: http://localhost:${PORT}`);
 });
 
