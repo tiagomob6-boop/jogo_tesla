@@ -624,7 +624,8 @@
         .hud-coins-display {
             font-size: 1.05rem;
             font-weight: 900;
-            color: #fbbf24;
+            color: 
+            #fbbf24;
             display: flex;
             align-items: center;
             gap: 5px;
@@ -907,6 +908,116 @@
             color: #38bdf8;
         }
 
+        /* Indicador de Escudo Ativo no HUD */
+        .hud-shield-indicator {
+            display: inline-flex;
+            flex-direction: column;
+            gap: 3px;
+            background: rgba(6, 182, 212, 0.28);
+            border: 1px solid #22d3ee;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #22d3ee;
+            text-shadow: 0 0 8px rgba(34, 211, 238, 0.75);
+            animation: shieldPulse 1.1s infinite alternate;
+        }
+
+        .hud-shield-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(0, 0, 0, 0.55);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .hud-shield-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #22d3ee, #38bdf8);
+            border-radius: 2px;
+            transition: width 0.1s linear;
+        }
+
+        @keyframes shieldPulse {
+            0% { box-shadow: 0 0 6px rgba(34, 211, 238, 0.4); }
+            100% { box-shadow: 0 0 16px rgba(34, 211, 238, 0.9); }
+        }
+
+        /* Estilos dos Cards de Pilotos */
+        .pilot-card {
+            background: rgba(18, 12, 28, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.25s;
+            position: relative;
+            text-align: left;
+        }
+
+        .pilot-card.selected {
+            border-color: #38bdf8;
+            box-shadow: 0 0 16px rgba(56, 189, 248, 0.45);
+            background: rgba(56, 189, 248, 0.12);
+        }
+
+        .pilot-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .pilot-avatar {
+            font-size: 1.8rem;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .pilot-name {
+            font-size: 1.05rem;
+            font-weight: 900;
+            color: #ffffff;
+        }
+
+        .pilot-title {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .pilot-skill-box {
+            margin: 8px 0;
+            padding: 8px 10px;
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px dashed rgba(56, 189, 248, 0.35);
+            border-radius: 10px;
+        }
+
+        .pilot-skill-name {
+            font-size: 0.78rem;
+            font-weight: 900;
+            color: #38bdf8;
+            margin-bottom: 3px;
+        }
+
+        .pilot-skill-desc {
+            font-size: 0.72rem;
+            color: #cbd5e1;
+            line-height: 1.35;
+        }
+
         /* Leaderboard Table */
         .leaderboard-box {
             width: 100%;
@@ -1054,6 +1165,11 @@
                     <div class="speed-meta"><span id="hud-level">NÍVEL 1</span> • <span id="hud-speed-timer">30s</span></div>
                     <div class="hud-coins-display" id="hud-coins-box">🪙 <span id="hud-coins">0</span></div>
                     <div class="user-badge" id="hud-user-badge" title="Clique para alterar seu Nickname">👤 <span id="hud-username">Piloto</span></div>
+                    <div class="user-badge" id="hud-pilot-badge" style="background: rgba(56, 189, 248, 0.22); border-color: rgba(56, 189, 248, 0.5); cursor: pointer;" title="Piloto Ativo & Habilidade">🧑‍🚀 <span id="hud-pilot-name">Aria</span></div>
+                    <div class="hud-shield-indicator" id="hud-shield-indicator" style="display: none;">
+                        <div>🛡️ ESCUDO: <span id="hud-shield-timer">5.0s</span></div>
+                        <div class="hud-shield-bar"><div class="hud-shield-fill" id="hud-shield-fill"></div></div>
+                    </div>
                     <div class="hearts-box">
                         <span class="heart-badge" id="heart-1">❤️</span>
                         <span class="heart-badge empty" id="heart-2">❤️</span>
@@ -1129,29 +1245,33 @@
             <h1 class="game-title">ROADSTER DASH</h1>
             <div class="game-subtitle">SUNSET COASTAL HIGHWAY // 2077</div>
 
-            <!-- Identificação do Usuário e Saldo de Moedas no Menu -->
-            <div style="margin-bottom: 14px; display: flex; justify-content: center; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <!-- Identificação do Usuário, Saldo de Moedas e Piloto Ativo no Menu -->
+            <div style="margin-bottom: 14px; display: flex; justify-content: center; gap: 10px; align-items: center; flex-wrap: wrap;">
                 <div class="hud-coins-display" style="font-size: 1.15rem; background: rgba(0,0,0,0.3); padding: 5px 12px; border-radius: 10px; border: 1px solid rgba(251,191,36,0.3);">
                     🪙 <span id="menu-coins">0</span>
                 </div>
                 <div class="user-badge" id="menu-user-badge" style="font-size: 0.85rem; padding: 6px 14px;" title="Clique para alterar seu Nickname">
                     👤 <span id="menu-username">Piloto</span> ✏️
                 </div>
+                <div class="user-badge" id="menu-pilot-badge" style="font-size: 0.85rem; padding: 6px 14px; background: rgba(56, 189, 248, 0.2); border-color: rgba(56, 189, 248, 0.45); cursor: pointer;" title="Clique para escolher seu Piloto">
+                    🧑‍🚀 <span id="menu-pilot-name">Aria Vortex</span>
+                </div>
             </div>
 
             <div class="controls-guide">
                 <div>📱 <strong>No Celular:</strong> Use os botões ◀ ▶ para virar, ⇪ BOOST para voar e ⬇ para descer rápido (ou arraste os dedos)!</div>
                 <div>💻 <strong>No PC:</strong> Setas / A D para virar, ESPAÇO / W para voar e S para descer.</div>
-                <div>⏱️ <strong>Velocidade Contínua:</strong> A cada 30 segundos de corrida, a velocidade aumenta para o próximo nível!</div>
+                <div>🛡️ <strong>Escudos Protetores:</strong> Colete os escudos na pista para ficar invulnerável por 5s e atropelar o tráfego!</div>
+                <div>🧑‍🚀 <strong>Pilotos com Habilidades:</strong> Escolha seu piloto com bônus de turbo, super escudo, ímã de moedas ou hiper-reflexos!</div>
                 <div>🛹 <strong>Rampas de Salto:</strong> Pule sobre o trânsito com acrobacias (Barrel Roll) para ganhar bônus de ar e moedas!</div>
-                <div>🚗 <strong>Garagem & Ranking:</strong> Compre novos carros com suas moedas e dispute o Top 10 mundial!</div>
             </div>
 
             <button class="action-btn" id="start-btn" style="width: 100%;">INICIAR CORRIDA</button>
 
-            <div class="menu-btn-grid">
-                <button class="secondary-btn" id="open-garage-btn">🚗 Garagem / Loja</button>
-                <button class="secondary-btn" id="open-leaderboard-btn">🏆 Ranking Global</button>
+            <div class="menu-btn-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                <button class="secondary-btn" id="open-garage-btn">🚗 Garagem</button>
+                <button class="secondary-btn" id="open-pilot-btn">🧑‍🚀 Pilotos</button>
+                <button class="secondary-btn" id="open-leaderboard-btn">🏆 Ranking</button>
             </div>
         </div>
     </div>
@@ -1183,9 +1303,10 @@
 
             <button class="action-btn" id="restart-btn" style="width: 100%;">JOGAR NOVAMENTE</button>
 
-            <div class="menu-btn-grid">
-                <button class="secondary-btn" id="go-garage-btn">🚗 Garagem / Loja</button>
-                <button class="secondary-btn" id="go-leaderboard-btn">🏆 Ranking Global</button>
+            <div class="menu-btn-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                <button class="secondary-btn" id="go-garage-btn">🚗 Garagem</button>
+                <button class="secondary-btn" id="go-pilot-btn">🧑‍🚀 Pilotos</button>
+                <button class="secondary-btn" id="go-leaderboard-btn">🏆 Ranking</button>
             </div>
         </div>
     </div>
@@ -1237,6 +1358,27 @@
             </div>
 
             <button class="action-btn" id="close-garage-btn" style="width: 100%; margin-top: 10px;">FECHAR GARAGEM</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE SELEÇÃO DE PILOTOS COM HABILIDADES -->
+    <div class="modal-screen" id="pilot-modal">
+        <div class="glass-box modal-large-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.15); padding-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                <div>
+                    <h2 class="game-title" style="font-size: 1.7rem; margin-bottom: 2px;">PILOTOS & HABILIDADES</h2>
+                    <div class="game-subtitle" style="margin-bottom: 0;">ESCOLHA SEU PILOTO ESPECIALIZADO // 2077</div>
+                </div>
+                <div class="user-badge" id="modal-active-pilot" style="font-size: 0.85rem; background: rgba(56, 189, 248, 0.2); border-color: rgba(56, 189, 248, 0.45);">
+                    🧑‍🚀 <span id="modal-pilot-name">Aria Vortex</span>
+                </div>
+            </div>
+
+            <div class="garage-grid" id="pilot-cards-container">
+                <!-- Cards dos pilotos renderizados dinamicamente pelo JS -->
+            </div>
+
+            <button class="action-btn" id="close-pilot-btn" style="width: 100%; margin-top: 10px;">CONFIRMAR PILOTO</button>
         </div>
     </div>
 
@@ -1449,6 +1591,20 @@
                     setTimeout(() => this.playTone(f, "sine", 0.12, 0.08), i * 60);
                 });
             }
+
+            playShield() {
+                if (!this.enabled || !this.ctx) return;
+                const notes = [392.00, 523.25, 659.25, 783.99, 1046.50, 1318.51];
+                notes.forEach((f, i) => {
+                    setTimeout(() => this.playTone(f, "sine", 0.16, 0.07), i * 42);
+                });
+            }
+
+            playShieldSmash() {
+                if (!this.enabled || !this.ctx) return;
+                this.playTone(140, "sawtooth", 0.22, 0.22);
+                this.playTone(480, "triangle", 0.28, 0.16);
+            }
         }
 
         // =====================================================================
@@ -1494,6 +1650,68 @@
                 tag: 'Hipervelocidade (+Score)',
                 desc: 'Hipercarro dourado reluzente com escapamento quádruplo.',
                 bonus: '+15% de Velocidade e +35% de Pontuação!'
+            }
+        };
+
+        // =====================================================================
+        // CATÁLOGO OFICIAL DE PILOTOS COM HABILIDADES ESPECIAIS
+        // =====================================================================
+        const PILOT_CATALOG = {
+            aria: {
+                id: 'aria',
+                name: 'Aria "Vortex" Vance',
+                title: 'Mestre da Propulsão',
+                avatar: '⚡',
+                theme: '#38bdf8',
+                desc: 'Piloto prodígio especialista em aerodinâmica e voo supersônico.',
+                skill: 'Turbo Criogênico',
+                skillName: 'Turbo Criogênico',
+                perkDesc: 'O Tanque de Ar recarrega 40% mais rápido e manobras em rampas (Barrel Roll) dão +50% de impulso.',
+                skillDesc: 'O Tanque de Ar recarrega 40% mais rápido e manobras em rampas (Barrel Roll) dão +50% de impulso.',
+                perk: { airRechargeMult: 1.4, rampBoostMult: 1.5 },
+                perks: { airRechargeMult: 1.4, rampBoostMult: 1.5 }
+            },
+            rex: {
+                id: 'rex',
+                name: 'Rex "Titan" Steele',
+                title: 'Especialista em Blindagem',
+                avatar: '🛡️',
+                theme: '#10b981',
+                desc: 'Veterano de demolição com instintos de combate pesado na estrada.',
+                skill: 'Super Escudo',
+                skillName: 'Super Escudo',
+                perkDesc: 'Escudos de invencibilidade duram 8 segundos (+3s) e bater em carros com escudo dá o dobro de pontos (+600).',
+                skillDesc: 'Escudos de invencibilidade duram 8 segundos (+3s) e bater em carros com escudo dá o dobro de pontos (+600).',
+                perk: { shieldDurationBonus: 3.0, shieldBonusDuration: 3.0, shieldSmashBonus: 2.0, smashBonus: 600 },
+                perks: { shieldDurationBonus: 3.0, shieldBonusDuration: 3.0, shieldSmashBonus: 2.0, smashBonus: 600 }
+            },
+            luna: {
+                id: 'luna',
+                name: 'Luna "Magnet" Nova',
+                title: 'Caçadora de Recompensas',
+                avatar: '🧲',
+                theme: '#fbbf24',
+                desc: 'Engenheira cyberpunk armada com drones de atração magnética.',
+                skill: 'Ímã de Moedas',
+                skillName: 'Ímã de Moedas',
+                perkDesc: 'Atrai moedas automaticamente em até 8.5 metros de raio e dá bônus de +20% em todas as moedas ganhas.',
+                skillDesc: 'Atrai moedas automaticamente em até 8.5 metros de raio e dá bônus de +20% em todas as moedas ganhas.',
+                perk: { coinMagnetRadius: 8.5, coinMagnetRange: 8.5, coinBonusMult: 1.2 },
+                perks: { coinMagnetRadius: 8.5, coinMagnetRange: 8.5, coinBonusMult: 1.2 }
+            },
+            zero: {
+                id: 'zero',
+                name: 'Zero "CyberGhost"',
+                title: 'Fantasma do Asfalto',
+                avatar: '👻',
+                theme: '#c084fc',
+                desc: 'Hacker clandestino das rodovias com reflexos neurais acelerados.',
+                skill: 'Hiper-Reflexos',
+                skillName: 'Hiper-Reflexos',
+                perkDesc: 'Invulnerabilidade após dano dura 3.2s e raspões de trânsito (Near Miss) dão o triplo de pontos (+225) e recarregam ar.',
+                skillDesc: 'Invulnerabilidade após dano dura 3.2s e raspões de trânsito (Near Miss) dão o triplo de pontos (+225) e recarregam ar.',
+                perk: { invulnDuration: 3.2, nearMissMult: 3.0, nearMissBonus: 225, nearMissAir: 15 },
+                perks: { invulnDuration: 3.2, nearMissMult: 3.0, nearMissBonus: 225, nearMissAir: 15 }
             }
         };
 
@@ -1556,6 +1774,13 @@
                 this.soundBtn = document.getElementById("sound-btn");
                 this.pauseBtn = document.getElementById("pause-btn");
 
+                // HUD & Piloto
+                this.hudPilotBadge = document.getElementById("hud-pilot-badge");
+                this.hudPilotName = document.getElementById("hud-pilot-name");
+                this.hudShieldIndicator = document.getElementById("hud-shield-indicator");
+                this.hudShieldTimer = document.getElementById("hud-shield-timer");
+                this.hudShieldFill = document.getElementById("hud-shield-fill");
+
                 // Telas e Menus
                 this.startScreen = document.getElementById("start-screen");
                 this.gameoverScreen = document.getElementById("gameover-screen");
@@ -1564,9 +1789,13 @@
                 this.menuCoins = document.getElementById("menu-coins");
                 this.menuUsername = document.getElementById("menu-username");
                 this.menuUserBadge = document.getElementById("menu-user-badge");
+                this.menuPilotBadge = document.getElementById("menu-pilot-badge");
+                this.menuPilotName = document.getElementById("menu-pilot-name");
                 this.openGarageBtn = document.getElementById("open-garage-btn");
+                this.openPilotBtn = document.getElementById("open-pilot-btn");
                 this.openLeaderboardBtn = document.getElementById("open-leaderboard-btn");
                 this.goGarageBtn = document.getElementById("go-garage-btn");
+                this.goPilotBtn = document.getElementById("go-pilot-btn");
                 this.goLeaderboardBtn = document.getElementById("go-leaderboard-btn");
                 this.goScore = document.getElementById("go-score");
                 this.goDist = document.getElementById("go-dist");
@@ -1587,6 +1816,12 @@
                 this.garageCardsContainer = document.getElementById("garage-cards-container");
                 this.closeGarageBtn = document.getElementById("close-garage-btn");
 
+                this.pilotModal = document.getElementById("pilot-modal");
+                this.pilotCardsContainer = document.getElementById("pilot-cards-container");
+                this.closePilotBtn = document.getElementById("close-pilot-btn");
+                this.modalActivePilot = document.getElementById("modal-active-pilot");
+                this.modalPilotName = document.getElementById("modal-pilot-name");
+
                 this.leaderboardModal = document.getElementById("leaderboard-modal");
                 this.leaderboardListContainer = document.getElementById("leaderboard-list-container");
                 this.closeLeaderboardBtn = document.getElementById("close-leaderboard-btn");
@@ -1601,6 +1836,15 @@
                 this.lives = 1;
                 this.maxLives = 3;
                 this.invulnerableTimer = 0;
+
+                // Sistema de Escudo de Invencibilidade (5s)
+                this.shieldTimer = 0;
+                this.shieldMaxDuration = 5.0;
+                this.shieldBubble = null;
+
+                // Sistema de Piloto Selecionado
+                this.selectedPilot = localStorage.getItem("roadster_selected_pilot") || "aria";
+                this.activePilotPerks = (PILOT_CATALOG[this.selectedPilot] || PILOT_CATALOG.aria).perks || {};
 
                 // Sistema de Velocidade a Cada 30 Segundos
                 this.speedIntervalDuration = 30.0;
@@ -1664,6 +1908,7 @@
                 this.buildPlayerVehicle(this.selectedCar);
                 this.initControls();
                 this.initEventListeners();
+                this.renderPilotCards();
                 this.initUserData();
             }
 
@@ -2435,6 +2680,25 @@
                     );
                 }
 
+                // Bolha de Força do Escudo Protetor (Forcefield translúcido pulsante em volta do carro)
+                const shieldBubbleGeo = new THREE.SphereGeometry(2.35, 24, 16);
+                shieldBubbleGeo.scale(1.08, 0.65, 1.36);
+                const shieldBubbleMat = new THREE.MeshStandardMaterial({
+                    color: 0x00f0ff,
+                    emissive: 0x00d4ff,
+                    emissiveIntensity: 0.85,
+                    transparent: true,
+                    opacity: 0.0,
+                    roughness: 0.1,
+                    metalness: 0.85,
+                    side: THREE.DoubleSide,
+                    depthWrite: false
+                });
+                this.shieldBubble = new THREE.Mesh(shieldBubbleGeo, shieldBubbleMat);
+                this.shieldBubble.position.set(0, 0.65, 0);
+                this.shieldBubble.visible = this.shieldTimer > 0;
+                this.truckGroup.add(this.shieldBubble);
+
                 this.scene.add(this.truckGroup);
                 this.truckGroup.position.set(this.playerX, this.playerY, 0);
 
@@ -2520,6 +2784,11 @@
                 for (let i = 0; i < count; i++) {
                     const laneIndex = lanesToSpawn[i];
                     const laneX = LANES[laneIndex];
+                    const spawnZ = -160 - (Math.random() * 40);
+
+                    // Impede spawn de carros sobre ou dentro de rampas existentes
+                    const rampInLane = this.ramps.some(r => Math.abs(r.position.x - laneX) < 1.6 && Math.abs(r.position.z - spawnZ) < 32.0);
+                    if (rampInLane) continue;
 
                     const carGroup = new THREE.Group();
                     const colors = [0xd97736, 0xdfe3ea, 0x1e2029, 0xb83838];
@@ -2544,7 +2813,6 @@
                     carGroup.add(hl1);
                     carGroup.add(hl2);
 
-                    const spawnZ = -160 - (Math.random() * 40);
                     carGroup.position.set(laneX, 0, spawnZ);
 
                     carGroup.trafficSpeed = Math.random() * 16 + 20;
@@ -2665,13 +2933,27 @@
             }
 
             spawnRamp() {
-                const laneIndex = Math.floor(Math.random() * 3);
-                const laneX = LANES[laneIndex];
+                // Escolhe faixa desobstruída para a rampa
+                let laneIndex = Math.floor(Math.random() * 3);
+                let laneX = LANES[laneIndex];
                 const spawnZ = -175 - (Math.random() * 25);
+
+                const blocked = this.trafficCars.some(c => Math.abs(c.position.x - laneX) < 1.6 && Math.abs(c.position.z - spawnZ) < 30.0);
+                if (blocked) {
+                    const clearLanes = [0, 1, 2].filter(idx => !this.trafficCars.some(c => Math.abs(c.position.x - LANES[idx]) < 1.6 && Math.abs(c.position.z - spawnZ) < 30.0));
+                    if (clearLanes.length > 0) {
+                        laneIndex = clearLanes[Math.floor(Math.random() * clearLanes.length)];
+                        laneX = LANES[laneIndex];
+                    }
+                }
+
                 this.createRamp(laneX, spawnZ);
 
-                // Gera carro logo atrás da rampa para proporcionar salto épico sobre o veículo
+                // Carros nunca devem ser gerados na mesma faixa da rampa para não atravessá-la
                 if (Math.random() < 0.65) {
+                    const adjLanes = LANES.filter(lx => lx !== laneX);
+                    const carLaneX = adjLanes[Math.floor(Math.random() * adjLanes.length)];
+
                     const carGroup = new THREE.Group();
                     const colors = [0xd97736, 0xdfe3ea, 0xb83838];
                     const chosenColor = colors[Math.floor(Math.random() * colors.length)];
@@ -2686,7 +2968,7 @@
                     cabin.position.set(0, 0.9, -0.2);
                     carGroup.add(cabin);
 
-                    carGroup.position.set(laneX, 0, spawnZ - 20);
+                    carGroup.position.set(carLaneX, 0, spawnZ - 8);
                     carGroup.trafficSpeed = Math.random() * 12 + 18;
                     carGroup.boxHeight = 1.4;
                     carGroup.obstacleType = "ground_car";
@@ -2794,7 +3076,7 @@
 
                 const rand = Math.random();
 
-                if (rand < 0.04 && this.lives < this.maxLives) {
+                if (rand < 0.05 && this.lives < this.maxLives) {
                     const heartGroup = new THREE.Group();
                     const heartShape = new THREE.Shape();
                     const x = 0, y = 0;
@@ -2818,6 +3100,60 @@
                     heartGroup.itemType = "heart";
                     this.scene.add(heartGroup);
                     this.collectibles.push(heartGroup);
+
+                } else if (rand >= 0.05 && rand < 0.18 && this.shieldTimer <= 0) {
+                    // Escudo Protetor de Invencibilidade (5s)
+                    const shieldGroup = new THREE.Group();
+                    
+                    const shieldShape = new THREE.Shape();
+                    shieldShape.moveTo(0, 0.65);
+                    shieldShape.lineTo(0.55, 0.35);
+                    shieldShape.lineTo(0.55, -0.2);
+                    shieldShape.lineTo(0, -0.65);
+                    shieldShape.lineTo(-0.55, -0.2);
+                    shieldShape.lineTo(-0.55, 0.35);
+                    shieldShape.closePath();
+
+                    const shieldGeo = new THREE.ExtrudeGeometry(shieldShape, {
+                        steps: 1, depth: 0.16, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.05
+                    });
+                    shieldGeo.center();
+
+                    const shieldMat = new THREE.MeshStandardMaterial({
+                        color: 0x00f0ff,
+                        emissive: 0x0099ff,
+                        emissiveIntensity: 0.55,
+                        metalness: 0.9,
+                        roughness: 0.25
+                    });
+                    const shieldMesh = new THREE.Mesh(shieldGeo, shieldMat);
+                    shieldGroup.add(shieldMesh);
+
+                    // Emblema interno de cruz luminosa
+                    const starGeo = new THREE.BoxGeometry(0.16, 0.52, 0.22);
+                    const starMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                    const s1 = new THREE.Mesh(starGeo, starMat);
+                    const s2 = s1.clone();
+                    s2.rotation.z = Math.PI / 2;
+                    shieldGroup.add(s1);
+                    shieldGroup.add(s2);
+
+                    // Anel orbital de proteção
+                    const ringGeo = new THREE.TorusGeometry(0.85, 0.04, 8, 24);
+                    const ringMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+                    const ring = new THREE.Mesh(ringGeo, ringMat);
+                    ring.rotation.x = Math.PI / 3;
+                    shieldGroup.add(ring);
+                    shieldGroup.ring = ring;
+
+                    // Halo suave de brilho ciano
+                    const glow = this.makeGlow(0x00f0ff, 1.3, 0.35);
+                    shieldGroup.add(glow);
+
+                    shieldGroup.position.set(laneX, 1.4, spawnZ);
+                    shieldGroup.itemType = "shield";
+                    this.scene.add(shieldGroup);
+                    this.collectibles.push(shieldGroup);
 
                 } else {
                     const count = 4;
@@ -3172,6 +3508,20 @@
                         this.registerUser(val);
                     });
                 }
+
+                // Botões de Seleção de Pilotos
+                const openPilotModal = () => {
+                    this.sound.init();
+                    this.renderPilotCards();
+                    this.pilotModal.classList.add("active");
+                };
+                if (this.openPilotBtn) this.openPilotBtn.addEventListener("click", openPilotModal);
+                if (this.goPilotBtn) this.goPilotBtn.addEventListener("click", openPilotModal);
+                if (this.menuPilotBadge) this.menuPilotBadge.addEventListener("click", openPilotModal);
+                if (this.hudPilotBadge) this.hudPilotBadge.addEventListener("click", openPilotModal);
+                if (this.closePilotBtn) this.closePilotBtn.addEventListener("click", () => {
+                    this.pilotModal.classList.remove("active");
+                });
             }
 
             startGame() {
@@ -3180,6 +3530,7 @@
                 this.garageModal.classList.remove("active");
                 this.leaderboardModal.classList.remove("active");
                 this.userModal.classList.remove("active");
+                if (this.pilotModal) this.pilotModal.classList.remove("active");
 
                 this.isRunning = true;
                 this.isPaused = false;
@@ -3188,6 +3539,15 @@
                 this.coinsCollected = 0;
                 this.coinsEarnedThisRun = 0;
                 this.invulnerableTimer = 0;
+                this.shieldTimer = 0;
+                this.shieldMaxDuration = 5.0;
+                if (this.shieldBubble) this.shieldBubble.visible = false;
+                if (this.hudShieldIndicator) this.hudShieldIndicator.style.display = "none";
+
+                // Carrega perks do piloto ativo
+                this.activePilotPerks = (PILOT_CATALOG[this.selectedPilot] && PILOT_CATALOG[this.selectedPilot].perk) || PILOT_CATALOG.aria.perk;
+                this.airRechargeRate = 18.0 * (this.activePilotPerks.airRechargeMult || 1.0);
+
                 this.resetStreak();
                 if (this.comboFeed) this.comboFeed.querySelectorAll(".combo-item").forEach(el => el.remove());
                 
@@ -3487,6 +3847,11 @@
                 if (this.hudCoins) this.hudCoins.textContent = this.totalCoins.toLocaleString();
                 if (this.menuCoins) this.menuCoins.textContent = this.totalCoins.toLocaleString();
                 if (this.garageCoinsVal) this.garageCoinsVal.textContent = this.totalCoins.toLocaleString();
+
+                const pilot = PILOT_CATALOG[this.selectedPilot] || PILOT_CATALOG.aria;
+                if (this.hudPilotName) this.hudPilotName.textContent = pilot.name;
+                if (this.menuPilotName) this.menuPilotName.textContent = pilot.name;
+                if (this.modalPilotName) this.modalPilotName.textContent = pilot.name;
             }
 
             async registerUser(newUsername) {
@@ -3805,7 +4170,101 @@
                 }
             }
 
+            activateShield(duration = 5.0) {
+                const bonus = (this.activePilotPerks && this.activePilotPerks.shieldBonusDuration) || 0;
+                this.shieldMaxDuration = duration + bonus;
+                this.shieldTimer = this.shieldMaxDuration;
+                if (this.shieldBubble) {
+                    this.shieldBubble.visible = true;
+                    this.shieldBubble.material.opacity = 0.55;
+                }
+                if (this.hudShieldIndicator) {
+                    this.hudShieldIndicator.style.display = "inline-flex";
+                    if (this.hudShieldTimer) this.hudShieldTimer.textContent = `${this.shieldMaxDuration.toFixed(1)}s`;
+                    if (this.hudShieldFill) this.hudShieldFill.style.width = "100%";
+                }
+                this.sound.playShield();
+                this.triggerActionPopup(`🛡️ ESCUDO DE FORÇA (${this.shieldMaxDuration.toFixed(0)}s)!`);
+            }
+
+            smashTrafficCar(car) {
+                car.isSmashed = true;
+                const side = (car.position.x - this.truckGroup.position.x) >= 0 ? 1 : -1;
+                car.smashVelocity = new THREE.Vector3(
+                    side * (16.0 + Math.random() * 8.0),
+                    14.0 + Math.random() * 8.0,
+                    -12.0 - Math.random() * 14.0
+                );
+                car.smashRot = new THREE.Vector3(
+                    Math.random() * 12 - 6,
+                    Math.random() * 14 - 7,
+                    Math.random() * 10 - 5
+                );
+                const pts = (this.activePilotPerks && this.activePilotPerks.smashBonus) || 300;
+                this.addScoreEvent("SHIELD SMASH!", pts, true);
+                this.sound.playShieldSmash();
+                this.sound.playCrash();
+            }
+
+            renderPilotCards() {
+                const container = this.pilotCardsContainer;
+                if (!container) return;
+                container.innerHTML = "";
+
+                Object.values(PILOT_CATALOG).forEach(pilot => {
+                    const card = document.createElement("div");
+                    const isSelected = this.selectedPilot === pilot.id;
+                    card.className = `pilot-card ${isSelected ? 'selected' : ''}`;
+
+                    const btnHTML = isSelected 
+                        ? '<button class="car-action-btn btn-disabled">EM COMANDO</button>'
+                        : `<button class="car-action-btn btn-equip" data-pilot="${pilot.id}">SELECIONAR</button>`;
+
+                    card.innerHTML = `
+                        <div>
+                            <div class="pilot-card-header">
+                                <div class="pilot-avatar">${pilot.avatar}</div>
+                                <div>
+                                    <div class="pilot-name">${pilot.name}</div>
+                                    <div class="pilot-title">${pilot.title}</div>
+                                </div>
+                            </div>
+                            <div class="car-desc">${pilot.desc}</div>
+                            <div class="pilot-skill-box">
+                                <div class="pilot-skill-name">⚡ ${pilot.skill}</div>
+                                <div class="pilot-skill-desc">${pilot.perkDesc}</div>
+                            </div>
+                        </div>
+                        <div class="car-footer" style="margin-top: 10px;">
+                            <span style="font-size: 0.72rem; color: #38bdf8; font-weight: 800;">HABILIDADE PASSIVA</span>
+                            ${btnHTML}
+                        </div>
+                    `;
+
+                    const selectBtn = card.querySelector(".btn-equip");
+                    if (selectBtn) {
+                        selectBtn.addEventListener("click", () => this.selectPilot(pilot.id));
+                    }
+
+                    container.appendChild(card);
+                });
+            }
+
+            selectPilot(pilotId) {
+                if (!PILOT_CATALOG[pilotId]) return;
+                this.selectedPilot = pilotId;
+                localStorage.setItem("roadster_selected_pilot", pilotId);
+                this.activePilotPerks = PILOT_CATALOG[pilotId].perk;
+                this.airRechargeRate = 18.0 * (this.activePilotPerks.airRechargeMult || 1.0);
+                this.sound.playHeart();
+                this.updateUserUI();
+                this.renderPilotCards();
+                this.triggerActionPopup(`PILOTO: ${PILOT_CATALOG[pilotId].name}!`);
+            }
+
             takeDamage(reason) {
+                // Escudo Protetor absorve qualquer impacto ou colisão
+                if (this.shieldTimer > 0) return;
                 if (this.invulnerableTimer > 0) return;
 
                 this.lives--;
@@ -3817,7 +4276,7 @@
                 if (this.lives <= 0) {
                     this.gameOver(reason);
                 } else {
-                    this.invulnerableTimer = 1.8;
+                    this.invulnerableTimer = (this.activePilotPerks && this.activePilotPerks.invulnDuration) || 1.8;
                 }
             }
 
@@ -4092,6 +4551,35 @@
                     if (this.playerShadow) this.playerShadow.visible = true;
                 }
 
+                // Atualização e Contagem do Escudo de Invencibilidade
+                if (this.shieldTimer > 0) {
+                    this.shieldTimer -= delta;
+                    if (this.shieldBubble) {
+                        this.shieldBubble.visible = true;
+                        this.shieldBubble.rotation.y += 2.8 * delta;
+                        this.shieldBubble.rotation.z += 1.6 * delta;
+                        if (this.shieldTimer < 1.5) {
+                            const blink = Math.floor(performance.now() / 90) % 2 === 0;
+                            this.shieldBubble.material.opacity = blink ? 0.65 : 0.15;
+                        } else {
+                            this.shieldBubble.material.opacity = 0.42 + Math.sin(performance.now() * 0.008) * 0.18;
+                        }
+                    }
+                    if (this.hudShieldIndicator) {
+                        this.hudShieldIndicator.style.display = "inline-flex";
+                        if (this.hudShieldTimer) this.hudShieldTimer.textContent = `${this.shieldTimer.toFixed(1)}s`;
+                        if (this.hudShieldFill) {
+                            const pct = Math.max(0, (this.shieldTimer / this.shieldMaxDuration) * 100);
+                            this.hudShieldFill.style.width = `${pct}%`;
+                        }
+                    }
+                    if (this.shieldTimer <= 0) {
+                        this.shieldTimer = 0;
+                        if (this.shieldBubble) this.shieldBubble.visible = false;
+                        if (this.hudShieldIndicator) this.hudShieldIndicator.style.display = "none";
+                    }
+                }
+
                 // 7. SPAWNERS DINÂMICOS COM DIFICULDADE CRESCENTE
                 this.trafficSpawnTimer -= delta;
                 if (this.trafficSpawnTimer <= 0) {
@@ -4120,13 +4608,69 @@
                 // 8. Atualizar Tráfego Terrestre
                 for (let i = this.trafficCars.length - 1; i >= 0; i--) {
                     const car = this.trafficCars[i];
+
+                    // Carros arremessados pelo Escudo (Shield Smash)
+                    if (car.isSmashed) {
+                        car.position.x += car.smashVelocity.x * delta;
+                        car.position.y += car.smashVelocity.y * delta;
+                        car.position.z += car.smashVelocity.z * delta;
+                        car.rotation.x += car.smashRot.x * delta;
+                        car.rotation.y += car.smashRot.y * delta;
+                        car.rotation.z += car.smashRot.z * delta;
+                        if (car.position.z > 35 || car.position.y > 40 || Math.abs(car.position.x) > 25) {
+                            this.scene.remove(car);
+                            this.trafficCars.splice(i, 1);
+                        }
+                        continue;
+                    }
+
                     car.position.z += (this.currentSpeed + car.trafficSpeed) * delta;
 
-                    // Se estiver em salto alto de rampa ou voando, o carro pula por cima do tráfego sem colidir!
-                    if (this.invulnerableTimer <= 0 && this.playerY < car.boxHeight) {
-                        const distToCarX = Math.abs(this.truckGroup.position.x - car.position.x);
-                        const distToCarZ = Math.abs(this.truckGroup.position.z - car.position.z);
+                    // IA ANTICOLISÃO E BLOQUEIO FÍSICO COM RAMPAS (Carros NUNCA atravessam rampas!)
+                    for (const ramp of this.ramps) {
+                        const latDist = Math.abs(car.position.x - ramp.position.x);
+                        const relZ = ramp.position.z - car.position.z;
 
+                        // Se a rampa estiver na mesma faixa e à frente do carro: IA desvia para outra faixa
+                        if (latDist < 1.4 && relZ > 0 && relZ < 50.0) {
+                            if (car.targetLaneX === undefined || Math.abs(car.targetLaneX - ramp.position.x) < 0.5) {
+                                const altLanes = LANES.filter(lx => Math.abs(lx - ramp.position.x) > 1.4);
+                                if (altLanes.length > 0) {
+                                    altLanes.sort((a, b) => Math.abs(a - car.position.x) - Math.abs(b - car.position.x));
+                                    car.targetLaneX = altLanes[0];
+                                }
+                            }
+                        }
+
+                        // Barreira Física Impenetrável: se o carro tocar na rampa, é repelido imediatamente
+                        const currRelZ = Math.abs(car.position.z - ramp.position.z);
+                        if (latDist < ramp.halfW + 0.6 && currRelZ < ramp.halfL + 1.2) {
+                            const pushDir = car.position.x >= ramp.position.x ? 1 : -1;
+                            car.position.x = ramp.position.x + (ramp.halfW + 0.75) * pushDir;
+                        }
+                    }
+
+                    // Interpolação de desvio da IA
+                    if (car.targetLaneX !== undefined) {
+                        car.position.x += (car.targetLaneX - car.position.x) * Math.min(1.0, 5.0 * delta);
+                        if (Math.abs(car.position.x - car.targetLaneX) < 0.05) {
+                            car.position.x = car.targetLaneX;
+                            delete car.targetLaneX;
+                        }
+                    }
+
+                    // COLISÃO COM O CARRO DO JOGADOR
+                    const distToCarX = Math.abs(this.truckGroup.position.x - car.position.x);
+                    const distToCarZ = Math.abs(this.truckGroup.position.z - car.position.z);
+
+                    // Se o jogador estiver com Escudo Ativo: DESTRÓI E ARREMESSA O CARRO DO TRÂNSITO!
+                    if (this.shieldTimer > 0) {
+                        if (distToCarX < 2.0 && distToCarZ < 3.8) {
+                            this.smashTrafficCar(car);
+                            continue;
+                        }
+                    } else if (this.invulnerableTimer <= 0 && this.playerY < car.boxHeight) {
+                        // Se estiver em salto alto de rampa ou voando, o carro pula por cima do tráfego sem colidir!
                         if (distToCarX < 1.7 && distToCarZ < 3.4) {
                             this.takeDamage("COLISÃO COM VEÍCULO NO TRÁFEGO");
                         }
@@ -4137,7 +4681,11 @@
                         car.passed = true;
                         const dX = Math.abs(this.truckGroup.position.x - car.position.x);
                         if (this.invulnerableTimer <= 0 && !this.isFlying && this.playerY < car.boxHeight + 0.5 && dX >= 1.7 && dX < 4.3) {
-                            this.addScoreEvent("NEAR MISS", 75);
+                            const pts = (this.activePilotPerks && this.activePilotPerks.nearMissBonus) || 75;
+                            this.addScoreEvent("NEAR MISS", pts);
+                            if (this.activePilotPerks && this.activePilotPerks.nearMissAir) {
+                                this.airLiters = Math.min(this.maxAirLiters, this.airLiters + this.activePilotPerks.nearMissAir);
+                            }
                         }
                     }
 
@@ -4187,6 +4735,16 @@
                     const item = this.collectibles[i];
                     item.position.z += this.currentSpeed * delta;
 
+                    // Ímã Magnético de Moedas (Habilidade da Pilota Luna)
+                    if (this.activePilotPerks && this.activePilotPerks.coinMagnetRange && item.itemType === "coin") {
+                        const pPos = this.truckGroup.position;
+                        const d3 = pPos.distanceTo(item.position);
+                        if (d3 < this.activePilotPerks.coinMagnetRange) {
+                            item.position.x += (pPos.x - item.position.x) * Math.min(1.0, 7.8 * delta);
+                            item.position.y += (pPos.y - item.position.y) * Math.min(1.0, 7.8 * delta);
+                        }
+                    }
+
                     if (item.itemType === "coin") {
                         // Rotação no próprio eixo Z (face redonda fica SEMPRE 100% voltada ao jogador, nunca vira palito!)
                         item.rotation.z += 2.6 * delta;
@@ -4201,6 +4759,9 @@
                         if (item.baseY !== undefined) {
                             item.position.y = item.baseY + Math.sin(performance.now() * 0.004 + item.position.z * 0.15) * 0.14;
                         }
+                    } else if (item.itemType === "shield") {
+                        item.rotation.y += 2.8 * delta;
+                        if (item.ring) item.ring.rotation.z += 3.2 * delta;
                     } else {
                         item.rotation.y += 2.5 * delta;
                     }
@@ -4208,12 +4769,17 @@
                     const dist = this.truckGroup.position.distanceTo(item.position);
                     if (dist < 2.2) {
                         if (item.itemType === "coin") {
+                            const bonus = (this.activePilotPerks && this.activePilotPerks.coinBonusMult) || 1.0;
+                            const coinEarned = Math.max(1, Math.round(1 * bonus));
                             this.coinsCollected++;
-                            this.coinsEarnedThisRun++;
+                            this.coinsEarnedThisRun += coinEarned;
                             this.addScoreEvent("COIN", 150);
                             this.sound.playCoin();
                         } else if (item.itemType === "heart") {
                             this.addHeart();
+                        } else if (item.itemType === "shield") {
+                            this.activateShield(5.0);
+                            this.addScoreEvent("SHIELD ONLINE", 250);
                         }
 
                         this.scene.remove(item);
