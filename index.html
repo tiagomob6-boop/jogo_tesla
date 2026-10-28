@@ -2544,6 +2544,7 @@
                 title: 'Mestre da Propulsão',
                 avatar: '⚡',
                 theme: '#38bdf8',
+                price: 0, // Grátis / Inicial
                 desc: 'Piloto prodígio especialista em aerodinâmica e voo supersônico.',
                 skill: 'Turbo Criogênico',
                 skillName: 'Turbo Criogênico',
@@ -2558,6 +2559,7 @@
                 title: 'Especialista em Blindagem',
                 avatar: '🛡️',
                 theme: '#10b981',
+                price: 350,
                 desc: 'Veterano de demolição com instintos de combate pesado na estrada.',
                 skill: 'Super Escudo',
                 skillName: 'Super Escudo',
@@ -2572,6 +2574,7 @@
                 title: 'Caçadora de Recompensas',
                 avatar: '🧲',
                 theme: '#fbbf24',
+                price: 600,
                 desc: 'Engenheira cyberpunk armada com drones de atração magnética.',
                 skill: 'Ímã de Moedas',
                 skillName: 'Ímã de Moedas',
@@ -2586,6 +2589,7 @@
                 title: 'Fantasma do Asfalto',
                 avatar: '👻',
                 theme: '#c084fc',
+                price: 900,
                 desc: 'Hacker clandestino das rodovias com reflexos neurais acelerados.',
                 skill: 'Hiper-Reflexos',
                 skillName: 'Hiper-Reflexos',
@@ -2887,8 +2891,14 @@
                 this.paySimulateBtn = document.getElementById("pay-simulate-btn");
                 this.currentPendingPackage = null;
 
-                // Sistema de Piloto Selecionado
+                // Sistema de Piloto Selecionado e Desbloqueios por Moedas
                 this.selectedPilot = localStorage.getItem("roadster_selected_pilot") || "aria";
+                let savedUnlockedPilots = ['aria'];
+                try {
+                    const parsedPilots = JSON.parse(localStorage.getItem("roadster_unlocked_pilots") || "[\"aria\"]");
+                    if (Array.isArray(parsedPilots)) savedUnlockedPilots = parsedPilots;
+                } catch(e) {}
+                this.unlockedPilots = savedUnlockedPilots;
                 this.activePilotPerks = (PILOT_CATALOG[this.selectedPilot] || PILOT_CATALOG.aria).perks || {};
 
                 // Sistema de Velocidade a Cada 30 Segundos
@@ -3423,11 +3433,11 @@
 
                 ctx.clearRect(0, 0, 512, 512);
 
-                // Fundo ultra-translúcido cristalino para máxima visibilidade do carro no interior do escudo
+                // Fundo escuro azul-noite cibernético para conferir tom escuro e proteger a visibilidade do carro
                 const bgGrad = ctx.createRadialGradient(256, 256, 40, 256, 256, 360);
-                bgGrad.addColorStop(0, "rgba(8, 28, 64, 0.08)");
-                bgGrad.addColorStop(0.6, "rgba(3, 14, 36, 0.05)");
-                bgGrad.addColorStop(1, "rgba(1, 6, 18, 0.02)");
+                bgGrad.addColorStop(0, "rgba(6, 18, 38, 0.45)");
+                bgGrad.addColorStop(0.6, "rgba(4, 12, 28, 0.40)");
+                bgGrad.addColorStop(1, "rgba(2, 7, 18, 0.35)");
                 ctx.fillStyle = bgGrad;
                 ctx.fillRect(0, 0, 512, 512);
 
@@ -3442,11 +3452,11 @@
                         pts.push({ x: cx + s * Math.cos(a), y: cy + s * Math.sin(a) });
                     }
 
-                    // Preenchimento interno translúcido (quase transparente como vidro de energia)
+                    // Preenchimento interno translúcido fumê escuro azulado
                     const hexGrad = ctx.createRadialGradient(cx, cy, 3, cx, cy, s);
-                    hexGrad.addColorStop(0, "rgba(14, 165, 233, 0.12)");
-                    hexGrad.addColorStop(0.65, "rgba(2, 60, 130, 0.08)");
-                    hexGrad.addColorStop(1, "rgba(1, 16, 45, 0.03)");
+                    hexGrad.addColorStop(0, "rgba(12, 38, 70, 0.35)");
+                    hexGrad.addColorStop(0.65, "rgba(6, 22, 45, 0.38)");
+                    hexGrad.addColorStop(1, "rgba(2, 9, 22, 0.45)");
                     ctx.fillStyle = hexGrad;
                     ctx.beginPath();
                     ctx.moveTo(pts[0].x, pts[0].y);
@@ -3890,38 +3900,38 @@
                     );
                 }
 
-                // Bolha de Força do Escudo Protetor (Mais compacto, rente à lataria e com alta transparência para visualização perfeita do carro)
+                // Bolha de Força do Escudo Protetor (Mais escuro, fumê e compacto sobre a lataria do carro)
                 const shieldBubbleGeo = new THREE.SphereGeometry(1.5, 32, 20);
                 shieldBubbleGeo.scale(0.98, 0.55, 1.22);
                 const honeycombTex = this.getHoneycombShieldTexture();
                 const shieldBubbleMat = new THREE.MeshStandardMaterial({
                     map: honeycombTex,
                     emissiveMap: honeycombTex,
-                    color: 0x88ccff,
-                    emissive: 0x38bdf8,
-                    emissiveIntensity: 0.65,
+                    color: 0x071b30,
+                    emissive: 0x1d4e7d,
+                    emissiveIntensity: 0.52,
                     transparent: true,
                     opacity: 0.0,
-                    roughness: 0.1,
-                    metalness: 0.3,
+                    roughness: 0.25,
+                    metalness: 0.7,
                     side: THREE.DoubleSide,
                     depthWrite: false,
-                    blending: THREE.AdditiveBlending
+                    blending: THREE.NormalBlending
                 });
                 this.shieldBubble = new THREE.Mesh(shieldBubbleGeo, shieldBubbleMat);
                 this.shieldBubble.position.set(0, 0.52, 0);
                 this.shieldBubble.visible = this.shieldTimer > 0;
                 this.truckGroup.add(this.shieldBubble);
 
-                // Faróis Dianteiros do Carro (Ativam e Projetam Feixe de Luz Cônico na Estrada à Noite)
+                // Faróis Dianteiros do Carro (Maiores, mais potentes e com tom âmbar/dourado clássico menos branco)
                 this.headlightBeams = [];
                 this.headlightFlares = [];
                 this.headlightsGroup = new THREE.Group();
 
-                const beamGeo = new THREE.CylinderGeometry(0.12, 1.85, 22.0, 16, 1, true);
+                const beamGeo = new THREE.CylinderGeometry(0.25, 4.2, 38.0, 20, 1, true);
                 beamGeo.rotateX(Math.PI / 2);
                 const beamMat = new THREE.MeshBasicMaterial({
-                    color: 0xfff6cf,
+                    color: 0xffb834,
                     transparent: true,
                     opacity: 0.0,
                     blending: THREE.AdditiveBlending,
@@ -3931,11 +3941,11 @@
 
                 [-0.72, 0.72].forEach(x => {
                     const beam = new THREE.Mesh(beamGeo, beamMat.clone());
-                    beam.position.set(x, 0.52, -12.5);
+                    beam.position.set(x, 0.52, -20.0);
                     this.headlightsGroup.add(beam);
                     this.headlightBeams.push(beam);
 
-                    const flare = this.makeGlow(0xfff8d6, 1.5, 0.0);
+                    const flare = this.makeGlow(0xffa61a, 2.8, 0.0);
                     flare.position.set(x, 0.52, -2.35);
                     this.headlightsGroup.add(flare);
                     this.headlightFlares.push(flare);
@@ -4236,18 +4246,40 @@
                     flockGroup.wings = [];
 
                     const birdCount = 3 + Math.floor(Math.random() * 3);
-                    const birdMat = new THREE.MeshStandardMaterial({ color: 0x22222a, roughness: 0.8 });
+                    const featherMat = new THREE.MeshStandardMaterial({ 
+                        color: 0xffffff, 
+                        emissive: 0xfff0dc, 
+                        emissiveIntensity: 0.35, 
+                        roughness: 0.35 
+                    });
+                    const wingTipMat = new THREE.MeshStandardMaterial({ color: 0x111116, roughness: 0.6 });
+                    const beakMat = new THREE.MeshBasicMaterial({ color: 0xff6600 });
 
                     for (let b = 0; b < birdCount; b++) {
                         const bird = new THREE.Group();
-                        const body = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.6, 5).rotateX(Math.PI / 2), birdMat);
+                        // Corpo ampliado de gaivota costeira (alta visibilidade e contraste no céu)
+                        const body = new THREE.Mesh(new THREE.ConeGeometry(0.32, 1.4, 6).rotateX(Math.PI / 2), featherMat);
                         bird.add(body);
 
-                        const wingGeo = new THREE.BoxGeometry(0.7, 0.03, 0.22);
-                        const leftWing = new THREE.Mesh(wingGeo, birdMat);
-                        leftWing.position.x = -0.35;
-                        const rightWing = new THREE.Mesh(wingGeo, birdMat);
-                        rightWing.position.x = 0.35;
+                        // Bico laranja vibrante
+                        const beak = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.45, 4).rotateX(-Math.PI / 2), beakMat);
+                        beak.position.set(0, 0.02, -0.85);
+                        bird.add(beak);
+
+                        // Asas amplas com pontas pretas e articulação para bater asas
+                        const wingGeo = new THREE.BoxGeometry(1.65, 0.06, 0.45);
+                        const leftWing = new THREE.Mesh(wingGeo, featherMat);
+                        leftWing.position.x = -0.85;
+                        const leftTip = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.07, 0.43), wingTipMat);
+                        leftTip.position.x = -0.65;
+                        leftWing.add(leftTip);
+
+                        const rightWing = new THREE.Mesh(wingGeo, featherMat);
+                        rightWing.position.x = 0.85;
+                        const rightTip = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.07, 0.43), wingTipMat);
+                        rightTip.position.x = 0.65;
+                        rightWing.add(rightTip);
+
                         bird.add(leftWing);
                         bird.add(rightWing);
 
@@ -4255,7 +4287,8 @@
                         bird.rightWing = rightWing;
                         flockGroup.wings.push(leftWing, rightWing);
 
-                        bird.position.set((b - 1.5) * 0.9, (b % 2) * 0.3, b * 0.8);
+                        // Formação escalonada em bando
+                        bird.position.set((b - 1.5) * 1.8, (b % 2) * 0.5, b * 1.4);
                         flockGroup.add(bird);
                     }
 
@@ -4268,17 +4301,84 @@
                     const planeGroup = new THREE.Group();
                     planeGroup.obstacleType = "plane";
 
-                    const planeMat = new THREE.MeshStandardMaterial({ color: 0xdce2ec, metalness: 0.85, roughness: 0.2 });
-                    const wingMat = new THREE.MeshStandardMaterial({ color: 0x1f232e, metalness: 0.9 });
+                    // Avião a jato em grande escala com pintura aeronáutica e luzes de navegação
+                    const airlinerMat = new THREE.MeshStandardMaterial({ 
+                        color: 0xf5f8fc, 
+                        metalness: 0.75, 
+                        roughness: 0.25,
+                        emissive: 0xd8e4f0,
+                        emissiveIntensity: 0.2
+                    });
+                    const wingMat = new THREE.MeshStandardMaterial({ 
+                        color: 0x1e293b, 
+                        metalness: 0.8, 
+                        roughness: 0.3 
+                    });
+                    const stripeMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+                    const glassMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
+                    const beaconRed = new THREE.MeshBasicMaterial({ color: 0xff0033 });
+                    const beaconGreen = new THREE.MeshBasicMaterial({ color: 0x00ff66 });
+                    const strobeWhite = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
-                    const fuselage = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.35, 6.2, 10).rotateX(Math.PI / 2), planeMat);
+                    // Fuselagem ampla e comprida
+                    const fuselage = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.65, 11.5, 12).rotateX(Math.PI / 2), airlinerMat);
                     planeGroup.add(fuselage);
 
-                    const wings = new THREE.Mesh(new THREE.BoxGeometry(6.4, 0.1, 1.4), wingMat);
+                    // Faixa decorativa vermelha ao longo da fuselagem
+                    const stripe = new THREE.Mesh(new THREE.BoxGeometry(1.72, 0.22, 9.8), stripeMat);
+                    planeGroup.add(stripe);
+
+                    // Janelas do Cockpit na dianteira
+                    const cockpit = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.35, 1.2), glassMat);
+                    cockpit.position.set(0, 0.55, -4.5);
+                    planeGroup.add(cockpit);
+
+                    // Asas amplas com grande envergadura
+                    const wings = new THREE.Mesh(new THREE.BoxGeometry(12.5, 0.18, 2.2), wingMat);
                     wings.position.set(0, 0.1, 0.2);
                     planeGroup.add(wings);
 
-                    planeGroup.position.set(laneX, FLIGHT_Y, spawnZ);
+                    // Luzes de Navegação nas Pontas das Asas
+                    const navLeft = new THREE.Mesh(new THREE.SphereGeometry(0.18, 8, 8), beaconRed);
+                    navLeft.position.set(-6.2, 0.12, 0.2);
+                    planeGroup.add(navLeft);
+                    const flareLeft = this.makeGlow(0xff0033, 1.2, 0.8);
+                    flareLeft.position.copy(navLeft.position);
+                    planeGroup.add(flareLeft);
+
+                    const navRight = new THREE.Mesh(new THREE.SphereGeometry(0.18, 8, 8), beaconGreen);
+                    navRight.position.set(6.2, 0.12, 0.2);
+                    planeGroup.add(navRight);
+                    const flareRight = this.makeGlow(0x00ff66, 1.2, 0.8);
+                    flareRight.position.copy(navRight.position);
+                    planeGroup.add(flareRight);
+
+                    // Cauda (Estabilizador Vertical e Horizontal)
+                    const vFin = new THREE.Mesh(new THREE.BoxGeometry(0.2, 2.6, 2.0), stripeMat);
+                    vFin.position.set(0, 1.6, 4.6);
+                    planeGroup.add(vFin);
+
+                    const hFin = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.12, 1.2), wingMat);
+                    hFin.position.set(0, 0.7, 4.6);
+                    planeGroup.add(hFin);
+
+                    // Strobe branco na cauda
+                    const tailLight = new THREE.Mesh(new THREE.SphereGeometry(0.16, 8, 8), strobeWhite);
+                    tailLight.position.set(0, 2.9, 4.2);
+                    planeGroup.add(tailLight);
+
+                    // Turbinas a Jato duplas sob as asas com labaredas azuis
+                    [-2.6, 2.6].forEach(tx => {
+                        const turbine = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 1.8, 10).rotateX(Math.PI / 2), airlinerMat);
+                        turbine.position.set(tx, -0.42, 0.4);
+                        planeGroup.add(turbine);
+
+                        const thrusterFlame = this.makeGlow(0x38bdf8, 1.4, 0.9);
+                        thrusterFlame.position.set(tx, -0.42, 1.6);
+                        planeGroup.add(thrusterFlame);
+                    });
+
+                    planeGroup.position.set(laneX, FLIGHT_Y + 0.4, spawnZ);
                     planeGroup.flySpeed = Math.random() * 20 + 25;
                     this.scene.add(planeGroup);
                     this.skyObstacles.push(planeGroup);
@@ -5113,14 +5213,14 @@
                 this.mpRivalTag = this.createNameTagSprite(nickname, accentHex);
                 G.add(this.mpRivalTag);
 
-                // Faróis Noturnos do Rival
+                // Faróis Noturnos do Rival (Maiores e com tom âmbar/dourado)
                 this.mpRivalHeadlightBeams = [];
                 this.mpRivalHeadlightFlares = [];
                 const rivalHlGroup = new THREE.Group();
-                const rBeamGeo = new THREE.CylinderGeometry(0.12, 1.85, 22.0, 16, 1, true);
+                const rBeamGeo = new THREE.CylinderGeometry(0.25, 4.2, 38.0, 20, 1, true);
                 rBeamGeo.rotateX(Math.PI / 2);
                 const rBeamMat = new THREE.MeshBasicMaterial({
-                    color: 0xfff6cf,
+                    color: 0xffb834,
                     transparent: true,
                     opacity: 0.0,
                     blending: THREE.AdditiveBlending,
@@ -5129,11 +5229,11 @@
                 });
                 [-0.65, 0.65].forEach(x => {
                     const beam = new THREE.Mesh(rBeamGeo, rBeamMat.clone());
-                    beam.position.set(x, 0.48, -12.5);
+                    beam.position.set(x, 0.48, -20.0);
                     rivalHlGroup.add(beam);
                     this.mpRivalHeadlightBeams.push(beam);
 
-                    const flare = this.makeGlow(0xfff8d6, 1.5, 0.0);
+                    const flare = this.makeGlow(0xffa61a, 2.8, 0.0);
                     flare.position.set(x, 0.48, -2.2);
                     rivalHlGroup.add(flare);
                     this.mpRivalHeadlightFlares.push(flare);
@@ -5895,6 +5995,8 @@
                     coins: this.totalCoins,
                     selectedCar: this.selectedCar,
                     unlockedCars: this.unlockedCars,
+                    selectedPilot: this.selectedPilot,
+                    unlockedPilots: this.unlockedPilots,
                     upgrades: this.upgrades || {}
                 };
                 localStorage.setItem(`roadster_acc_${username.toLowerCase()}`, JSON.stringify(accData));
@@ -5903,6 +6005,8 @@
                 localStorage.setItem("roadster_coins", this.totalCoins.toString());
                 localStorage.setItem("roadster_selected_car", this.selectedCar);
                 localStorage.setItem("roadster_unlocked_cars", JSON.stringify(this.unlockedCars));
+                localStorage.setItem("roadster_selected_pilot", this.selectedPilot);
+                localStorage.setItem("roadster_unlocked_pilots", JSON.stringify(this.unlockedPilots));
 
                 let accounts = [];
                 try {
@@ -5922,12 +6026,15 @@
                     this.totalCoins = typeof local.coins === 'number' ? local.coins : 0;
                     this.selectedCar = local.selectedCar || 'roadster';
                     this.unlockedCars = local.unlockedCars || ['roadster'];
+                    this.selectedPilot = local.selectedPilot || 'aria';
+                    this.unlockedPilots = local.unlockedPilots || ['aria'];
                     this.upgrades = local.upgrades || { phantom_air: 0, cybertruck_armor: 0 };
                 }
                 this.saveAccountData(username);
                 this.buildPlayerVehicle(this.selectedCar);
                 this.updateUserUI();
                 this.renderGarageCards();
+                this.renderPilotCards();
                 this.sound.playHeart();
                 this.triggerActionPopup(`BEM-VINDO, ${username}!`);
 
@@ -6386,7 +6493,7 @@
                 this.shieldTimer = this.shieldMaxDuration;
                 if (this.shieldBubble) {
                     this.shieldBubble.visible = true;
-                    this.shieldBubble.material.opacity = 0.28;
+                    this.shieldBubble.material.opacity = 0.55;
                 }
                 if (this.hudShieldIndicator) {
                     this.hudShieldIndicator.style.display = "inline-flex";
@@ -6699,11 +6806,23 @@
                 Object.values(PILOT_CATALOG).forEach(pilot => {
                     const card = document.createElement("div");
                     const isSelected = this.selectedPilot === pilot.id;
-                    card.className = `pilot-card ${isSelected ? 'selected' : ''}`;
+                    const isUnlocked = (pilot.price === 0) || (this.unlockedPilots && this.unlockedPilots.includes(pilot.id));
+                    card.className = `pilot-card ${isSelected ? 'selected' : ''} ${!isUnlocked ? 'locked' : ''}`;
 
-                    const btnHTML = isSelected 
-                        ? '<button class="car-action-btn btn-disabled">EM COMANDO</button>'
-                        : `<button class="car-action-btn btn-equip" data-pilot="${pilot.id}">SELECIONAR</button>`;
+                    let btnHTML = "";
+                    if (isSelected) {
+                        btnHTML = '<button class="car-action-btn btn-disabled">EM COMANDO</button>';
+                    } else if (isUnlocked) {
+                        btnHTML = `<button class="car-action-btn btn-equip" data-pilot="${pilot.id}">SELECIONAR</button>`;
+                    } else {
+                        const canAfford = this.totalCoins >= pilot.price;
+                        if (canAfford) {
+                            btnHTML = `<button class="car-action-btn btn-buy-pilot" data-pilot="${pilot.id}" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 900; border: none; cursor: pointer; border-radius: 8px; padding: 7px 14px; font-size: 0.8rem;">CONTRATAR (${pilot.price} 🪙)</button>`;
+                        } else {
+                            const missing = pilot.price - this.totalCoins;
+                            btnHTML = `<button class="car-action-btn btn-disabled">FALTAM ${missing} 🪙</button>`;
+                        }
+                    }
 
                     card.innerHTML = `
                         <div>
@@ -6713,6 +6832,7 @@
                                     <div class="pilot-name">${pilot.name}</div>
                                     <div class="pilot-title">${pilot.title}</div>
                                 </div>
+                                ${!isUnlocked ? `<div style="margin-left: auto; background: #0f172a; border: 1px solid #f59e0b; border-radius: 6px; padding: 3px 8px; font-size: 0.75rem; font-weight: 800; color: #fbbf24;">🪙 ${pilot.price}</div>` : ''}
                             </div>
                             <div class="car-desc">${pilot.desc}</div>
                             <div class="pilot-skill-box">
@@ -6730,13 +6850,39 @@
                     if (selectBtn) {
                         selectBtn.addEventListener("click", () => this.selectPilot(pilot.id));
                     }
+                    const buyBtn = card.querySelector(".btn-buy-pilot");
+                    if (buyBtn) {
+                        buyBtn.addEventListener("click", () => this.buyPilot(pilot.id));
+                    }
 
                     container.appendChild(card);
                 });
             }
 
+            buyPilot(pilotId) {
+                const pilot = PILOT_CATALOG[pilotId];
+                if (!pilot || (this.unlockedPilots && this.unlockedPilots.includes(pilotId))) return;
+                if (this.totalCoins < pilot.price) {
+                    this.triggerActionPopup("MOEDAS INSUFICIENTES!");
+                    this.sound.playCrash();
+                    return;
+                }
+                this.totalCoins -= pilot.price;
+                if (!this.unlockedPilots) this.unlockedPilots = ['aria'];
+                this.unlockedPilots.push(pilotId);
+                localStorage.setItem("roadster_coins", this.totalCoins.toString());
+                localStorage.setItem("roadster_unlocked_pilots", JSON.stringify(this.unlockedPilots));
+                this.saveAccountData(this.currentUser);
+                this.sound.playBuyCar();
+                this.updateUserCoinsEverywhere();
+                this.triggerActionPopup(`PILOTO CONTRATADO: ${pilot.name}! 🎉`);
+                this.selectPilot(pilotId);
+            }
+
             selectPilot(pilotId) {
                 if (!PILOT_CATALOG[pilotId]) return;
+                const isUnlocked = (PILOT_CATALOG[pilotId].price === 0) || (this.unlockedPilots && this.unlockedPilots.includes(pilotId));
+                if (!isUnlocked) return;
                 this.selectedPilot = pilotId;
                 localStorage.setItem("roadster_selected_pilot", pilotId);
                 this.activePilotPerks = PILOT_CATALOG[pilotId].perk;
@@ -7079,9 +7225,9 @@
                         }
                         if (this.shieldTimer < 1.5) {
                             const blink = Math.floor(performance.now() / 90) % 2 === 0;
-                            this.shieldBubble.material.opacity = blink ? 0.35 : 0.08;
+                            this.shieldBubble.material.opacity = blink ? 0.65 : 0.25;
                         } else {
-                            this.shieldBubble.material.opacity = 0.22 + Math.sin(performance.now() * 0.007) * 0.05;
+                            this.shieldBubble.material.opacity = 0.52 + Math.sin(performance.now() * 0.007) * 0.05;
                         }
                     }
                     if (this.hudShieldIndicator) {
