@@ -155,3 +155,4 @@ export class PaymentSystem {
         if (modal) modal.classList.remove("active");
     }
 }
+

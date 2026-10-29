@@ -211,27 +211,54 @@
         </div>
     </div>
 
-    <!-- MODAL DE IDENTIFICAÇÃO / NICKNAME ÚNICO -->
+    <!-- MODAL DE AUTENTICAÇÃO / LOGIN & CADASTRO COM USUÁRIO E SENHA -->
     <div class="modal-screen" id="user-modal">
-        <div class="glass-box" style="max-width: 440px;">
-            <h2 class="game-title" style="font-size: 1.8rem;">PERFIL DO PILOTO</h2>
-            <div class="game-subtitle">ACESSE OU CADASTRE SEU NICKNAME</div>
-            <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5; margin-bottom: 8px;">
-                Acesse seu piloto para carregar suas moedas, carros e recordes mundiais salvos!
-            </p>
+        <div class="glass-box auth-box" style="max-width: 440px;">
+            <h2 class="game-title" style="font-size: 1.7rem; margin-bottom: 2px;">CENTRAL DO PILOTO</h2>
+            <div class="game-subtitle" id="auth-modal-subtitle" style="margin-bottom: 12px;">ACESSO SEGURO COM USUÁRIO E SENHA</div>
 
-            <input type="text" class="styled-input" id="username-input" placeholder="Digite seu Nickname" maxlength="18" autocomplete="off" />
-            <div class="status-msg" id="username-status"></div>
+            <!-- Abas de Alternância: Entrar vs Criar Conta -->
+            <div class="auth-tabs-row">
+                <button type="button" class="auth-tab-btn active" id="auth-tab-login">🔑 ENTRAR</button>
+                <button type="button" class="auth-tab-btn" id="auth-tab-register">✨ CRIAR CONTA</button>
+            </div>
 
-            <div style="display: flex; gap: 8px; margin-top: 10px;">
-                <button class="action-btn" id="login-username-btn" style="flex: 1; font-size: 0.82rem; padding: 12px 6px;">ENTRAR COM MEU NICK</button>
-                <button class="secondary-btn" id="save-username-btn" style="flex: 1; font-size: 0.82rem; padding: 12px 6px;">CRIAR NOVO PILOTO</button>
+            <!-- Campo Nome de Usuário -->
+            <div style="text-align: left; margin-bottom: 4px;">
+                <label style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;">Nome de Usuário:</label>
+            </div>
+            <input type="text" class="styled-input" id="username-input" placeholder="Ex: Piloto_Cyber (3 a 20 letras)" maxlength="20" autocomplete="username" />
+
+            <!-- Campo Senha -->
+            <div style="text-align: left; margin-top: 8px; margin-bottom: 4px;">
+                <label style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;">Senha:</label>
+            </div>
+            <div style="position: relative;">
+                <input type="password" class="styled-input" id="password-input" placeholder="Sua senha (mínimo 4 caracteres)" maxlength="32" autocomplete="current-password" style="padding-right: 42px; margin-top: 0;" />
+                <button type="button" id="auth-toggle-pwd-btn" title="Mostrar/Ocultar Senha" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; font-size: 1.1rem; cursor: pointer; color: #94a3b8; padding: 4px;">👁️</button>
+            </div>
+
+            <!-- Campo Confirmação de Senha (Visível somente no Cadastro) -->
+            <div id="password-confirm-container" style="display: none; margin-top: 8px;">
+                <div style="text-align: left; margin-bottom: 4px;">
+                    <label style="font-size: 0.75rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;">Confirmar Senha:</label>
+                </div>
+                <input type="password" class="styled-input" id="password-confirm-input" placeholder="Repita a senha digitada" maxlength="32" autocomplete="new-password" style="margin-top: 0;" />
+            </div>
+
+            <!-- Feedback de Status / Erro / Sucesso -->
+            <div class="status-msg" id="username-status" style="margin-top: 8px;"></div>
+
+            <!-- Botões de Ação -->
+            <div style="margin-top: 12px;">
+                <button class="action-btn" id="login-username-btn" style="width: 100%; font-size: 0.88rem; padding: 12px;">ENTRAR NO JOGO 🚀</button>
+                <button class="action-btn" id="save-username-btn" style="width: 100%; font-size: 0.88rem; padding: 12px; display: none; background: linear-gradient(135deg, #10b981, #059669);">CADASTRAR PILOTO ⚡</button>
             </div>
 
             <!-- Contas salvas neste aparelho -->
             <div id="saved-accounts-section" style="margin-top: 14px; text-align: left; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
                 <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">
-                    👤 Pilotos neste aparelho (Clique para alternar):
+                    👤 Pilotos neste aparelho (Clique para selecionar):
                 </div>
                 <div id="saved-accounts-list" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
             </div>

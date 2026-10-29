@@ -152,3 +152,4 @@ export function calculateMapScoreBonus(baseDeltaScore, activeMap) {
     const mult = (activeMap && activeMap.scoreMultiplier) ? activeMap.scoreMultiplier : 1.0;
     return baseDeltaScore * mult;
 }
+

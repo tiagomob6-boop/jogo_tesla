@@ -1,7 +1,7 @@
 import pyautogui as py
 import time
 
-for clique in range(1, 100):
+for enter in range(1, 10000):
     py.press("enter")
-    print(f"clique numero {clique}")
+    print(f"enter numero {enter}")
     time.sleep(5)

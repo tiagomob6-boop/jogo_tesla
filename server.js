@@ -5,7 +5,29 @@ const cors = require('cors');
 const path = require('path');
 const { Pool } = require('pg');
 const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
+const crypto = require('crypto');
 require('dotenv').config();
+
+// =============================================================================
+// SEGURANÇA E CRIPTOGRAFIA DE SENHAS (PBKDF2 COM SALT ÚNICO DE 16 BYTES)
+// =============================================================================
+function hashPassword(password, salt) {
+    if (!salt) {
+        salt = crypto.randomBytes(16).toString('hex');
+    }
+    const hash = crypto.pbkdf2Sync(String(password), salt, 1000, 64, 'sha512').toString('hex');
+    return { hash, salt };
+}
+
+function verifyPassword(password, hash, salt) {
+    if (!password || !hash || !salt) return false;
+    try {
+        const testHash = crypto.pbkdf2Sync(String(password), salt, 1000, 64, 'sha512').toString('hex');
+        return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(testHash, 'hex'));
+    } catch (e) {
+        return false;
+    }
+}
 
 const app = express();
 const server = http.createServer(app);
@@ -97,27 +119,43 @@ const memoryStore = {
     scores: []
 };
 
+// Demo users default password: '1234'
+const defaultDemoSalt = 'e4f8b92c10a35d7e90c2b184f6a73c21';
+const defaultDemoHash = hashPassword('1234', defaultDemoSalt).hash;
+
 // Usuários demonstrativos iniciais no ranking
 memoryStore.users.set('CyberRacer', {
     username: 'CyberRacer',
+    password_hash: defaultDemoHash,
+    password_salt: defaultDemoSalt,
     coins: 1450,
     best_score: 18450,
     selected_car: 'solaris',
-    unlocked_cars: ['roadster', 'cybertruck', 'solaris']
+    unlocked_cars: ['roadster', 'cybertruck', 'solaris'],
+    unlocked_maps: ['rodovia_dupla', 'circuito_urbano'],
+    selected_map: 'circuito_urbano'
 });
 memoryStore.users.set('NeonGhost', {
     username: 'NeonGhost',
+    password_hash: defaultDemoHash,
+    password_salt: defaultDemoSalt,
     coins: 820,
     best_score: 14200,
     selected_car: 'phantom',
-    unlocked_cars: ['roadster', 'phantom']
+    unlocked_cars: ['roadster', 'phantom'],
+    unlocked_maps: ['rodovia_dupla'],
+    selected_map: 'rodovia_dupla'
 });
 memoryStore.users.set('TeslaPilot', {
     username: 'TeslaPilot',
+    password_hash: defaultDemoHash,
+    password_salt: defaultDemoSalt,
     coins: 340,
     best_score: 9800,
     selected_car: 'cybertruck',
-    unlocked_cars: ['roadster', 'cybertruck']
+    unlocked_cars: ['roadster', 'cybertruck'],
+    unlocked_maps: ['rodovia_dupla'],
+    selected_map: 'rodovia_dupla'
 });
 
 if (process.env.DATABASE_URL) {
@@ -167,6 +205,10 @@ async function initDatabase() {
                 CREATE INDEX IF NOT EXISTS idx_scores_score ON scores(score DESC);
 
                 ALTER TABLE users ADD COLUMN IF NOT EXISTS upgrades JSONB DEFAULT '{}'::jsonb;
+                ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255) DEFAULT '';
+                ALTER TABLE users ADD COLUMN IF NOT EXISTS password_salt VARCHAR(255) DEFAULT '';
+                ALTER TABLE users ADD COLUMN IF NOT EXISTS unlocked_maps TEXT[] DEFAULT ARRAY['rodovia_dupla'];
+                ALTER TABLE users ADD COLUMN IF NOT EXISTS selected_map VARCHAR(50) DEFAULT 'rodovia_dupla';
             `);
             console.log('✅ Banco de Dados Neon Postgres inicializado com sucesso (tabelas users e scores prontas).');
         } finally {
@@ -194,72 +236,129 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// 2. Registro ou Login por Nickname Único
+// 2. Login com Nome de Usuário e Senha
 app.post('/api/user/login', async (req, res) => {
     const rawUsername = (req.body.username || '').trim();
+    const rawPassword = (req.body.password || '').toString();
+
     if (!rawUsername) {
-        return res.status(400).json({ error: 'Informe seu Nickname para entrar.' });
+        return res.status(400).json({ success: false, error: 'Informe seu nome de usuário para entrar.' });
+    }
+    if (!rawPassword) {
+        return res.status(400).json({ success: false, error: 'Informe sua senha para entrar.' });
     }
 
     if (useDb && pool) {
         try {
-            const findRes = await pool.query('SELECT username, coins, best_score, selected_car, unlocked_cars, COALESCE(upgrades, \'{}\'::jsonb) as upgrades FROM users WHERE LOWER(username) = LOWER($1)', [rawUsername]);
+            const findRes = await pool.query(
+                `SELECT id, username, password_hash, password_salt, coins, best_score, selected_car, unlocked_cars, COALESCE(unlocked_maps, ARRAY['rodovia_dupla']::text[]) as unlocked_maps, COALESCE(selected_map, 'rodovia_dupla') as selected_map, COALESCE(upgrades, '{}'::jsonb) as upgrades 
+                 FROM users WHERE LOWER(username) = LOWER($1)`,
+                [rawUsername]
+            );
             if (findRes.rows.length === 0) {
-                return res.status(404).json({ error: 'Piloto não encontrado. Verifique o nome ou cadastre um novo piloto.' });
+                return res.status(404).json({ success: false, error: 'Piloto não encontrado. Verifique o nome de usuário ou cadastre uma nova conta.' });
             }
             const user = findRes.rows[0];
-            await pool.query('UPDATE users SET last_seen = CURRENT_TIMESTAMP WHERE LOWER(username) = LOWER($1)', [rawUsername]);
-            return res.json({ success: true, user });
+
+            // Se o usuário já tiver senha cadastrada, valida
+            if (user.password_hash && user.password_salt) {
+                const isValid = verifyPassword(rawPassword, user.password_hash, user.password_salt);
+                if (!isValid) {
+                    return res.status(401).json({ success: false, error: 'Senha incorreta! Verifique sua senha e tente novamente.' });
+                }
+            } else {
+                // Caso seja uma conta antiga sem senha, vincula a senha informada
+                const { hash, salt } = hashPassword(rawPassword);
+                await pool.query('UPDATE users SET password_hash = $1, password_salt = $2 WHERE id = $3', [hash, salt, user.id]);
+            }
+
+            await pool.query('UPDATE users SET last_seen = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
+            return res.json({
+                success: true,
+                user: {
+                    username: user.username,
+                    coins: user.coins,
+                    best_score: user.best_score,
+                    selected_car: user.selected_car,
+                    unlocked_cars: user.unlocked_cars,
+                    unlocked_maps: user.unlocked_maps,
+                    selected_map: user.selected_map,
+                    upgrades: user.upgrades || {}
+                }
+            });
         } catch (err) {
-            return res.status(500).json({ error: err.message });
+            console.error('Erro no login Neon DB:', err);
+            return res.status(500).json({ success: false, error: err.message });
         }
     } else {
+        // Fallback em memória
+        let user = null;
         for (const [_, u] of memoryStore.users.entries()) {
             if (u.username.toLowerCase() === rawUsername.toLowerCase()) {
-                return res.json({ success: true, user: u });
+                user = u;
+                break;
             }
         }
-        return res.status(404).json({ error: 'Piloto não encontrado.' });
+
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'Piloto não encontrado. Verifique o nome ou cadastre-se.' });
+        }
+
+        if (user.password_hash && user.password_salt) {
+            const isValid = verifyPassword(rawPassword, user.password_hash, user.password_salt);
+            if (!isValid) {
+                return res.status(401).json({ success: false, error: 'Senha incorreta! Verifique sua senha e tente novamente.' });
+            }
+        } else {
+            const { hash, salt } = hashPassword(rawPassword);
+            user.password_hash = hash;
+            user.password_salt = salt;
+        }
+
+        return res.json({
+            success: true,
+            user: {
+                username: user.username,
+                coins: user.coins,
+                best_score: user.best_score,
+                selected_car: user.selected_car,
+                unlocked_cars: user.unlocked_cars,
+                unlocked_maps: user.unlocked_maps || ['rodovia_dupla'],
+                selected_map: user.selected_map || 'rodovia_dupla',
+                upgrades: user.upgrades || {}
+            }
+        });
     }
 });
 
-// 2. Registro ou Login por Nickname Único
+// 2.1 Cadastro com Nome de Usuário e Senha
 app.post('/api/user/register', async (req, res) => {
     const rawUsername = (req.body.username || '').trim();
-    if (!rawUsername || rawUsername.length < 3 || rawUsername.length > 20) {
-        return res.status(400).json({ error: 'O nome precisa ter entre 3 e 20 caracteres.' });
+    const rawPassword = (req.body.password || '').toString();
+
+    if (!rawUsername || !/^[a-zA-Z0-9_-]{3,20}$/.test(rawUsername)) {
+        return res.status(400).json({ success: false, error: 'O nome de usuário deve ter entre 3 e 20 caracteres e conter apenas letras, números, hífen (-) ou underline (_).' });
+    }
+    const cleanUsername = rawUsername;
+
+    if (!rawPassword || rawPassword.length < 4) {
+        return res.status(400).json({ success: false, error: 'A senha precisa ter no mínimo 4 caracteres.' });
     }
 
-    const cleanUsername = rawUsername.replace(/[^a-zA-Z0-9_-]/g, '');
-    if (!cleanUsername) {
-        return res.status(400).json({ error: 'Nome contém caracteres inválidos.' });
-    }
+    const { hash, salt } = hashPassword(rawPassword);
 
     if (useDb && pool) {
         try {
-            const findRes = await pool.query('SELECT * FROM users WHERE LOWER(username) = LOWER($1)', [cleanUsername]);
+            const findRes = await pool.query('SELECT id, username FROM users WHERE LOWER(username) = LOWER($1)', [cleanUsername]);
             if (findRes.rows.length > 0) {
-                const user = findRes.rows[0];
-                await pool.query('UPDATE users SET last_seen = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
-                return res.json({
-                    success: true,
-                    isNew: false,
-                    user: {
-                        username: user.username,
-                        coins: user.coins,
-                        best_score: user.best_score,
-                        selected_car: user.selected_car,
-                        unlocked_cars: user.unlocked_cars,
-                        upgrades: user.upgrades || {}
-                    }
-                });
+                return res.status(409).json({ success: false, error: 'Este nome de usuário já está cadastrado. Faça login com sua senha ou escolha outro nome.' });
             }
 
             const insertRes = await pool.query(`
-                INSERT INTO users (username, coins, best_score, selected_car, unlocked_cars, upgrades)
-                VALUES ($1, 0, 0, 'roadster', ARRAY['roadster'], '{}'::jsonb)
-                RETURNING *
-            `, [cleanUsername]);
+                INSERT INTO users (username, password_hash, password_salt, coins, best_score, selected_car, unlocked_cars, unlocked_maps, selected_map, upgrades)
+                VALUES ($1, $2, $3, 150, 0, 'roadster', ARRAY['roadster'], ARRAY['rodovia_dupla'], 'rodovia_dupla', '{}'::jsonb)
+                RETURNING username, coins, best_score, selected_car, unlocked_cars, unlocked_maps, selected_map, upgrades
+            `, [cleanUsername, hash, salt]);
 
             const newUser = insertRes.rows[0];
             return res.json({
@@ -271,35 +370,81 @@ app.post('/api/user/register', async (req, res) => {
                     best_score: newUser.best_score,
                     selected_car: newUser.selected_car,
                     unlocked_cars: newUser.unlocked_cars,
+                    unlocked_maps: newUser.unlocked_maps,
+                    selected_map: newUser.selected_map,
                     upgrades: newUser.upgrades || {}
                 }
             });
         } catch (err) {
             console.error('Erro ao registrar usuário no DB:', err);
-            return res.status(500).json({ error: 'Erro interno ao registrar usuário.' });
+            return res.status(500).json({ success: false, error: 'Erro interno ao registrar usuário.' });
         }
     } else {
-        let user = null;
+        // Fallback em memória
         for (const [_, u] of memoryStore.users.entries()) {
             if (u.username.toLowerCase() === cleanUsername.toLowerCase()) {
-                user = u;
-                break;
+                return res.status(409).json({ success: false, error: 'Este nome de usuário já está cadastrado. Faça login com sua senha.' });
             }
-        }
-
-        if (user) {
-            return res.json({ success: true, isNew: false, user });
         }
 
         const newUser = {
             username: cleanUsername,
-            coins: 0,
+            password_hash: hash,
+            password_salt: salt,
+            coins: 150,
             best_score: 0,
             selected_car: 'roadster',
-            unlocked_cars: ['roadster']
+            unlocked_cars: ['roadster'],
+            unlocked_maps: ['rodovia_dupla'],
+            selected_map: 'rodovia_dupla',
+            upgrades: {}
         };
         memoryStore.users.set(cleanUsername, newUser);
         return res.json({ success: true, isNew: true, user: newUser });
+    }
+});
+
+// 2.2 Sincronização e Salvamento de Perfil (Carros, Mapas, Moedas)
+app.post(['/api/user/save', '/api/users/save'], async (req, res) => {
+    const { username, coins, selectedCar, unlockedCars, unlockedMaps, selectedMap, upgrades } = req.body;
+    if (!username) return res.status(400).json({ success: false, error: 'Nome de usuário obrigatório.' });
+
+    if (useDb && pool) {
+        try {
+            await pool.query(`
+                UPDATE users
+                SET coins = COALESCE($1, coins),
+                    selected_car = COALESCE($2, selected_car),
+                    unlocked_cars = COALESCE($3, unlocked_cars),
+                    unlocked_maps = COALESCE($4, unlocked_maps),
+                    selected_map = COALESCE($5, selected_map),
+                    upgrades = COALESCE($6, upgrades),
+                    last_seen = CURRENT_TIMESTAMP
+                WHERE LOWER(username) = LOWER($7)
+            `, [
+                coins !== undefined ? coins : null,
+                selectedCar || null,
+                unlockedCars || null,
+                unlockedMaps || null,
+                selectedMap || null,
+                upgrades ? JSON.stringify(upgrades) : null,
+                username
+            ]);
+            return res.json({ success: true });
+        } catch (e) {
+            return res.status(500).json({ success: false, error: e.message });
+        }
+    } else {
+        const u = memoryStore.users.get(username);
+        if (u) {
+            if (coins !== undefined) u.coins = coins;
+            if (selectedCar) u.selected_car = selectedCar;
+            if (unlockedCars) u.unlocked_cars = unlockedCars;
+            if (unlockedMaps) u.unlocked_maps = unlockedMaps;
+            if (selectedMap) u.selected_map = selectedMap;
+            if (upgrades) u.upgrades = upgrades;
+        }
+        return res.json({ success: true });
     }
 });
 

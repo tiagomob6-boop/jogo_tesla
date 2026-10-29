@@ -238,3 +238,4 @@ export class ControlsSystem {
         document.getElementById("reset-touch-layout-btn").addEventListener("click", () => this.resetToDefaultLayout());
     }
 }
+

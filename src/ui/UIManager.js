@@ -166,46 +166,93 @@ export const UIManager = (Base) => class extends Base {
             this.leaderboardModal.classList.remove("active");
         });
 
-        // Botões de Perfil / Nickname
+        // Abas e Ações do Mini-Sistema de Autenticação (Usuário & Senha)
+        this.authMode = "login";
+
+        const setAuthMode = (mode) => {
+            this.authMode = mode;
+            this.usernameStatus.textContent = "";
+            this.usernameStatus.className = "status-msg";
+            if (mode === "login") {
+                if (this.authTabLogin) this.authTabLogin.classList.add("active");
+                if (this.authTabRegister) this.authTabRegister.classList.remove("active");
+                if (this.passwordConfirmContainer) this.passwordConfirmContainer.style.display = "none";
+                if (this.loginUsernameBtn) this.loginUsernameBtn.style.display = "block";
+                if (this.saveUsernameBtn) this.saveUsernameBtn.style.display = "none";
+                if (this.authModalSubtitle) this.authModalSubtitle.textContent = "ACESSO SEGURO COM USUÁRIO E SENHA";
+            } else {
+                if (this.authTabRegister) this.authTabRegister.classList.add("active");
+                if (this.authTabLogin) this.authTabLogin.classList.remove("active");
+                if (this.passwordConfirmContainer) this.passwordConfirmContainer.style.display = "block";
+                if (this.loginUsernameBtn) this.loginUsernameBtn.style.display = "none";
+                if (this.saveUsernameBtn) this.saveUsernameBtn.style.display = "block";
+                if (this.authModalSubtitle) this.authModalSubtitle.textContent = "CRIE SUA CONTA COM USUÁRIO E SENHA";
+            }
+        };
+
+        if (this.authTabLogin) this.authTabLogin.addEventListener("click", () => setAuthMode("login"));
+        if (this.authTabRegister) this.authTabRegister.addEventListener("click", () => setAuthMode("register"));
+
+        if (this.authTogglePwdBtn) {
+            this.authTogglePwdBtn.addEventListener("click", () => {
+                const isPwd = this.passwordInput && this.passwordInput.type === "password";
+                const nextType = isPwd ? "text" : "password";
+                if (this.passwordInput) this.passwordInput.type = nextType;
+                if (this.passwordConfirmInput) this.passwordConfirmInput.type = nextType;
+                this.authTogglePwdBtn.textContent = isPwd ? "🙈" : "👁️";
+            });
+        }
+
         const openUserModal = () => {
             this.sound.init();
-            this.usernameInput.value = this.currentUser === "Piloto" ? "" : this.currentUser;
+            setAuthMode("login");
+            if (this.usernameInput) this.usernameInput.value = this.currentUser === "Piloto" ? "" : this.currentUser;
+            if (this.passwordInput) this.passwordInput.value = "";
+            if (this.passwordConfirmInput) this.passwordConfirmInput.value = "";
             this.usernameStatus.textContent = "";
             this.renderSavedAccounts();
-            this.userModal.classList.add("active");
-            setTimeout(() => this.usernameInput.focus(), 200);
+            if (this.userModal) this.userModal.classList.add("active");
+            setTimeout(() => {
+                if (this.usernameInput && !this.usernameInput.value) {
+                    this.usernameInput.focus();
+                } else if (this.passwordInput) {
+                    this.passwordInput.focus();
+                }
+            }, 200);
         };
+
         if (this.hudUserBadge) this.hudUserBadge.addEventListener("click", openUserModal);
         if (this.menuUserBadge) this.menuUserBadge.addEventListener("click", openUserModal);
         if (this.closeUserModalBtn) this.closeUserModalBtn.addEventListener("click", () => {
-            this.userModal.classList.remove("active");
+            if (this.userModal) this.userModal.classList.remove("active");
         });
 
-        if (this.loginUsernameBtn) {
-            this.loginUsernameBtn.addEventListener("click", () => {
-                this.loginUser(this.usernameInput.value.trim());
-            });
-        }
+        const submitLogin = () => {
+            const u = this.usernameInput ? this.usernameInput.value.trim() : "";
+            const p = this.passwordInput ? this.passwordInput.value : "";
+            this.loginUser(u, p);
+        };
 
-        if (this.usernameInput) {
-            this.usernameInput.addEventListener("keydown", (e) => {
-                if (e.key === "Enter") {
-                    this.loginUser(this.usernameInput.value.trim());
-                }
-            });
-        }
+        const submitRegister = () => {
+            const u = this.usernameInput ? this.usernameInput.value.trim() : "";
+            const p = this.passwordInput ? this.passwordInput.value : "";
+            const c = this.passwordConfirmInput ? this.passwordConfirmInput.value : "";
+            this.registerUser(u, p, c);
+        };
 
-        if (this.saveUsernameBtn) {
-            this.saveUsernameBtn.addEventListener("click", () => {
-                const val = this.usernameInput.value.trim();
-                if (val.length < 3) {
-                    this.usernameStatus.className = "status-msg error";
-                    this.usernameStatus.textContent = "O nome precisa ter pelo menos 3 letras!";
-                    return;
-                }
-                this.registerUser(val);
-            });
-        }
+        if (this.loginUsernameBtn) this.loginUsernameBtn.addEventListener("click", submitLogin);
+        if (this.saveUsernameBtn) this.saveUsernameBtn.addEventListener("click", submitRegister);
+
+        const handleEnterKey = (e) => {
+            if (e.key === "Enter") {
+                if (this.authMode === "register") submitRegister();
+                else submitLogin();
+            }
+        };
+
+        if (this.usernameInput) this.usernameInput.addEventListener("keydown", handleEnterKey);
+        if (this.passwordInput) this.passwordInput.addEventListener("keydown", handleEnterKey);
+        if (this.passwordConfirmInput) this.passwordConfirmInput.addEventListener("keydown", handleEnterKey);
 
         // Botões de Seleção de Pilotos
         const openPilotModal = () => {
@@ -355,8 +402,13 @@ export const UIManager = (Base) => class extends Base {
             chip.className = `account-chip ${acc.toLowerCase() === this.currentUser.toLowerCase() ? 'active' : ''}`;
             chip.innerHTML = `👤 ${acc} <span style="color:#fbbf24; font-size:0.72rem;">(🪙 ${coins})</span>`;
             chip.addEventListener("click", () => {
-                this.switchUser(acc);
-                this.userModal.classList.remove("active");
+                if (this.usernameInput) this.usernameInput.value = acc;
+                if (this.passwordInput) {
+                    this.passwordInput.value = "";
+                    this.passwordInput.focus();
+                }
+                this.usernameStatus.className = "status-msg";
+                this.usernameStatus.textContent = `Piloto ${acc} selecionado. Digite a senha para entrar.`;
             });
             container.appendChild(chip);
         });

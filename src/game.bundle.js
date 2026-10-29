@@ -1508,9 +1508,16 @@ class PaymentSystem {
         this.goBest = document.getElementById("go-best");
         this.goReason = document.getElementById("go-reason");
 
-        // Modais
+        // Modais e Mini-Login
         this.userModal = document.getElementById("user-modal");
         this.usernameInput = document.getElementById("username-input");
+        this.passwordInput = document.getElementById("password-input");
+        this.passwordConfirmInput = document.getElementById("password-confirm-input");
+        this.passwordConfirmContainer = document.getElementById("password-confirm-container");
+        this.authTabLogin = document.getElementById("auth-tab-login");
+        this.authTabRegister = document.getElementById("auth-tab-register");
+        this.authTogglePwdBtn = document.getElementById("auth-toggle-pwd-btn");
+        this.authModalSubtitle = document.getElementById("auth-modal-subtitle");
         this.usernameStatus = document.getElementById("username-status");
         this.saveUsernameBtn = document.getElementById("save-username-btn");
         this.loginUsernameBtn = document.getElementById("login-username-btn");
@@ -6055,46 +6062,109 @@ class PaymentSystem {
             this.leaderboardModal.classList.remove("active");
         });
 
-        // Botões de Perfil / Nickname
+        // Abas e Ações do Mini-Sistema de Autenticação (Usuário & Senha)
+        this.authMode = "login"; // "login" | "register"
+
+        const setAuthMode = (mode) => {
+            this.authMode = mode;
+            this.usernameStatus.textContent = "";
+            this.usernameStatus.className = "status-msg";
+            if (mode === "login") {
+                if (this.authTabLogin) this.authTabLogin.classList.add("active");
+                if (this.authTabRegister) this.authTabRegister.classList.remove("active");
+                if (this.passwordConfirmContainer) this.passwordConfirmContainer.style.display = "none";
+                if (this.loginUsernameBtn) this.loginUsernameBtn.style.display = "block";
+                if (this.saveUsernameBtn) this.saveUsernameBtn.style.display = "none";
+                if (this.authModalSubtitle) this.authModalSubtitle.textContent = "ACESSO SEGURO COM USUÁRIO E SENHA";
+            } else {
+                if (this.authTabRegister) this.authTabRegister.classList.add("active");
+                if (this.authTabLogin) this.authTabLogin.classList.remove("active");
+                if (this.passwordConfirmContainer) this.passwordConfirmContainer.style.display = "block";
+                if (this.loginUsernameBtn) this.loginUsernameBtn.style.display = "none";
+                if (this.saveUsernameBtn) this.saveUsernameBtn.style.display = "block";
+                if (this.authModalSubtitle) this.authModalSubtitle.textContent = "CRIE SUA CONTA COM USUÁRIO E SENHA";
+            }
+        };
+
+        if (this.authTabLogin) {
+            this.authTabLogin.addEventListener("click", () => setAuthMode("login"));
+        }
+        if (this.authTabRegister) {
+            this.authTabRegister.addEventListener("click", () => setAuthMode("register"));
+        }
+
+        // Alternar visibilidade de senha (olho)
+        if (this.authTogglePwdBtn) {
+            this.authTogglePwdBtn.addEventListener("click", () => {
+                const isPwd = this.passwordInput && this.passwordInput.type === "password";
+                const nextType = isPwd ? "text" : "password";
+                if (this.passwordInput) this.passwordInput.type = nextType;
+                if (this.passwordConfirmInput) this.passwordConfirmInput.type = nextType;
+                this.authTogglePwdBtn.textContent = isPwd ? "🙈" : "👁️";
+            });
+        }
+
         const openUserModal = () => {
             this.sound.init();
-            this.usernameInput.value = this.currentUser === "Piloto" ? "" : this.currentUser;
+            setAuthMode("login");
+            if (this.usernameInput) this.usernameInput.value = this.currentUser === "Piloto" ? "" : this.currentUser;
+            if (this.passwordInput) this.passwordInput.value = "";
+            if (this.passwordConfirmInput) this.passwordConfirmInput.value = "";
             this.usernameStatus.textContent = "";
             this.renderSavedAccounts();
-            this.userModal.classList.add("active");
-            setTimeout(() => this.usernameInput.focus(), 200);
+            if (this.userModal) this.userModal.classList.add("active");
+            setTimeout(() => {
+                if (this.usernameInput && !this.usernameInput.value) {
+                    this.usernameInput.focus();
+                } else if (this.passwordInput) {
+                    this.passwordInput.focus();
+                }
+            }, 200);
         };
+
         if (this.hudUserBadge) this.hudUserBadge.addEventListener("click", openUserModal);
         if (this.menuUserBadge) this.menuUserBadge.addEventListener("click", openUserModal);
         if (this.closeUserModalBtn) this.closeUserModalBtn.addEventListener("click", () => {
-            this.userModal.classList.remove("active");
+            if (this.userModal) this.userModal.classList.remove("active");
         });
 
-        if (this.loginUsernameBtn) {
-            this.loginUsernameBtn.addEventListener("click", () => {
-                this.loginUser(this.usernameInput.value.trim());
-            });
-        }
+        // Submissão do Login
+        const submitLogin = () => {
+            const u = this.usernameInput ? this.usernameInput.value.trim() : "";
+            const p = this.passwordInput ? this.passwordInput.value : "";
+            this.loginUser(u, p);
+        };
 
-        if (this.usernameInput) {
-            this.usernameInput.addEventListener("keydown", (e) => {
-                if (e.key === "Enter") {
-                    this.loginUser(this.usernameInput.value.trim());
-                }
-            });
+        // Submissão do Cadastro
+        const submitRegister = () => {
+            const u = this.usernameInput ? this.usernameInput.value.trim() : "";
+            const p = this.passwordInput ? this.passwordInput.value : "";
+            const c = this.passwordConfirmInput ? this.passwordConfirmInput.value : "";
+            this.registerUser(u, p, c);
+        };
+
+        if (this.loginUsernameBtn) {
+            this.loginUsernameBtn.addEventListener("click", submitLogin);
         }
 
         if (this.saveUsernameBtn) {
-            this.saveUsernameBtn.addEventListener("click", () => {
-                const val = this.usernameInput.value.trim();
-                if (val.length < 3) {
-                    this.usernameStatus.className = "status-msg error";
-                    this.usernameStatus.textContent = "O nome precisa ter pelo menos 3 letras!";
-                    return;
-                }
-                this.registerUser(val);
-            });
+            this.saveUsernameBtn.addEventListener("click", submitRegister);
         }
+
+        // Tecla Enter nos campos
+        const handleEnterKey = (e) => {
+            if (e.key === "Enter") {
+                if (this.authMode === "register") {
+                    submitRegister();
+                } else {
+                    submitLogin();
+                }
+            }
+        };
+
+        if (this.usernameInput) this.usernameInput.addEventListener("keydown", handleEnterKey);
+        if (this.passwordInput) this.passwordInput.addEventListener("keydown", handleEnterKey);
+        if (this.passwordConfirmInput) this.passwordConfirmInput.addEventListener("keydown", handleEnterKey);
 
         // Botões de Seleção de Pilotos
         const openPilotModal = () => {
@@ -6146,7 +6216,7 @@ class PaymentSystem {
 
 
 
-    saveAccountData(username) {
+    saveAccountData(username, password = '') {
         if (!username || username === "Piloto") return;
         const accData = {
             username: this.currentUser,
@@ -6157,6 +6227,14 @@ class PaymentSystem {
             unlockedPilots: this.unlockedPilots,
             upgrades: this.upgrades || {}
         };
+        if (password) {
+            let h = 5381;
+            for (let i = 0; i < password.length; i++) { h = ((h << 5) + h) + password.charCodeAt(i); h = h & h; }
+            accData.passwordHash = "h_" + Math.abs(h).toString(16) + "_" + password.length;
+        } else {
+            const old = this.loadAccountData(username);
+            if (old && old.passwordHash) accData.passwordHash = old.passwordHash;
+        }
         localStorage.setItem(`roadster_acc_${username.toLowerCase()}`, JSON.stringify(accData));
 
         localStorage.setItem("roadster_user", this.currentUser);
@@ -6244,59 +6322,96 @@ class PaymentSystem {
             chip.className = `account-chip ${acc.toLowerCase() === this.currentUser.toLowerCase() ? 'active' : ''}`;
             chip.innerHTML = `👤 ${acc} <span style="color:#fbbf24; font-size:0.72rem;">(🪙 ${coins})</span>`;
             chip.addEventListener("click", () => {
-                this.switchUser(acc);
-                this.userModal.classList.remove("active");
+                if (this.usernameInput) this.usernameInput.value = acc;
+                if (this.passwordInput) {
+                    this.passwordInput.value = "";
+                    this.passwordInput.focus();
+                }
+                this.usernameStatus.className = "status-msg";
+                this.usernameStatus.textContent = `Piloto ${acc} selecionado. Digite a senha para entrar.`;
             });
             container.appendChild(chip);
         });
     }
 
-    async loginUser(targetUsername) {
+    async loginUser(targetUsername, password = '') {
         const name = (targetUsername || '').trim();
+        const pwd = (password || '').toString();
+
         if (!name) {
             this.usernameStatus.className = "status-msg error";
-            this.usernameStatus.textContent = "Digite o nome do piloto!";
+            this.usernameStatus.textContent = "Digite seu nome de usuário!";
+            if (this.usernameInput) this.usernameInput.focus();
+            return;
+        }
+        if (!pwd) {
+            this.usernameStatus.className = "status-msg error";
+            this.usernameStatus.textContent = "Digite sua senha para entrar!";
+            if (this.passwordInput) this.passwordInput.focus();
             return;
         }
 
         this.usernameStatus.className = "status-msg";
-        this.usernameStatus.textContent = "Buscando piloto...";
+        this.usernameStatus.textContent = "Autenticando credenciais...";
 
-        const res = await this.apiCall('/api/user/login', 'POST', { username: name });
-        if (res && res.success && res.user) {
-            this.currentUser = res.user.username;
-            this.totalCoins = res.user.coins;
-            this.selectedCar = res.user.selected_car || 'roadster';
-            this.unlockedCars = res.user.unlocked_cars || ['roadster'];
-            this.upgrades = res.user.upgrades || {};
-            this.saveAccountData(this.currentUser);
+        try {
+            const res = await this.apiCall('/api/user/login', 'POST', { username: name, password: pwd });
+            if (res && res.success && res.user) {
+                this.currentUser = res.user.username;
+                this.totalCoins = res.user.coins;
+                this.selectedCar = res.user.selected_car || 'roadster';
+                this.unlockedCars = res.user.unlocked_cars || ['roadster'];
+                if (res.user.selected_map) this.selectedMap = res.user.selected_map;
+                if (res.user.unlocked_maps) this.unlockedMaps = res.user.unlocked_maps;
+                this.upgrades = res.user.upgrades || {};
+                this.saveAccountData(this.currentUser, pwd);
 
-            this.usernameStatus.className = "status-msg success";
-            this.usernameStatus.textContent = `Piloto ${this.currentUser} conectado!`;
-            this.buildPlayerVehicle(this.selectedCar);
-            this.updateUserUI();
-            this.renderGarageCards();
-            this.sound.playHeart();
+                this.usernameStatus.className = "status-msg success";
+                this.usernameStatus.textContent = `Bem-vindo de volta, ${this.currentUser}!`;
+                this.buildPlayerVehicle(this.selectedCar);
+                this.updateUserUI();
+                this.renderGarageCards();
+                if (typeof this.renderMapsCards === 'function') this.renderMapsCards();
+                this.sound.playHeart();
 
-            setTimeout(() => {
-                this.userModal.classList.remove("active");
-            }, 650);
-            return;
+                setTimeout(() => {
+                    if (this.userModal) this.userModal.classList.remove("active");
+                }, 700);
+                return;
+            } else if (res && res.error) {
+                this.usernameStatus.className = "status-msg error";
+                this.usernameStatus.textContent = res.error;
+                return;
+            }
+        } catch(err) {
+            // Em caso de falha de conexão com backend, autentica localmente
+            console.warn("[Auth] Backend inacessível, checando local:", err);
         }
 
+        // Fallback local com validação de senha
         const local = this.loadAccountData(name);
         if (local) {
+            if (local.passwordHash) {
+                let h = 5381;
+                for (let i = 0; i < pwd.length; i++) { h = ((h << 5) + h) + pwd.charCodeAt(i); h = h & h; }
+                const testHash = "h_" + Math.abs(h).toString(16) + "_" + pwd.length;
+                if (testHash !== local.passwordHash) {
+                    this.usernameStatus.className = "status-msg error";
+                    this.usernameStatus.textContent = "Senha incorreta! Verifique sua senha e tente novamente.";
+                    return;
+                }
+            }
             this.switchUser(name);
             this.usernameStatus.className = "status-msg success";
-            this.usernameStatus.textContent = `Acesso local liberado para ${name}!`;
+            this.usernameStatus.textContent = `Acesso liberado para ${name}!`;
             setTimeout(() => {
-                this.userModal.classList.remove("active");
-            }, 650);
+                if (this.userModal) this.userModal.classList.remove("active");
+            }, 700);
             return;
         }
 
         this.usernameStatus.className = "status-msg error";
-        this.usernameStatus.textContent = "Piloto não encontrado. Se for seu 1º acesso, clique em CRIAR NOVO PILOTO.";
+        this.usernameStatus.textContent = "Piloto não encontrado. Se for seu 1º acesso, clique na aba 'CRIAR CONTA'.";
     }
 
     async initUserData() {
@@ -6335,55 +6450,103 @@ class PaymentSystem {
         if (this.modalPilotName) this.modalPilotName.textContent = pilot.name;
     }
 
-    async registerUser(newUsername) {
+    async registerUser(newUsername, newPassword = '', confirmPassword = '') {
         const name = (newUsername || '').trim();
+        const pwd = (newPassword || '').toString();
+        const confirm = (confirmPassword || '').toString();
+
         if (!name || name.length < 3) {
             this.usernameStatus.className = "status-msg error";
-            this.usernameStatus.textContent = "O nome precisa ter pelo menos 3 caracteres.";
+            this.usernameStatus.textContent = "O nome de usuário precisa ter no mínimo 3 caracteres.";
+            if (this.usernameInput) this.usernameInput.focus();
+            return;
+        }
+
+        const cleanName = name.replace(/[^a-zA-Z0-9_-]/g, '');
+        if (!cleanName || cleanName.length < 3) {
+            this.usernameStatus.className = "status-msg error";
+            this.usernameStatus.textContent = "Use apenas letras, números, '-' ou '_' no nome.";
+            return;
+        }
+
+        if (!pwd || pwd.length < 4) {
+            this.usernameStatus.className = "status-msg error";
+            this.usernameStatus.textContent = "A senha deve ter no mínimo 4 caracteres!";
+            if (this.passwordInput) this.passwordInput.focus();
+            return;
+        }
+
+        if (confirm !== undefined && confirm !== pwd) {
+            this.usernameStatus.className = "status-msg error";
+            this.usernameStatus.textContent = "As senhas não coincidem! Verifique a confirmação.";
+            if (this.passwordConfirmInput) this.passwordConfirmInput.focus();
             return;
         }
 
         this.usernameStatus.className = "status-msg";
-        this.usernameStatus.textContent = "Registrando piloto...";
+        this.usernameStatus.textContent = "Criando seu piloto com segurança...";
 
-        const res = await this.apiCall('/api/user/register', 'POST', { username: name });
-        if (res && res.success && res.user) {
-            this.currentUser = res.user.username;
-            this.totalCoins = res.user.coins;
-            this.selectedCar = res.user.selected_car || 'roadster';
-            this.unlockedCars = res.user.unlocked_cars || ['roadster'];
-            this.upgrades = res.user.upgrades || {};
-            this.saveAccountData(this.currentUser);
+        try {
+            const res = await this.apiCall('/api/user/register', 'POST', { username: cleanName, password: pwd });
+            if (res && res.success && res.user) {
+                this.currentUser = res.user.username;
+                this.totalCoins = res.user.coins || 150;
+                this.selectedCar = res.user.selected_car || 'roadster';
+                this.unlockedCars = res.user.unlocked_cars || ['roadster'];
+                this.selectedMap = res.user.selected_map || 'rodovia_dupla';
+                this.unlockedMaps = res.user.unlocked_maps || ['rodovia_dupla'];
+                this.upgrades = res.user.upgrades || {};
+                this.saveAccountData(this.currentUser, pwd);
 
-            this.usernameStatus.className = "status-msg success";
-            this.usernameStatus.textContent = res.isNew ? "Piloto registrado com sucesso no Neon DB!" : "Perfil sincronizado!";
-            
-            this.buildPlayerVehicle(this.selectedCar);
-            this.updateUserUI();
-            this.renderGarageCards();
-            this.sound.playHeart();
+                this.usernameStatus.className = "status-msg success";
+                this.usernameStatus.textContent = "Conta criada com sucesso! Carregando piloto...";
+                
+                this.buildPlayerVehicle(this.selectedCar);
+                this.updateUserUI();
+                this.renderGarageCards();
+                if (typeof this.renderMapsCards === 'function') this.renderMapsCards();
+                this.sound.playHeart();
 
-            setTimeout(() => {
-                this.userModal.classList.remove("active");
-            }, 650);
-        } else {
-            this.currentUser = name;
-            this.totalCoins = 0;
-            this.selectedCar = 'roadster';
-            this.unlockedCars = ['roadster'];
-            this.upgrades = { phantom_air: 0, cybertruck_armor: 0 };
-            this.saveAccountData(name);
-
-            this.usernameStatus.className = "status-msg success";
-            this.usernameStatus.textContent = "Piloto salvo localmente!";
-            this.buildPlayerVehicle(this.selectedCar);
-            this.updateUserUI();
-            this.renderGarageCards();
-
-            setTimeout(() => {
-                this.userModal.classList.remove("active");
-            }, 650);
+                setTimeout(() => {
+                    if (this.userModal) this.userModal.classList.remove("active");
+                }, 800);
+                return;
+            } else if (res && res.error) {
+                this.usernameStatus.className = "status-msg error";
+                this.usernameStatus.textContent = res.error;
+                return;
+            }
+        } catch(err) {
+            console.warn("[Auth] Backend indisponível para registro, registrando local:", err);
         }
+
+        // Fallback local seguro
+        const existing = this.loadAccountData(cleanName);
+        if (existing) {
+            this.usernameStatus.className = "status-msg error";
+            this.usernameStatus.textContent = "Este nome já existe neste dispositivo. Faça login com sua senha.";
+            return;
+        }
+
+        this.currentUser = cleanName;
+        this.totalCoins = 150;
+        this.selectedCar = 'roadster';
+        this.unlockedCars = ['roadster'];
+        this.selectedMap = 'rodovia_dupla';
+        this.unlockedMaps = ['rodovia_dupla'];
+        this.upgrades = { phantom_air: 0, cybertruck_armor: 0 };
+        this.saveAccountData(cleanName, pwd);
+
+        this.usernameStatus.className = "status-msg success";
+        this.usernameStatus.textContent = "Piloto cadastrado com sucesso localmente!";
+        this.buildPlayerVehicle(this.selectedCar);
+        this.updateUserUI();
+        this.renderGarageCards();
+        if (typeof this.renderMapsCards === 'function') this.renderMapsCards();
+
+        setTimeout(() => {
+            if (this.userModal) this.userModal.classList.remove("active");
+        }, 800);
     }
 
     async submitRunScore(score, distance, coinsEarned) {
