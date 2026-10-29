@@ -124,3 +124,4 @@ export class SnapshotInterpolator {
         return this.lastInterpolated;
     }
 }
+

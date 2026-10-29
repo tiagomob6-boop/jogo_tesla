@@ -1,5 +1,8 @@
 import { RoadsterDashGame } from './core/RoadsterDashGame.js';
 
-window.addEventListener('DOMContentLoaded', () => {
-    window.game = new RoadsterDashGame();
-});
+if (typeof window !== 'undefined') {
+    window.RoadsterDashGame = RoadsterDashGame;
+    window.addEventListener('DOMContentLoaded', () => {
+        window.game = new RoadsterDashGame();
+    });
+}

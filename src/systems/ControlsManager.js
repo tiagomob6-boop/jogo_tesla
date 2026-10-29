@@ -1,10 +1,11 @@
-import { LANES, GROUND_Y, FLIGHT_Y, SLAM_FORCE } from '../core/Config.js';
+import { LANES, GROUND_Y, FLIGHT_Y, GRAVITY, SLAM_FORCE, CAR_CATALOG, PILOT_CATALOG, COIN_PACKAGES, DAILY_MISSION_DEFS, API_URL } from '../core/Config.js';
 
-export const ControlsManager = {
+export const ControlsManager = (Base) => class extends Base {
     initControls() {
         // Teclado
         window.addEventListener("keydown", (e) => {
             if (!this.isRunning || this.isPaused) return;
+
             // Modo 2 Jogadores no Mesmo Teclado (Local Versus)
             if (this.isMultiplayer && this.mpMode === "local2p") {
                 // Controles do Jogador 1 (WASD)
@@ -24,6 +25,7 @@ export const ControlsManager = {
                     this.slamDown();
                     return;
                 }
+
                 // Controles do Jogador 2 (Setas)
                 if (e.key === "ArrowLeft") {
                     this.changeP2Lane(-1);
@@ -42,6 +44,7 @@ export const ControlsManager = {
                     return;
                 }
             }
+
             // Modo Solo / Online / Duelo IA (Teclas Universais)
             switch (e.key) {
                 case "ArrowLeft":
@@ -68,6 +71,7 @@ export const ControlsManager = {
                     break;
             }
         });
+
         // Botões Touchscreen na tela para celular
         const bindTouchBtn = (element, action) => {
             if (!element) return;
@@ -80,14 +84,17 @@ export const ControlsManager = {
                 action();
             });
         };
+
         bindTouchBtn(this.btnLeft, () => this.changeLane(-1));
         bindTouchBtn(this.btnRight, () => this.changeLane(1));
         bindTouchBtn(this.btnSlam, () => this.slamDown());
         bindTouchBtn(this.boostTouchBtn, () => this.toggleFlight());
+
         // Suporte a Swipe na tela
         let touchStartX = 0;
         let touchStartY = 0;
         let touchStartTime = 0;
+
         window.addEventListener("touchstart", (e) => {
             if (e.target.closest("button")) return; // Não interfere nos botões
             const touch = e.touches[0];
@@ -95,12 +102,14 @@ export const ControlsManager = {
             touchStartY = touch.clientY;
             touchStartTime = Date.now();
         }, { passive: true });
+
         window.addEventListener("touchend", (e) => {
             if (!this.isRunning || this.isPaused || e.target.closest("button")) return;
             const touch = e.changedTouches[0];
             const deltaX = touch.clientX - touchStartX;
             const deltaY = touch.clientY - touchStartY;
             const deltaTime = Date.now() - touchStartTime;
+
             if (deltaTime < 400) {
                 if (Math.abs(deltaX) > Math.abs(deltaY)) {
                     if (deltaX > 25) this.changeLane(1);
@@ -111,13 +120,16 @@ export const ControlsManager = {
                 }
             }
         }, { passive: true });
-    },
+    }
+
+
 
     changeLane(dir) {
         const targetLane = this.currentLane + dir;
         if (targetLane >= 0 && targetLane <= 2) {
             this.currentLane = targetLane;
             this.sound.playLaneChange();
+
             if (this.isFlying) {
                 this.sound.playAirPuff();
                 const truckPos = this.truckGroup.position;
@@ -130,7 +142,9 @@ export const ControlsManager = {
                 }
             }
         }
-    },
+    }
+
+
 
     toggleFlight() {
         if (!this.isFlying) {
@@ -146,7 +160,9 @@ export const ControlsManager = {
             this.isFlying = false;
             this.triggerActionPopup("POUSANDO...");
         }
-    },
+    }
+
+
 
     slamDown() {
         if (this.isFlying) {
@@ -162,7 +178,9 @@ export const ControlsManager = {
             this.velocityY = SLAM_FORCE;
             this.sound.playSlam();
         }
-    },
+    }
+
+
 
     triggerActionPopup(text) {
         this.actionPopup.textContent = text;
@@ -172,9 +190,11 @@ export const ControlsManager = {
             this.actionPopup.classList.remove("show");
         }, 1200);
     }
+
     // =================================================================
     // FEED DE COMBOS (estilo Roadster Dash): "+10 STREAK", "BARREL ROLL +180"...
-    // =================================================================,
+    // =================================================================
+
 
     addScoreEvent(label, points, big = false) {
         this.streak = (this.streak || 0) + 1;
@@ -183,6 +203,7 @@ export const ControlsManager = {
         const streakBonus = this.streak >= 2 ? Math.min(this.streak, 20) * 10 : 0;
         const total = points + streakBonus;
         this.scorePoints += total;
+
         if (this.comboFeed) {
             const item = document.createElement("div");
             item.className = "combo-item" + (big ? " big" : "");
@@ -194,12 +215,15 @@ export const ControlsManager = {
             item.appendChild(lbl);
             item.appendChild(pts);
             this.comboFeed.appendChild(item);
+
             const items = this.comboFeed.querySelectorAll(".combo-item");
             if (items.length > 4) items[0].remove();
             setTimeout(() => item.remove(), 2000);
         }
         this.updateStreakUI(true);
-    },
+    }
+
+
 
     updateStreakUI(bump) {
         if (!this.streakLine) return;
@@ -214,16 +238,20 @@ export const ControlsManager = {
         } else {
             this.streakLine.classList.remove("active");
         }
-    },
+    }
+
+
 
     resetStreak() {
         this.streak = 0;
         this.streakTimer = 0;
         this.updateStreakUI(false);
     }
+
     // =================================================================
     // SISTEMA MULTIPLAYER & DUELOS (ONLINE, 2P LOCAL E CYBER IA)
-    // =================================================================,
+    // =================================================================
+
 
     triggerHaptic(type) {
         if (!this.settings || this.settings.haptics === false) return;
@@ -255,9 +283,11 @@ export const ControlsManager = {
             }
         } catch(e) {}
     }
+
     // =================================================================
     // VOZ SINTETIZADA DO LOCUTOR DE ARCADE (WEB SPEECH SYNTHESIS API)
-    // =================================================================,
+    // =================================================================
+
 
     speakAnnouncer(text, priority = false) {
         if (!this.settings || this.settings.announcer === false) return;
@@ -277,8 +307,10 @@ export const ControlsManager = {
             window.speechSynthesis.speak(utter);
         } catch(e) {}
     }
+
     // =================================================================
     // GERENCIAMENTO DE MISSÕES DIÁRIAS / DESAFIOS
     // =================================================================
+
 
 };

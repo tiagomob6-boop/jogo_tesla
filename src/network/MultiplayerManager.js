@@ -1,7 +1,7 @@
-import { LANES, GROUND_Y, FLIGHT_Y, SLAM_FORCE, API_URL, CAR_CATALOG, PILOT_CATALOG } from '../core/Config.js';
+import { LANES, GROUND_Y, FLIGHT_Y, GRAVITY, SLAM_FORCE, CAR_CATALOG, PILOT_CATALOG, COIN_PACKAGES, DAILY_MISSION_DEFS, API_URL } from '../core/Config.js';
 import { SnapshotInterpolator } from './SnapshotInterpolator.js';
 
-export const MultiplayerManager = {
+export const MultiplayerManager = (Base) => class extends Base {
     initMultiplayer() {
         this.mpInterpolator = new SnapshotInterpolator(100);
         this.mpLastRivalX = 0;
@@ -24,6 +24,7 @@ export const MultiplayerManager = {
                 if (t.content) t.content.classList.add("active");
             });
         });
+
         // Abrir / Fechar Modal de Multiplayer
         if (this.openMultiplayerBtn) {
             this.openMultiplayerBtn.addEventListener("click", () => {
@@ -37,6 +38,7 @@ export const MultiplayerManager = {
                 if (this.multiplayerModal) this.multiplayerModal.classList.remove("active");
             });
         }
+
         // Partida Rápida (Matchmaking)
         if (this.mpQuickMatchBtn) {
             this.mpQuickMatchBtn.addEventListener("click", () => {
@@ -44,6 +46,7 @@ export const MultiplayerManager = {
                 this.quickMatchMultiplayer();
             });
         }
+
         // Criar Sala Privada
         if (this.mpCreateRoomBtn) {
             this.mpCreateRoomBtn.addEventListener("click", () => {
@@ -51,6 +54,7 @@ export const MultiplayerManager = {
                 this.createMultiplayerRoom();
             });
         }
+
         // Iniciar Corrida Manualmente (Host)
         if (this.mpStartRoomBtn) {
             this.mpStartRoomBtn.addEventListener("click", () => {
@@ -60,6 +64,7 @@ export const MultiplayerManager = {
                 }
             });
         }
+
         // Entrar com Código
         if (this.mpJoinRoomBtn) {
             this.mpJoinRoomBtn.addEventListener("click", () => {
@@ -69,6 +74,7 @@ export const MultiplayerManager = {
                 this.joinMultiplayerRoom(code);
             });
         }
+
         // Iniciar Versus Local (2 Jogadores no Mesmo Teclado)
         if (this.mpStartLocalBtn) {
             this.mpStartLocalBtn.addEventListener("click", () => {
@@ -77,6 +83,7 @@ export const MultiplayerManager = {
                 this.startMultiplayerRace('local2p', { name: 'Piloto 2 (Rosa)', car: 'rusty' });
             });
         }
+
         // Iniciar Duelo contra IA
         if (this.mpStartAiBtn) {
             this.mpStartAiBtn.addEventListener("click", () => {
@@ -85,6 +92,7 @@ export const MultiplayerManager = {
                 this.startMultiplayerRace('ai', { name: 'Cyber Ghost IA', car: 'solaris' });
             });
         }
+
         // Modal de Fim de Duelo
         if (this.mpPlayAgainBtn) {
             this.mpPlayAgainBtn.addEventListener("click", () => {
@@ -111,7 +119,9 @@ export const MultiplayerManager = {
                 this.startScreen.classList.add("active");
             });
         }
-    },
+    }
+
+
 
     connectMultiplayerWebSocket(onOpenCallback) {
         if (this.mpWs && this.mpWs.readyState === WebSocket.OPEN) {
@@ -119,17 +129,20 @@ export const MultiplayerManager = {
             return;
         }
         if (this.mpWs && this.mpWs.readyState === WebSocket.CONNECTING) return;
+
         const loc = window.location;
         const isLocal = loc.hostname === "localhost" || loc.hostname === "127.0.0.1";
         const wsProto = loc.protocol === "https:" ? "wss:" : "ws:";
         const wsHost = isLocal ? `${loc.hostname}:${loc.port || 3000}` : "jogo-tesla.onrender.com";
         const wsUrl = `${wsProto}//${wsHost}`;
+
         try {
             this.mpWs = new WebSocket(wsUrl);
         } catch(e) {
             if (this.mpOnlineStatus) this.mpOnlineStatus.textContent = "Servidor offline. Tente o modo 2P Local ou Duelo IA!";
             return;
         }
+
         this.mpWs.onopen = () => {
             if (this.mpOnlineStatus) {
                 this.mpOnlineStatus.className = "status-msg success";
@@ -137,25 +150,30 @@ export const MultiplayerManager = {
             }
             if (onOpenCallback) onOpenCallback();
         };
+
         this.mpWs.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
                 this.handleMultiplayerMessage(data);
             } catch(e) {}
         };
+
         this.mpWs.onerror = () => {
             if (this.mpOnlineStatus) {
                 this.mpOnlineStatus.className = "status-msg error";
                 this.mpOnlineStatus.textContent = "Servidor multiplayer iniciando ou inacessível. O modo 2P Local está disponível!";
             }
         };
+
         this.mpWs.onclose = () => {
             if (this.mpOnlineStatus) {
                 this.mpOnlineStatus.className = "status-msg";
                 this.mpOnlineStatus.textContent = "Desconectado do servidor multiplayer.";
             }
         };
-    },
+    }
+
+
 
     handleMultiplayerMessage(data) {
         switch (data.type) {
@@ -168,6 +186,7 @@ export const MultiplayerManager = {
                 if (this.mpRoomStatusLabel) this.mpRoomStatusLabel.textContent = "Aguardando rival entrar com este código...";
                 if (this.mpStartRoomBtn) this.mpStartRoomBtn.style.display = "none";
                 break;
+
             case "room_joined":
                 this.mpRoomCode = data.roomCode;
                 this.mpPlayerId = data.playerId;
@@ -176,6 +195,7 @@ export const MultiplayerManager = {
                 if (this.mpRoomCodeLabel) this.mpRoomCodeLabel.textContent = data.roomCode;
                 if (this.mpRoomStatusLabel) this.mpRoomStatusLabel.textContent = "Você entrou na sala! Aguardando anfitrião iniciar...";
                 break;
+
             case "player_joined":
                 if (this.mpIsHost) {
                     if (this.mpRoomStatusLabel) this.mpRoomStatusLabel.textContent = `⚡ Piloto ${data.username} entrou na sala!`;
@@ -183,24 +203,28 @@ export const MultiplayerManager = {
                     this.sound.playMissionComplete();
                 }
                 break;
+
             case "waiting_match":
                 if (this.mpOnlineStatus) {
                     this.mpOnlineStatus.className = "status-msg";
                     this.mpOnlineStatus.textContent = "🔍 Procurando adversário online na rodovia...";
                 }
                 break;
+
             case "match_found":
                 if (this.mpOnlineStatus) {
                     this.mpOnlineStatus.className = "status-msg success";
                     this.mpOnlineStatus.textContent = "⚡ Rival encontrado! Preparando duelo...";
                 }
                 break;
+
             case "race_start":
                 if (this.multiplayerModal) this.multiplayerModal.classList.remove("active");
                 this.triggerActionPopup("3... 2... 1... LARGADA!");
                 this.speakAnnouncer("Duel Start!", true);
                 this.startMultiplayerRace('online', { name: 'Rival Online', car: 'solaris' });
                 break;
+
             case "rival_update":
                 this.mpRivalData = {
                     x: data.x,
@@ -212,10 +236,8 @@ export const MultiplayerManager = {
                     shield: data.shield,
                     name: data.username || 'Rival'
                 };
-                if (this.mpInterpolator) {
-                    this.mpInterpolator.addSnapshot(data);
-                }
                 break;
+
             case "rival_crashed":
                 this.rivalCrashed = true;
                 this.rivalFinalDist = Math.max(1, Math.floor(data.dist || this.mpRivalData.dist || 0));
@@ -229,11 +251,13 @@ export const MultiplayerManager = {
                     this.speakAnnouncer("Rival Down! Keep Going!", true);
                 }
                 break;
+
             case "player_left":
                 if (this.isRunning && this.isMultiplayer && this.mpMode === 'online') {
                     this.finishDuel(true, "O Rival desconectou da corrida!");
                 }
                 break;
+
             case "error":
                 if (this.mpOnlineStatus) {
                     this.mpOnlineStatus.className = "status-msg error";
@@ -241,7 +265,9 @@ export const MultiplayerManager = {
                 }
                 break;
         }
-    },
+    }
+
+
 
     createMultiplayerRoom() {
         this.connectMultiplayerWebSocket(() => {
@@ -251,7 +277,9 @@ export const MultiplayerManager = {
                 selectedCar: this.selectedCar
             }));
         });
-    },
+    }
+
+
 
     joinMultiplayerRoom(code) {
         this.connectMultiplayerWebSocket(() => {
@@ -262,7 +290,9 @@ export const MultiplayerManager = {
                 selectedCar: this.selectedCar
             }));
         });
-    },
+    }
+
+
 
     quickMatchMultiplayer() {
         this.connectMultiplayerWebSocket(() => {
@@ -272,7 +302,9 @@ export const MultiplayerManager = {
                 selectedCar: this.selectedCar
             }));
         });
-    },
+    }
+
+
 
     createNameTagSprite(text, color = "#38bdf8") {
         const canvas = document.createElement("canvas");
@@ -280,6 +312,7 @@ export const MultiplayerManager = {
         canvas.height = 72;
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, 256, 72);
+
         // Fundo escuro com borda neon
         ctx.fillStyle = "rgba(10, 18, 38, 0.9)";
         ctx.strokeStyle = color;
@@ -288,6 +321,7 @@ export const MultiplayerManager = {
         ctx.roundRect(8, 8, 240, 56, 28);
         ctx.fill();
         ctx.stroke();
+
         // Texto iluminado
         ctx.font = "bold 26px 'Segoe UI', Montserrat, sans-serif";
         ctx.fillStyle = "#ffffff";
@@ -296,26 +330,32 @@ export const MultiplayerManager = {
         ctx.shadowColor = color;
         ctx.shadowBlur = 8;
         ctx.fillText(text.substring(0, 14), 128, 36);
+
         const tex = new THREE.CanvasTexture(canvas);
         const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false });
         const sprite = new THREE.Sprite(mat);
         sprite.scale.set(3.4, 0.95, 1);
         sprite.position.set(0, 2.2, 0);
         return sprite;
-    },
+    }
+
+
 
     startMultiplayerRace(mode, rivalInfo) {
-        this.isMultiplayer = true;
         if (this.mpInterpolator) this.mpInterpolator.reset();
         this.mpLastRivalX = 0;
+        this.isMultiplayer = true;
         this.mpMode = mode;
+
         // Prepara P1 na faixa esquerda (faixa 0)
         this.currentLane = 0;
         this.playerX = LANES[0];
+
         // Prepara P2 ou Rival na faixa direita (faixa 2)
         const rivalName = rivalInfo.name || (mode === 'local2p' ? 'Piloto 2' : (mode === 'ai' ? 'Cyber Ghost IA' : 'Rival'));
         const rivalCar = rivalInfo.car || 'phantom';
         this.buildRivalVehicle(rivalCar, rivalName, mode === 'local2p');
+
         // Reset de estado dos competidores (sobrevivência até o fim)
         this.p1Crashed = false;
         this.p1FinalDist = 0;
@@ -324,6 +364,7 @@ export const MultiplayerManager = {
         this.p2.crashed = false;
         this.p2.finalDist = 0;
         this.aiPostCrashTimer = 0;
+
         // Configuração P2 (Local Versus)
         this.p2.lane = 2;
         this.p2.x = LANES[2];
@@ -336,6 +377,7 @@ export const MultiplayerManager = {
         this.p2.lives = 3;
         this.p2.crashed = false;
         this.p2.shieldTimer = 0;
+
         // Configuração Rival Online / IA
         this.mpRivalData.x = LANES[2];
         this.mpRivalData.y = GROUND_Y;
@@ -343,6 +385,7 @@ export const MultiplayerManager = {
         this.mpRivalData.speed = 78;
         this.mpRivalData.crashed = false;
         this.mpRivalData.name = rivalName;
+
         // Configuração HUD Banner
         if (this.hudMpBanner) this.hudMpBanner.style.display = "block";
         if (this.mpNameP1) this.mpNameP1.textContent = mode === 'local2p' ? "P1 (Você)" : (this.currentUser || "Você");
@@ -353,8 +396,11 @@ export const MultiplayerManager = {
             this.mpGapLabel.className = "mp-gap-indicator";
             this.mpGapLabel.textContent = "+0m";
         }
+
         this.startGame();
-    },
+    }
+
+
 
     changeP2Lane(dir) {
         if (!this.isMultiplayer || this.mpMode !== 'local2p' || this.p2.crashed) return;
@@ -364,7 +410,9 @@ export const MultiplayerManager = {
             this.p2.targetX = LANES[nextLane];
             this.sound.playLaneChange();
         }
-    },
+    }
+
+
 
     toggleP2Flight() {
         if (!this.isMultiplayer || this.mpMode !== 'local2p' || this.p2.crashed) return;
@@ -372,7 +420,9 @@ export const MultiplayerManager = {
         if (this.p2.isFlying) {
             this.sound.playBoost();
         }
-    },
+    }
+
+
 
     slamP2Down() {
         if (!this.isMultiplayer || this.mpMode !== 'local2p' || this.p2.crashed) return;
@@ -380,11 +430,15 @@ export const MultiplayerManager = {
             this.p2.isFlying = false;
             this.p2.velocityY = SLAM_FORCE;
         }
-    },
+    }
+
+
 
     updateMultiplayer(delta) {
         if (!this.isMultiplayer || !this.mpRivalVehicle) return;
+
         let rivalDist = 0;
+
         // 1. MODO 2 JOGADORES NO MESMO TECLADO (LOCAL VERSUS)
         if (this.mpMode === 'local2p') {
             if (!this.p2.crashed) {
@@ -392,6 +446,7 @@ export const MultiplayerManager = {
                 this.p2.x += (this.p2.targetX - this.p2.x) * 14.0 * delta;
                 this.p2.speed = this.currentSpeed;
                 this.p2.dist += this.p2.speed * delta;
+
                 // Física vertical (voo e gravidade)
                 if (this.p2.isFlying) {
                     this.p2.y += (FLIGHT_Y - this.p2.y) * 6.0 * delta;
@@ -403,9 +458,11 @@ export const MultiplayerManager = {
                         this.p2.velocityY = 0;
                     }
                 }
+
                 // Atualiza posição do veículo no Three.js
                 const relativeZ = this.truckGroup.position.z + (this.p2.dist - this.scoreDistance);
                 this.mpRivalVehicle.position.set(this.p2.x, this.p2.y, relativeZ);
+
                 // Colisão do P2 com tráfego
                 for (let i = 0; i < this.trafficCars.length; i++) {
                     const car = this.trafficCars[i];
@@ -434,6 +491,7 @@ export const MultiplayerManager = {
             }
             rivalDist = this.p2.crashed ? this.p2.finalDist : this.p2.dist;
         }
+
         // 2. MODO DUELO CONTRA CYBER IA
         else if (this.mpMode === 'ai') {
             if (!this.rivalCrashed) {
@@ -442,8 +500,10 @@ export const MultiplayerManager = {
                 let targetAiSpeed = this.currentSpeed;
                 if (distDiff < -15) targetAiSpeed += 6;
                 else if (distDiff > 25) targetAiSpeed -= 5;
+
                 this.mpRivalData.speed += (targetAiSpeed - this.mpRivalData.speed) * 3.0 * delta;
                 this.mpRivalData.dist += this.mpRivalData.speed * delta;
+
                 // IA de desvio de tráfego
                 const relativeZ = this.truckGroup.position.z + (this.mpRivalData.dist - this.scoreDistance);
                 for (const car of this.trafficCars) {
@@ -472,8 +532,10 @@ export const MultiplayerManager = {
                         break;
                     }
                 }
+
                 this.mpRivalVehicle.position.set(this.mpRivalData.x, GROUND_Y, relativeZ);
             }
+
             // Se P1 bateu e IA ainda está viva, limite o tempo da IA para finalizar o duelo
             if (this.p1Crashed && !this.rivalCrashed) {
                 this.aiPostCrashTimer = (this.aiPostCrashTimer || 0) + delta;
@@ -484,57 +546,46 @@ export const MultiplayerManager = {
                     return;
                 }
             }
+
             rivalDist = this.rivalCrashed ? this.rivalFinalDist : this.mpRivalData.dist;
         }
+
         // 3. MODO ONLINE (WEBSOCKET REAL-TIME)
-        // 3. MODO ONLINE (WEBSOCKET COM INTERPOLAÇÃO 20Hz - ZERO STUTTER)
         else if (this.mpMode === 'online') {
-            // Interpolação precisa de snapshots com buffer de 100ms (Elimina stutter e jitter)
-            const state = this.mpInterpolator ? this.mpInterpolator.getInterpolatedState() : this.mpRivalData;
-
-            this.mpRivalVehicle.position.x = state.x;
-            this.mpRivalVehicle.position.y = state.y;
-
-            // Sincronização contínua do Z relativo baseado na distância real do rival
-            const relativeZ = this.truckGroup.position.z + (state.dist - this.scoreDistance);
+            // Interpolação suave das coordenadas recebidas
+            this.mpRivalVehicle.position.x += (this.mpRivalData.x - this.mpRivalVehicle.position.x) * 12.0 * delta;
+            this.mpRivalVehicle.position.y += (this.mpRivalData.y - this.mpRivalVehicle.position.y) * 12.0 * delta;
+            const relativeZ = this.truckGroup.position.z + (this.mpRivalData.dist - this.scoreDistance);
             this.mpRivalVehicle.position.z = relativeZ;
 
-            // Rotação suave da lataria em desvios laterais
-            const deltaX = state.x - (this.mpLastRivalX || state.x);
-            const targetRotY = Math.max(-0.25, Math.min(0.25, -deltaX * 1.5));
-            this.mpRivalVehicle.rotation.y += (targetRotY - this.mpRivalVehicle.rotation.y) * 12 * delta;
-            this.mpLastRivalX = state.x;
-
-            // Ajuste de inclinação se estiver voando
-            this.mpRivalVehicle.rotation.x += ((state.isFlying ? -0.06 : 0) - this.mpRivalVehicle.rotation.x) * 10 * delta;
-
-            // Envio de telemetria local via WebSocket com tickrate fixo de 20Hz (0.05s)
+            // Envio de telemetria local via WebSocket (~25Hz)
             if (this.mpWs && this.mpWs.readyState === WebSocket.OPEN && !this.p1Crashed) {
                 this.mpTelemetryTimer += delta;
-                if (this.mpTelemetryTimer >= 0.05) {
+                if (this.mpTelemetryTimer >= 0.04) {
                     this.mpTelemetryTimer = 0;
                     this.mpWs.send(JSON.stringify({
                         type: 'player_state',
-                        clientTime: performance.now(),
                         username: this.currentUser,
                         selectedCar: this.selectedCar,
                         x: this.playerX,
                         y: this.playerY,
                         lane: this.currentLane,
-                        dist: this.scoreDistance,
-                        speed: this.currentSpeed,
+                        dist: Math.floor(this.scoreDistance),
+                        speed: Math.floor(this.currentSpeed),
                         isFlying: this.isFlying,
                         shield: this.shieldTimer > 0,
                         score: Math.floor(this.scorePoints)
                     }));
                 }
             }
-            rivalDist = this.rivalCrashed ? this.rivalFinalDist : state.dist;
+            rivalDist = this.rivalCrashed ? this.rivalFinalDist : this.mpRivalData.dist;
         }
+
         // Atualização dos números no Banner HUD
         const displayP1Dist = this.p1Crashed ? this.p1FinalDist : Math.floor(this.scoreDistance);
         if (this.mpDistP1) this.mpDistP1.textContent = `${displayP1Dist}m`;
         if (this.mpDistP2) this.mpDistP2.textContent = `${Math.floor(rivalDist)}m`;
+
         if (this.mpGapLabel) {
             const gap = Math.floor(displayP1Dist - rivalDist);
             if (gap >= 0) {
@@ -545,19 +596,24 @@ export const MultiplayerManager = {
                 this.mpGapLabel.textContent = `${gap}m ATRÁS`;
             }
         }
-    },
+    }
+
+
 
     finishDuel(forceWon, customMessage) {
         this.isRunning = false;
         this.sound.stopEngine();
+
         const p1Dist = this.p1FinalDist || Math.floor(this.scoreDistance);
         const p2Dist = (this.mpMode === 'local2p') 
             ? (this.p2.finalDist || Math.floor(this.p2.dist)) 
             : (this.rivalFinalDist || Math.floor(this.mpRivalData.dist));
+
         let won = false;
         let isDraw = false;
         let title = "";
         let message = "";
+
         if (forceWon !== undefined && customMessage) {
             won = forceWon;
             message = customMessage;
@@ -582,6 +638,7 @@ export const MultiplayerManager = {
                 message = `Ambos os pilotos bateram na mesma distância: ${p1Dist}m!`;
             }
         }
+
         if (won) {
             this.sound.playMissionComplete();
             this.speakAnnouncer("Victory!", true);
@@ -597,6 +654,7 @@ export const MultiplayerManager = {
             this.speakAnnouncer("Game Over!", true);
             this.triggerHaptic("crash");
         }
+
         if (this.mpFinishModal) {
             this.mpFinishModal.classList.add("active");
             if (this.mpFinishTitle) this.mpFinishTitle.textContent = title;
@@ -610,8 +668,10 @@ export const MultiplayerManager = {
             }
         }
     }
+
     // =================================================================
     // EVENTOS DE INTERFACE E MODAIS
     // =================================================================
+
 
 };

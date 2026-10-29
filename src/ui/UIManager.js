@@ -1,25 +1,29 @@
-import { CAR_CATALOG, PILOT_CATALOG, COIN_PACKAGES, DAILY_MISSION_DEFS, API_URL } from '../core/Config.js';
+import { LANES, GROUND_Y, FLIGHT_Y, GRAVITY, SLAM_FORCE, CAR_CATALOG, PILOT_CATALOG, COIN_PACKAGES, DAILY_MISSION_DEFS, API_URL } from '../core/Config.js';
 
-export const UIManager = {
+export const UIManager = (Base) => class extends Base {
     initEventListeners() {
         this.startBtn.addEventListener("click", () => {
             this.sound.init();
             this.startGame();
         });
+
         this.restartBtn.addEventListener("click", () => {
             this.sound.init();
             this.startGame();
         });
+
         this.soundBtn.addEventListener("click", () => {
             this.sound.init();
             const enabled = this.sound.enabled;
             this.sound.enabled = !enabled;
             this.soundBtn.textContent = !enabled ? "🔊" : "🔇";
         });
+
         // Botão de Pause do HUD
         this.pauseBtn.addEventListener("click", () => {
             this.togglePause();
         });
+
         // Botões de Missões Diárias
         const openMissionsModal = () => {
             this.sound.init();
@@ -31,6 +35,7 @@ export const UIManager = {
         if (this.closeMissionsBtn) this.closeMissionsBtn.addEventListener("click", () => {
             if (this.missionsModal) this.missionsModal.classList.remove("active");
         });
+
         // Botões de Configurações e Áudio
         const openSettingsModal = () => {
             this.sound.init();
@@ -38,6 +43,7 @@ export const UIManager = {
         };
         if (this.openSettingsBtn) this.openSettingsBtn.addEventListener("click", openSettingsModal);
         if (this.goSettingsBtn) this.goSettingsBtn.addEventListener("click", openSettingsModal);
+
         // Configurações: Volume SFX
         if (this.sfxVolumeSlider) {
             this.sfxVolumeSlider.value = this.settings.sfxVolume ?? 100;
@@ -50,6 +56,7 @@ export const UIManager = {
                 localStorage.setItem("roadster_settings", JSON.stringify(this.settings));
             });
         }
+
         // Configurações: Locutor Arcade
         if (this.announcerToggleBtn) {
             const isAnnouncerOn = this.settings.announcer !== false;
@@ -70,6 +77,7 @@ export const UIManager = {
                 localStorage.setItem("roadster_settings", JSON.stringify(this.settings));
             });
         }
+
         // Configurações: Vibração Háptica
         if (this.hapticsToggleBtn) {
             const isHapticsOn = this.settings.haptics !== false;
@@ -83,6 +91,7 @@ export const UIManager = {
                 if (this.settings.haptics) this.triggerHaptic("coin");
             });
         }
+
         // Ações do Modal de Pause
         if (this.resumeGameBtn) {
             this.resumeGameBtn.addEventListener("click", () => this.togglePause(false));
@@ -100,6 +109,7 @@ export const UIManager = {
                 this.startScreen.classList.add("active");
             });
         }
+
         // Botões de Garagem
         const openGarage = () => {
             this.sound.init();
@@ -111,6 +121,7 @@ export const UIManager = {
         if (this.closeGarageBtn) this.closeGarageBtn.addEventListener("click", () => {
             this.garageModal.classList.remove("active");
         });
+
         // Botões de Ranking Global
         const openLeaderboard = () => {
             this.sound.init();
@@ -122,6 +133,7 @@ export const UIManager = {
         if (this.closeLeaderboardBtn) this.closeLeaderboardBtn.addEventListener("click", () => {
             this.leaderboardModal.classList.remove("active");
         });
+
         // Botões de Perfil / Nickname
         const openUserModal = () => {
             this.sound.init();
@@ -136,11 +148,13 @@ export const UIManager = {
         if (this.closeUserModalBtn) this.closeUserModalBtn.addEventListener("click", () => {
             this.userModal.classList.remove("active");
         });
+
         if (this.loginUsernameBtn) {
             this.loginUsernameBtn.addEventListener("click", () => {
                 this.loginUser(this.usernameInput.value.trim());
             });
         }
+
         if (this.usernameInput) {
             this.usernameInput.addEventListener("keydown", (e) => {
                 if (e.key === "Enter") {
@@ -148,6 +162,7 @@ export const UIManager = {
                 }
             });
         }
+
         if (this.saveUsernameBtn) {
             this.saveUsernameBtn.addEventListener("click", () => {
                 const val = this.usernameInput.value.trim();
@@ -159,6 +174,7 @@ export const UIManager = {
                 this.registerUser(val);
             });
         }
+
         // Botões de Seleção de Pilotos
         const openPilotModal = () => {
             this.sound.init();
@@ -172,12 +188,15 @@ export const UIManager = {
         if (this.closePilotBtn) this.closePilotBtn.addEventListener("click", () => {
             this.pilotModal.classList.remove("active");
         });
-    },
+    }
+
+
 
     togglePause(forceState = null) {
         const nextState = forceState !== null ? forceState : !this.isPaused;
         this.isPaused = nextState;
         if (this.pauseBtn) this.pauseBtn.textContent = this.isPaused ? "▶" : "⏸";
+
         if (this.isPaused) {
             this.sound.stopEngine();
             if (this.pauseSettingsModal) {
@@ -191,7 +210,9 @@ export const UIManager = {
                 requestAnimationFrame((t) => this.gameLoop(t));
             }
         }
-    },
+    }
+
+
 
     loadAccountData(username) {
         if (!username || username === "Piloto") return null;
@@ -200,7 +221,9 @@ export const UIManager = {
             try { return JSON.parse(raw); } catch(e) {}
         }
         return null;
-    },
+    }
+
+
 
     saveAccountData(username) {
         if (!username || username === "Piloto") return;
@@ -214,12 +237,14 @@ export const UIManager = {
             upgrades: this.upgrades || {}
         };
         localStorage.setItem(`roadster_acc_${username.toLowerCase()}`, JSON.stringify(accData));
+
         localStorage.setItem("roadster_user", this.currentUser);
         localStorage.setItem("roadster_coins", this.totalCoins.toString());
         localStorage.setItem("roadster_selected_car", this.selectedCar);
         localStorage.setItem("roadster_unlocked_cars", JSON.stringify(this.unlockedCars));
         localStorage.setItem("roadster_selected_pilot", this.selectedPilot);
         localStorage.setItem("roadster_unlocked_pilots", JSON.stringify(this.unlockedPilots));
+
         let accounts = [];
         try {
             accounts = JSON.parse(localStorage.getItem("roadster_saved_accounts") || "[]");
@@ -228,7 +253,9 @@ export const UIManager = {
             accounts.push(username);
             localStorage.setItem("roadster_saved_accounts", JSON.stringify(accounts));
         }
-    },
+    }
+
+
 
     switchUser(username) {
         if (!username) return;
@@ -249,6 +276,7 @@ export const UIManager = {
         this.renderPilotCards();
         this.sound.playHeart();
         this.triggerActionPopup(`BEM-VINDO, ${username}!`);
+
         // Sincroniza dados mais recentes com o banco de dados em background
         this.apiCall(`/api/user/${encodeURIComponent(username)}`).then(data => {
             if (data && data.success && data.user) {
@@ -264,23 +292,29 @@ export const UIManager = {
                 this.renderGarageCards();
             }
         }).catch(() => {});
-    },
+    }
+
+
 
     renderSavedAccounts() {
         const container = document.getElementById("saved-accounts-list");
         if (!container) return;
         container.innerHTML = "";
+
         let accounts = [];
         try {
             accounts = JSON.parse(localStorage.getItem("roadster_saved_accounts") || "[]");
         } catch(e) {}
+
         if (!accounts.map(a => a.toLowerCase()).includes(this.currentUser.toLowerCase()) && this.currentUser !== "Piloto") {
             accounts.push(this.currentUser);
         }
+
         if (accounts.length === 0) {
             container.innerHTML = '<span style="font-size:0.75rem; color:#64748b;">Nenhum piloto registrado neste aparelho.</span>';
             return;
         }
+
         accounts.forEach(acc => {
             const data = this.loadAccountData(acc);
             const coins = data ? data.coins : 0;
@@ -295,6 +329,7 @@ export const UIManager = {
             container.appendChild(chip);
         });
     }
+
     async loginUser(targetUsername) {
         const name = (targetUsername || '').trim();
         if (!name) {
@@ -302,8 +337,10 @@ export const UIManager = {
             this.usernameStatus.textContent = "Digite o nome do piloto!";
             return;
         }
+
         this.usernameStatus.className = "status-msg";
         this.usernameStatus.textContent = "Buscando piloto...";
+
         const res = await this.apiCall('/api/user/login', 'POST', { username: name });
         if (res && res.success && res.user) {
             this.currentUser = res.user.username;
@@ -312,17 +349,20 @@ export const UIManager = {
             this.unlockedCars = res.user.unlocked_cars || ['roadster'];
             this.upgrades = res.user.upgrades || {};
             this.saveAccountData(this.currentUser);
+
             this.usernameStatus.className = "status-msg success";
             this.usernameStatus.textContent = `Piloto ${this.currentUser} conectado!`;
             this.buildPlayerVehicle(this.selectedCar);
             this.updateUserUI();
             this.renderGarageCards();
             this.sound.playHeart();
+
             setTimeout(() => {
                 this.userModal.classList.remove("active");
             }, 650);
             return;
         }
+
         const local = this.loadAccountData(name);
         if (local) {
             this.switchUser(name);
@@ -333,12 +373,15 @@ export const UIManager = {
             }, 650);
             return;
         }
+
         this.usernameStatus.className = "status-msg error";
         this.usernameStatus.textContent = "Piloto não encontrado. Se for seu 1º acesso, clique em CRIAR NOVO PILOTO.";
     }
+
     async initUserData() {
         this.updateUserUI();
         if (!this.currentUser || this.currentUser === "Piloto") return;
+
         const data = await this.apiCall(`/api/user/${encodeURIComponent(this.currentUser)}`);
         if (data && data.success && data.user) {
             this.totalCoins = Math.max(this.totalCoins, data.user.coins || 0);
@@ -349,11 +392,14 @@ export const UIManager = {
             if (data.user.upgrades) {
                 this.upgrades = { ...this.upgrades, ...data.user.upgrades };
             }
+
             this.saveAccountData(this.currentUser);
             this.buildPlayerVehicle(this.selectedCar);
             this.updateUserUI();
         }
-    },
+    }
+
+
 
     updateUserUI() {
         if (this.hudUsername) this.hudUsername.textContent = this.currentUser;
@@ -361,11 +407,13 @@ export const UIManager = {
         if (this.hudCoins) this.hudCoins.textContent = this.totalCoins.toLocaleString();
         if (this.menuCoins) this.menuCoins.textContent = this.totalCoins.toLocaleString();
         if (this.garageCoinsVal) this.garageCoinsVal.textContent = this.totalCoins.toLocaleString();
+
         const pilot = PILOT_CATALOG[this.selectedPilot] || PILOT_CATALOG.aria;
         if (this.hudPilotName) this.hudPilotName.textContent = pilot.name;
         if (this.menuPilotName) this.menuPilotName.textContent = pilot.name;
         if (this.modalPilotName) this.modalPilotName.textContent = pilot.name;
     }
+
     async registerUser(newUsername) {
         const name = (newUsername || '').trim();
         if (!name || name.length < 3) {
@@ -373,8 +421,10 @@ export const UIManager = {
             this.usernameStatus.textContent = "O nome precisa ter pelo menos 3 caracteres.";
             return;
         }
+
         this.usernameStatus.className = "status-msg";
         this.usernameStatus.textContent = "Registrando piloto...";
+
         const res = await this.apiCall('/api/user/register', 'POST', { username: name });
         if (res && res.success && res.user) {
             this.currentUser = res.user.username;
@@ -383,6 +433,7 @@ export const UIManager = {
             this.unlockedCars = res.user.unlocked_cars || ['roadster'];
             this.upgrades = res.user.upgrades || {};
             this.saveAccountData(this.currentUser);
+
             this.usernameStatus.className = "status-msg success";
             this.usernameStatus.textContent = res.isNew ? "Piloto registrado com sucesso no Neon DB!" : "Perfil sincronizado!";
             
@@ -390,6 +441,7 @@ export const UIManager = {
             this.updateUserUI();
             this.renderGarageCards();
             this.sound.playHeart();
+
             setTimeout(() => {
                 this.userModal.classList.remove("active");
             }, 650);
@@ -400,16 +452,19 @@ export const UIManager = {
             this.unlockedCars = ['roadster'];
             this.upgrades = { phantom_air: 0, cybertruck_armor: 0 };
             this.saveAccountData(name);
+
             this.usernameStatus.className = "status-msg success";
             this.usernameStatus.textContent = "Piloto salvo localmente!";
             this.buildPlayerVehicle(this.selectedCar);
             this.updateUserUI();
             this.renderGarageCards();
+
             setTimeout(() => {
                 this.userModal.classList.remove("active");
             }, 650);
         }
     }
+
     async submitRunScore(score, distance, coinsEarned) {
         if (!this.currentUser || this.currentUser === "Piloto") return;
         const res = await this.apiCall('/api/score/submit', 'POST', {
@@ -425,9 +480,11 @@ export const UIManager = {
             this.updateUserUI();
         }
     }
+
     async fetchLeaderboard() {
         const container = this.leaderboardListContainer;
         container.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 25px;">Consultando banco de dados Neon...</div>';
+
         const res = await this.apiCall('/api/leaderboard');
         if (res && res.success && res.leaderboard && res.leaderboard.length > 0) {
             this.renderLeaderboard(res.leaderboard);
@@ -441,18 +498,23 @@ export const UIManager = {
             ].sort((a, b) => b.best_score - a.best_score);
             this.renderLeaderboard(mockData);
         }
-    },
+    }
+
+
 
     renderLeaderboard(list) {
         const container = this.leaderboardListContainer;
         container.innerHTML = "";
+
         list.forEach((item, index) => {
             const row = document.createElement("div");
             const pos = index + 1;
             const topClass = pos === 1 ? "top-1" : pos === 2 ? "top-2" : pos === 3 ? "top-3" : "";
             row.className = `leaderboard-row ${topClass}`;
+
             const medal = pos === 1 ? "🥇" : pos === 2 ? "🥈" : pos === 3 ? "🥉" : `#${pos}`;
             const carInfo = CAR_CATALOG[item.selected_car] || { name: item.selected_car };
+
             row.innerHTML = `
                 <div class="rank-pos">${medal}</div>
                 <div class="rank-user-info">
@@ -463,17 +525,22 @@ export const UIManager = {
             `;
             container.appendChild(row);
         });
-    },
+    }
+
+
 
     renderGarageCards() {
         const container = this.garageCardsContainer;
         container.innerHTML = "";
         if (this.garageCoinsVal) this.garageCoinsVal.textContent = this.totalCoins.toLocaleString();
+
         Object.values(CAR_CATALOG).forEach(car => {
             const card = document.createElement("div");
             const isSelected = this.selectedCar === car.id;
             const isOwned = this.unlockedCars.includes(car.id);
+
             card.className = `car-card ${isSelected ? 'selected' : ''}`;
+
             let badgeHTML = '';
             if (isSelected) {
                 badgeHTML = '<span class="car-badge selected-tag">EQUIPADO</span>';
@@ -482,6 +549,7 @@ export const UIManager = {
             } else {
                 badgeHTML = `<span class="car-badge" style="background: rgba(255,255,255,0.1); color: #cbd5e1;">${car.tag}</span>`;
             }
+
             let btnHTML = '';
             if (isSelected) {
                 btnHTML = '<button class="car-action-btn btn-disabled">EM USO</button>';
@@ -494,6 +562,7 @@ export const UIManager = {
                     btnHTML = `<button class="car-action-btn btn-disabled">FALTAM 🪙 ${car.price - this.totalCoins}</button>`;
                 }
             }
+
             // Seção de Melhoria (Upgrades) para Cybertruck (Blindagem) e Neon Phantom (Ar)
             let upgradeHTML = '';
             if (isOwned && car.id === 'cybertruck') {
@@ -527,6 +596,7 @@ export const UIManager = {
                     : canBuyAir
                         ? `EXPANDIR +25L AR (🪙 ${airCost})`
                         : `FALTAM 🪙 ${airCost - this.totalCoins} P/ EXPANSÃO`;
+
                 upgradeHTML = `
                     <div class="upgrade-section">
                         <div class="upgrade-header">
@@ -539,7 +609,9 @@ export const UIManager = {
                     </div>
                 `;
             }
+
             const priceText = car.price === 0 ? "GRÁTIS" : `🪙 ${car.price}`;
+
             card.innerHTML = `
                 <div>
                     <div class="car-card-header">
@@ -555,6 +627,7 @@ export const UIManager = {
                     ${btnHTML}
                 </div>
             `;
+
             // Listeners dos botões de selecionar e comprar
             const equipBtn = card.querySelector(".btn-equip");
             if (equipBtn) {
@@ -572,78 +645,98 @@ export const UIManager = {
                     this.buyUpgrade(uType);
                 });
             }
+
             container.appendChild(card);
         });
-    },
+    }
+
+
 
     buyUpgrade(upgradeType) {
         const costs = { phantom_air: 100, cybertruck_armor: 150 };
         const cost = costs[upgradeType];
         if (!cost || this.totalCoins < cost) return;
+
         // Atualização Otimista Imediata (Zero delay)
         this.totalCoins -= cost;
         this.upgrades = this.upgrades || {};
         this.upgrades[upgradeType] = (this.upgrades[upgradeType] || 0) + 1;
+
         this.saveAccountData(this.currentUser);
         this.sound.playBuyCar();
         this.updateUserUI();
         this.renderGarageCards();
+
         const upgradeName = upgradeType === 'phantom_air' ? 'Tanque de Ar (+25L)' : 'Blindagem (+1 Vida)';
         this.triggerActionPopup(`UPGRADE: ${upgradeName}!`);
+
         // Sincroniza em segundo plano com a API
         this.apiCall('/api/user/upgrade', 'POST', {
             username: this.currentUser,
             upgradeType: upgradeType
         }).catch(() => {});
-    },
+    }
+
+
 
     buyCar(carId) {
         const car = CAR_CATALOG[carId];
         if (!car || this.totalCoins < car.price) return;
+
         // Atualização Otimista Imediata
         this.totalCoins -= car.price;
         if (!this.unlockedCars.includes(carId)) {
             this.unlockedCars.push(carId);
         }
         this.selectedCar = carId;
+
         this.saveAccountData(this.currentUser);
         this.sound.playBuyCar();
         this.buildPlayerVehicle(this.selectedCar);
         this.updateUserUI();
         this.renderGarageCards();
         this.triggerActionPopup(`NOVO CARRO: ${car.name}!`);
+
         // Sincroniza em segundo plano com a API
         this.apiCall('/api/user/buy-car', 'POST', {
             username: this.currentUser,
             carId: carId
         }).catch(() => {});
-    },
+    }
+
+
 
     selectCar(carId) {
         if (!this.unlockedCars.includes(carId)) return;
         this.selectedCar = carId;
+
         // Atualização Otimista Imediata
         this.saveAccountData(this.currentUser);
         this.sound.playLaneChange();
         this.buildPlayerVehicle(this.selectedCar);
         this.renderGarageCards();
         this.triggerActionPopup(`EQUIPADO: ${CAR_CATALOG[carId].name}!`);
+
         // Sincroniza em segundo plano com a API
         this.apiCall('/api/user/select-car', 'POST', {
             username: this.currentUser,
             carId: carId
         }).catch(() => {});
-    },
+    }
+
+
 
     renderPilotCards() {
         const container = this.pilotCardsContainer;
         if (!container) return;
         container.innerHTML = "";
+
         Object.values(PILOT_CATALOG).forEach(pilot => {
             const card = document.createElement("div");
             const isSelected = this.selectedPilot === pilot.id;
             const isUnlocked = (pilot.price === 0) || (this.unlockedPilots && this.unlockedPilots.includes(pilot.id));
             card.className = `pilot-card ${isSelected ? 'selected' : ''} ${!isUnlocked ? 'locked' : ''}`;
+
             let btnHTML = "";
             if (isSelected) {
                 btnHTML = '<button class="car-action-btn btn-disabled">EM COMANDO</button>';
@@ -658,6 +751,7 @@ export const UIManager = {
                     btnHTML = `<button class="car-action-btn btn-disabled">FALTAM ${missing} 🪙</button>`;
                 }
             }
+
             card.innerHTML = `
                 <div>
                     <div class="pilot-card-header">
@@ -679,6 +773,7 @@ export const UIManager = {
                     ${btnHTML}
                 </div>
             `;
+
             const selectBtn = card.querySelector(".btn-equip");
             if (selectBtn) {
                 selectBtn.addEventListener("click", () => this.selectPilot(pilot.id));
@@ -687,9 +782,12 @@ export const UIManager = {
             if (buyBtn) {
                 buyBtn.addEventListener("click", () => this.buyPilot(pilot.id));
             }
+
             container.appendChild(card);
         });
-    },
+    }
+
+
 
     buyPilot(pilotId) {
         const pilot = PILOT_CATALOG[pilotId];
@@ -709,7 +807,9 @@ export const UIManager = {
         this.updateUserCoinsEverywhere();
         this.triggerActionPopup(`PILOTO CONTRATADO: ${pilot.name}! 🎉`);
         this.selectPilot(pilotId);
-    },
+    }
+
+
 
     selectPilot(pilotId) {
         if (!PILOT_CATALOG[pilotId]) return;
@@ -723,7 +823,9 @@ export const UIManager = {
         this.updateUserUI();
         this.renderPilotCards();
         this.triggerActionPopup(`PILOTO: ${PILOT_CATALOG[pilotId].name}!`);
-    },
+    }
+
+
 
     initDailyMissions() {
         const todayStr = new Date().toISOString().slice(0, 10);
@@ -740,12 +842,16 @@ export const UIManager = {
             }
         });
         this.saveMissionsState();
-    },
+    }
+
+
 
     saveMissionsState() {
         if (!this.missionsKey) return;
         localStorage.setItem(this.missionsKey, JSON.stringify(this.missionsState));
-    },
+    }
+
+
 
     trackMissionProgress(type, amount = 1) {
         let updated = false;
@@ -773,18 +879,23 @@ export const UIManager = {
             this.saveMissionsState();
             this.renderMissions();
         }
-    },
+    }
+
+
 
     renderMissions() {
         const container = this.missionsListContainer;
         if (!container) return;
         container.innerHTML = "";
+
         DAILY_MISSION_DEFS.forEach(m => {
             const st = (this.missionsState && this.missionsState[m.id]) || { progress: 0, claimed: false };
             const isDone = st.progress >= m.target;
             const pct = Math.min(100, Math.round((st.progress / m.target) * 100));
+
             const card = document.createElement("div");
             card.className = "mission-card";
+
             let btnHTML = "";
             if (st.claimed) {
                 btnHTML = `<button class="btn-claim-reward btn-claimed" disabled>RESGATADO</button>`;
@@ -793,6 +904,7 @@ export const UIManager = {
             } else {
                 btnHTML = `<span style="font-size: 0.72rem; color: #94a3b8; font-weight: 700;">${st.progress}/${m.target}</span>`;
             }
+
             card.innerHTML = `
                 <div class="mission-header">
                     <span class="mission-title">${m.icon} ${m.title}</span>
@@ -806,18 +918,23 @@ export const UIManager = {
                     ${btnHTML}
                 </div>
             `;
+
             const claimBtn = card.querySelector(".btn-claim-reward:not(.btn-claimed)");
             if (claimBtn) {
                 claimBtn.addEventListener("click", () => this.claimMissionReward(m.id));
             }
+
             container.appendChild(card);
         });
-    },
+    }
+
+
 
     claimMissionReward(missionId) {
         const def = DAILY_MISSION_DEFS.find(m => m.id === missionId);
         const st = this.missionsState && this.missionsState[missionId];
         if (!def || !st || st.claimed || st.progress < def.target) return;
+
         st.claimed = true;
         this.saveMissionsState();
         this.totalCoins += def.reward;
@@ -827,9 +944,11 @@ export const UIManager = {
         this.renderMissions();
         this.triggerActionPopup(`+${def.reward} MOEDAS RESGATADAS!`);
     }
+
     // =================================================================
     // CICLO DIA / NOITE DINÂMICO SYNTHWAVE (SUNSET TO MIDNIGHT)
-    // =================================================================,
+    // =================================================================
+
 
     initCoinShop() {
         this.coinShopModal = document.getElementById("coin-shop-modal");
@@ -847,12 +966,14 @@ export const UIManager = {
         this.mpPaymentStatus = document.getElementById("mp-payment-status");
         this.openCoinShopBtn = document.getElementById("open-coin-shop-btn");
         this.garageBuyCoinsBtn = document.getElementById("garage-buy-coins-btn");
+
         if (this.openCoinShopBtn) {
             this.openCoinShopBtn.addEventListener("click", () => {
                 this.sound.playCoin();
                 this.openCoinShop();
             });
         }
+
         if (this.garageBuyCoinsBtn) {
             this.garageBuyCoinsBtn.addEventListener("click", () => {
                 this.sound.playCoin();
@@ -860,16 +981,19 @@ export const UIManager = {
                 this.openCoinShop();
             });
         }
+
         if (this.closeCoinShopBtn) {
             this.closeCoinShopBtn.addEventListener("click", () => {
                 if (this.coinShopModal) this.coinShopModal.classList.remove("active");
             });
         }
+
         if (this.closeMpModalBtn) {
             this.closeMpModalBtn.addEventListener("click", () => {
                 if (this.mpPaymentModal) this.mpPaymentModal.classList.remove("active");
             });
         }
+
         if (this.copyPixBtn && this.mpPixCode) {
             this.copyPixBtn.addEventListener("click", () => {
                 const code = this.mpPixCode.textContent || "";
@@ -883,12 +1007,15 @@ export const UIManager = {
                 }
             });
         }
+
         if (this.simulatePaymentBtn) {
             this.simulatePaymentBtn.addEventListener("click", () => {
                 this.simulatePaymentApproval();
             });
         }
-    },
+    }
+
+
 
     openCoinShop() {
         if (this.shopUserBalance) {
@@ -898,11 +1025,14 @@ export const UIManager = {
         if (this.coinShopModal) {
             this.coinShopModal.classList.add("active");
         }
-    },
+    }
+
+
 
     renderCoinShopCards() {
         if (!this.coinPackagesContainer) return;
         this.coinPackagesContainer.innerHTML = "";
+
         COIN_PACKAGES.forEach(pkg => {
             const card = document.createElement("div");
             card.className = "coin-package-card";
@@ -915,6 +1045,7 @@ export const UIManager = {
                     💳 R$ ${pkg.priceBRL.toFixed(2).replace('.', ',')}
                 </button>
             `;
+
             const btn = card.querySelector(".pkg-price-btn");
             if (btn) {
                 btn.addEventListener("click", () => {
@@ -925,20 +1056,26 @@ export const UIManager = {
             this.coinPackagesContainer.appendChild(card);
         });
     }
+
     async openPaymentCheckout(packageId) {
         const pkg = COIN_PACKAGES.find(p => p.id === packageId);
         if (!pkg) return;
+
         this.selectedCheckoutPackage = pkg;
+
         if (this.mpPkgName) this.mpPkgName.textContent = `${pkg.coins.toLocaleString()} Moedas (${pkg.tag})`;
         if (this.mpPkgPrice) this.mpPkgPrice.textContent = `R$ ${pkg.priceBRL.toFixed(2).replace('.', ',')}`;
         if (this.mpPaymentStatus) {
             this.mpPaymentStatus.className = "status-msg";
             this.mpPaymentStatus.textContent = "Conectando ao gateway Mercado Pago...";
         }
+
         if (this.mpPaymentModal) this.mpPaymentModal.classList.add("active");
+
         const loc = window.location;
         const isLocal = loc.hostname === "localhost" || loc.hostname === "127.0.0.1";
         const apiBase = isLocal ? `http://${loc.hostname}:${loc.port || 3000}` : "https://jogo-tesla.onrender.com";
+
         try {
             const res = await fetch(`${apiBase}/api/payment/create-preference`, {
                 method: "POST",
@@ -948,6 +1085,7 @@ export const UIManager = {
                     username: this.currentUser || "Piloto"
                 })
             });
+
             const data = await res.json();
             if (data.success) {
                 if (this.mpCheckoutLink) {
@@ -981,16 +1119,20 @@ export const UIManager = {
             }
         }
     }
+
     async simulatePaymentApproval() {
         if (!this.selectedCheckoutPackage) return;
         const pkg = this.selectedCheckoutPackage;
+
         if (this.mpPaymentStatus) {
             this.mpPaymentStatus.className = "status-msg";
             this.mpPaymentStatus.textContent = "Processando confirmação Pix / Cartão...";
         }
+
         const loc = window.location;
         const isLocal = loc.hostname === "localhost" || loc.hostname === "127.0.0.1";
         const apiBase = isLocal ? `http://${loc.hostname}:${loc.port || 3000}` : "https://jogo-tesla.onrender.com";
+
         try {
             const res = await fetch(`${apiBase}/api/payment/simulate`, {
                 method: "POST",
@@ -1009,20 +1151,26 @@ export const UIManager = {
         } catch(e) {
             this.totalCoins += pkg.coins;
         }
+
         localStorage.setItem("roadster_coins", this.totalCoins.toString());
         this.updateUserCoinsEverywhere();
+
         if (this.mpPaymentStatus) {
             this.mpPaymentStatus.className = "status-msg success";
             this.mpPaymentStatus.textContent = `🎉 Pagamento Aprovado! +${pkg.coins.toLocaleString()} Moedas creditadas na sua conta!`;
         }
+
         this.sound.playMissionComplete();
         this.speakAnnouncer("Payment Approved! Coins Added!", true);
         this.triggerActionPopup(`+${pkg.coins.toLocaleString()} MOEDAS VIP!`);
+
         setTimeout(() => {
             if (this.mpPaymentModal) this.mpPaymentModal.classList.remove("active");
             if (this.shopUserBalance) this.shopUserBalance.textContent = this.totalCoins.toLocaleString();
         }, 1800);
-    },
+    }
+
+
 
     updateUserCoinsEverywhere() {
         if (this.hudCoins) this.hudCoins.textContent = (this.totalCoins + this.coinsEarnedThisRun).toLocaleString();
@@ -1031,6 +1179,6 @@ export const UIManager = {
         const garageCoins = document.getElementById("garage-coins");
         if (garageCoins) garageCoins.textContent = this.totalCoins.toLocaleString();
     }
-}
+
 
 };

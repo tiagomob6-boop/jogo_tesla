@@ -1,7 +1,7 @@
         // =====================================================================
         // CATÁLOGO DE PACOTES DE MOEDAS (LOJA DE MOEDAS & MERCADO PAGO)
         // =====================================================================
-        const COIN_PACKAGES = {
+export const COIN_PACKAGES = {
             pacote_500: {
                 id: 'pacote_500',
                 name: 'Pacote Básico de Moedas',
@@ -44,7 +44,7 @@
         // =====================================================================
         // CATÁLOGO OFICIAL DE CARROS
         // =====================================================================
-        const CAR_CATALOG = {
+export const CAR_CATALOG = {
             roadster: {
                 id: 'roadster',
                 name: 'Tesla Roadster 2077',
@@ -90,7 +90,7 @@
         // =====================================================================
         // CATÁLOGO OFICIAL DE PILOTOS COM HABILIDADES ESPECIAIS
         // =====================================================================
-        const PILOT_CATALOG = {
+export const PILOT_CATALOG = {
             aria: {
                 id: 'aria',
                 name: 'Aria "Vortex" Vance',
@@ -156,7 +156,7 @@
         // =====================================================================
         // MISSÕES DIÁRIAS / DESAFIOS CYBERPUNK
         // =====================================================================
-        const DAILY_MISSION_DEFS = [
+export const DAILY_MISSION_DEFS = [
             { id: 'coins_50', type: 'coins', target: 50, reward: 75, icon: '🪙', title: 'Caçador de Moedas', desc: 'Colete 50 moedas em corridas hoje' },
             { id: 'smash_3', type: 'shield_smash', target: 3, reward: 100, icon: '🛡️', title: 'Demolição com Escudo', desc: 'Destrua 3 carros de trânsito usando o escudo' },
             { id: 'near_miss_5', type: 'near_miss', target: 5, reward: 60, icon: '⚡', title: 'Reflexos Cyberpunk', desc: 'Faça 5 raspões (Near Miss) no tráfego' },
@@ -165,16 +165,18 @@
         ];
 
         // Rota base da API REST (compatível com Render e Local)
-        const API_URL = (window.location.hostname === "localhost" || window.location.port === "3000" || window.location.hostname.includes("onrender.com"))
-            ? ""
-            : (localStorage.getItem("roadster_api_url") || "https://jogo-tesla.onrender.com");
+const isBrowser = typeof window !== 'undefined';
+const isLocalHost = isBrowser && (window.location.hostname === "localhost" || window.location.port === "3000" || window.location.hostname.includes("onrender.com"));
+export const API_URL = isLocalHost
+    ? ""
+    : (isBrowser && window.localStorage && window.localStorage.getItem("roadster_api_url") || "https://jogo-tesla.onrender.com");
 
         // =====================================================================
         // CONSTANTES DA RODOVIA
         // =====================================================================
-        const LANES = [-3.8, 0.0, 3.8];
-        const GROUND_Y = 0.52;
-        const FLIGHT_Y = 5.0;
-        const GRAVITY = -36.0;
-        const SLAM_FORCE = -34.0;
+export const LANES = [-3.8, 0.0, 3.8];
+export const GROUND_Y = 0.52;
+export const FLIGHT_Y = 5.0;
+export const GRAVITY = -36.0;
+export const SLAM_FORCE = -34.0;
 
