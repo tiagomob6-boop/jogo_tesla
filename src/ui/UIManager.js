@@ -466,12 +466,23 @@ export const UIManager = (Base) => class extends Base {
         this.updateUserUI();
         if (!this.currentUser || this.currentUser === "Piloto") return;
 
+        try {
+            const rec = await this.apiCall(`/api/payment/reconcile/${encodeURIComponent(this.currentUser)}`);
+            if (rec && rec.reconciled) {
+                this.sound.playMissionComplete();
+                this.triggerActionPopup("🎉 PAGAMENTO DO MERCADO PAGO IDENTIFICADO E CREDITADO!");
+            }
+        } catch(e) {}
+
         const data = await this.apiCall(`/api/user/${encodeURIComponent(this.currentUser)}`);
         if (data && data.success && data.user) {
             this.totalCoins = Math.max(this.totalCoins, data.user.coins || 0);
             this.selectedCar = data.user.selected_car || this.selectedCar;
             if (data.user.unlocked_cars && Array.isArray(data.user.unlocked_cars)) {
                 this.unlockedCars = Array.from(new Set([...this.unlockedCars, ...data.user.unlocked_cars]));
+            }
+            if (data.user.unlocked_maps && Array.isArray(data.user.unlocked_maps)) {
+                this.unlockedMaps = Array.from(new Set([...this.unlockedMaps, ...data.user.unlocked_maps]));
             }
             if (data.user.upgrades) {
                 this.upgrades = { ...this.upgrades, ...data.user.upgrades };
@@ -480,6 +491,7 @@ export const UIManager = (Base) => class extends Base {
             this.saveAccountData(this.currentUser);
             this.buildPlayerVehicle(this.selectedCar);
             this.updateUserUI();
+            this.updateUserCoinsEverywhere();
         }
     }
 

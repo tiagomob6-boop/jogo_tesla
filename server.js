@@ -1155,22 +1155,26 @@ app.get('/api/payment/check-status', async (req, res) => {
 
     const safeOrderId = String(orderId);
     if (processedPayments.has(safeOrderId)) {
-        return res.json({ success: true, approved: true, orderId });
+        return res.json({ success: true, approved: true, orderId: safeOrderId });
     }
 
-    // Se o webhook ainda não tiver registrado, faz uma busca direta na API do Mercado Pago
     if (mpClient) {
         try {
             const payment = new Payment(mpClient);
             const searchRes = await payment.search({
                 options: {
+                    sort: 'date_created',
                     criteria: 'desc',
-                    external_reference: safeOrderId
+                    limit: 30
                 }
             });
 
             const results = (searchRes && searchRes.results) || [];
-            const approved = results.find(p => p.status === 'approved');
+            const approved = results.find(p => {
+                if (p.status !== 'approved') return false;
+                if (!p.external_reference) return false;
+                return p.external_reference.includes(safeOrderId) || (username && p.external_reference.toLowerCase().includes(String(username).toLowerCase()));
+            });
 
             if (approved) {
                 processedPayments.add(String(approved.id));
@@ -1188,14 +1192,83 @@ app.get('/api/payment/check-status', async (req, res) => {
                     console.log(`💰 [API MP Check] Moedas creditadas com sucesso para ${userToCredit}: +${extRef.coins} (ID: ${approved.id})`);
                 }
 
-                return res.json({ success: true, approved: true, orderId: safeOrderId });
+                return res.json({ success: true, approved: true, orderId: safeOrderId, paymentId: approved.id });
             }
         } catch (e) {
-            // Em caso de falha transitória ou rate-limit, responde sem travar o cliente
+            console.warn('Erro ao consultar Mercado Pago:', e.message);
         }
     }
 
     return res.json({ success: true, approved: false, orderId: safeOrderId });
+});
+
+// 3.1 Reconciliação Automática de Pagamentos Aprovados por Usuário
+app.all(['/api/payment/reconcile', '/api/payment/reconcile/:username'], async (req, res) => {
+    const userTarget = (req.params.username || req.body.username || req.query.username || '').trim();
+    if (!userTarget) return res.status(400).json({ success: false, error: 'Informe o nome de usuário' });
+
+    if (!mpClient) return res.json({ success: false, message: 'Mercado Pago não conectado' });
+
+    try {
+        const payment = new Payment(mpClient);
+        const searchRes = await payment.search({
+            options: {
+                sort: 'date_created',
+                criteria: 'desc',
+                limit: 40
+            }
+        });
+
+        const results = (searchRes && searchRes.results) || [];
+        let creditedItems = [];
+
+        for (const p of results) {
+            if (p.status === 'approved' && p.external_reference) {
+                try {
+                    const ext = typeof p.external_reference === 'string' && p.external_reference.startsWith('{')
+                        ? JSON.parse(p.external_reference)
+                        : null;
+
+                    if (ext && ext.username && ext.username.toLowerCase() === userTarget.toLowerCase()) {
+                        const paymentKey = `reconciled_${p.id}`;
+                        if (!processedPayments.has(String(p.id)) && !processedPayments.has(paymentKey)) {
+                            processedPayments.add(String(p.id));
+                            processedPayments.add(paymentKey);
+                            if (ext.orderId) processedPayments.add(String(ext.orderId));
+
+                            if (ext.packageId === 'map_cyber_premium' || ext.packageId === 'pista_premium') {
+                                await unlockUserMap(ext.username, 'pista_premium');
+                                creditedItems.push({ type: 'map', id: 'pista_premium', paymentId: p.id });
+                                console.log(`⚡ [Reconcile] Pista Premium liberada para ${ext.username} (Pagamento: ${p.id})`);
+                            } else if (ext.coins) {
+                                const updated = await creditUserCoins(ext.username, ext.coins);
+                                creditedItems.push({ type: 'coins', amount: ext.coins, totalCoins: updated ? updated.coins : null, paymentId: p.id });
+                                console.log(`💰 [Reconcile] +${ext.coins} moedas creditadas para ${ext.username} (Pagamento: ${p.id})`);
+                            }
+                        }
+                    }
+                } catch (e) {}
+            }
+        }
+
+        let currentProfile = null;
+        if (useDb && pool) {
+            const uRes = await pool.query('SELECT username, coins, unlocked_cars, unlocked_maps FROM users WHERE LOWER(username) = LOWER($1)', [userTarget]);
+            if (uRes.rows.length > 0) currentProfile = uRes.rows[0];
+        } else {
+            currentProfile = memoryStore.users.get(userTarget);
+        }
+
+        return res.json({
+            success: true,
+            reconciled: creditedItems.length > 0,
+            creditedItems,
+            user: currentProfile
+        });
+    } catch (err) {
+        console.error('Erro na reconciliação de pagamentos:', err);
+        return res.status(500).json({ success: false, error: err.message });
+    }
 });
 
 // 3.1 Confirmação de Retorno do Checkout (Redirecionamento do Mercado Pago para o Jogo)
