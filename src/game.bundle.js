@@ -1747,6 +1747,13 @@ class PaymentSystem {
             if (Array.isArray(parsed)) savedUnlocked = parsed;
         } catch(e) {}
         this.unlockedCars = savedUnlocked;
+        this.selectedMap = (savedAcc && savedAcc.selectedMap) ? savedAcc.selectedMap : (localStorage.getItem("roadster_selected_map") || "rodovia_dupla");
+        let savedUnlockedMaps = ["rodovia_dupla"];
+        try {
+            const parsedMaps = (savedAcc && savedAcc.unlockedMaps) ? savedAcc.unlockedMaps : JSON.parse(localStorage.getItem("roadster_unlocked_maps") || '["rodovia_dupla"]');
+            if (Array.isArray(parsedMaps)) savedUnlockedMaps = parsedMaps;
+        } catch(e) {}
+        this.unlockedMaps = savedUnlockedMaps;
         this.upgrades = savedAcc && savedAcc.upgrades ? savedAcc.upgrades : { phantom_air: 0, cybertruck_armor: 0 };
 
         // SISTEMA DE AR (180 L BASE - 10 SEGMENTOS)
@@ -1789,7 +1796,15 @@ class PaymentSystem {
         this.collectibleSpawnTimer = 0;
 
         this.initDailyMissions();
-        setTimeout(() => { if (typeof this.updateMapBadge === "function") this.updateMapBadge(); }, 100);
+        if (!this.selectedMap) {
+            this.selectedMap = localStorage.getItem("roadster_selected_map") || "rodovia_dupla";
+        }
+        if (typeof this.applyMapEnvironment === "function") {
+            this.applyMapEnvironment(this.selectedMap);
+        }
+        if (typeof this.updateMapBadge === "function") {
+            this.updateMapBadge();
+        }
         this.initThree();
         this.buildAtmosphericWorld();
         this.buildPlayerVehicle(this.selectedCar);
@@ -2794,6 +2809,7 @@ class PaymentSystem {
     }
 
     applyMapEnvironment(mapId) {
+        if (!mapId) mapId = this.selectedMap || "rodovia_dupla";
         const map = (typeof MAPS_CATALOG !== "undefined" && MAPS_CATALOG[mapId]) ? MAPS_CATALOG[mapId] : null;
         if (!map) return;
 
@@ -2802,13 +2818,55 @@ class PaymentSystem {
             this.nextTunnelDistance = map.tunnelSpacing;
         }
 
-        // Iluminação e atmosfera diferenciada
+        // Iluminação e atmosfera diferenciada por pista
         if (map.theme === 'midnight_city') {
-            if (this.ambientLight) this.ambientLight.intensity = 0.45;
+            if (this.ambientLight) {
+                this.ambientLight.intensity = 0.45;
+                this.ambientLight.color.setHex(0x38bdf8);
+            }
+            if (this.sunLight) {
+                this.sunLight.intensity = 0.7;
+                this.sunLight.color.setHex(0xa855f7);
+            }
+            if (this.scene && this.scene.fog) {
+                this.scene.fog.color.setHex(0x0a0f24);
+                this.scene.background = new THREE.Color(0x0a0f24);
+            }
         } else if (map.theme === 'dirt_road') {
-            if (this.ambientLight) this.ambientLight.intensity = 0.85;
+            if (this.ambientLight) {
+                this.ambientLight.intensity = 0.85;
+                this.ambientLight.color.setHex(0xfbbf24);
+            }
+            if (this.sunLight) {
+                this.sunLight.intensity = 1.6;
+                this.sunLight.color.setHex(0xf97316);
+            }
+            if (this.scene && this.scene.fog) {
+                this.scene.fog.color.setHex(0x78350f);
+                this.scene.background = new THREE.Color(0x78350f);
+            }
         } else if (map.theme === 'cyber_super_speedway') {
-            if (this.ambientLight) this.ambientLight.intensity = 0.65;
+            if (this.ambientLight) {
+                this.ambientLight.intensity = 0.75;
+                this.ambientLight.color.setHex(0x06b6d4);
+            }
+            if (this.sunLight) {
+                this.sunLight.intensity = 1.3;
+                this.sunLight.color.setHex(0xec4899);
+            }
+            if (this.scene && this.scene.fog) {
+                this.scene.fog.color.setHex(0x090514);
+                this.scene.background = new THREE.Color(0x090514);
+            }
+        } else {
+            if (this.ambientLight) {
+                this.ambientLight.intensity = 0.6;
+                this.ambientLight.color.setHex(0xc98a9a);
+            }
+            if (this.sunLight) {
+                this.sunLight.intensity = 1.5;
+                this.sunLight.color.setHex(0xffb98a);
+            }
         }
     }
 
@@ -6250,6 +6308,8 @@ class PaymentSystem {
             unlockedCars: this.unlockedCars,
             selectedPilot: this.selectedPilot,
             unlockedPilots: this.unlockedPilots,
+            selectedMap: this.selectedMap || "rodovia_dupla",
+            unlockedMaps: this.unlockedMaps || ["rodovia_dupla"],
             upgrades: this.upgrades || {}
         };
         if (password) {
@@ -6268,6 +6328,8 @@ class PaymentSystem {
         localStorage.setItem("roadster_unlocked_cars", JSON.stringify(this.unlockedCars));
         localStorage.setItem("roadster_selected_pilot", this.selectedPilot);
         localStorage.setItem("roadster_unlocked_pilots", JSON.stringify(this.unlockedPilots));
+        localStorage.setItem("roadster_selected_map", this.selectedMap || "rodovia_dupla");
+        localStorage.setItem("roadster_unlocked_maps", JSON.stringify(this.unlockedMaps || ["rodovia_dupla"]));
 
         let accounts = [];
         try {
@@ -6291,6 +6353,8 @@ class PaymentSystem {
             this.unlockedCars = local.unlockedCars || ['roadster'];
             this.selectedPilot = local.selectedPilot || 'aria';
             this.unlockedPilots = local.unlockedPilots || ['aria'];
+            this.selectedMap = local.selectedMap || localStorage.getItem("roadster_selected_map") || "rodovia_dupla";
+            this.unlockedMaps = local.unlockedMaps || ["rodovia_dupla"];
             this.upgrades = local.upgrades || { phantom_air: 0, cybertruck_armor: 0 };
         }
         this.saveAccountData(username);
@@ -6298,6 +6362,8 @@ class PaymentSystem {
         this.updateUserUI();
         this.renderGarageCards();
         this.renderPilotCards();
+        this.updateMapBadge();
+        if (typeof this.renderMapsCards === 'function') this.renderMapsCards();
         this.sound.playHeart();
         this.triggerActionPopup(`BEM-VINDO, ${username}!`);
 
@@ -7408,11 +7474,15 @@ class PaymentSystem {
     }
 
     updateMapBadge() {
-        if (!this.selectedMap) this.selectedMap = "rodovia_dupla";
-        const map = (typeof MAPS_CATALOG !== "undefined" && MAPS_CATALOG[this.selectedMap]) || { name: "Rodovia Dupla" };
+        if (!this.selectedMap) this.selectedMap = localStorage.getItem("roadster_selected_map") || "rodovia_dupla";
+        const map = (typeof MAPS_CATALOG !== "undefined" && MAPS_CATALOG[this.selectedMap]) || { name: "Rodovia Dupla", icon: "🛣️" };
         const badge = document.getElementById("menu-map-name");
         if (badge) {
-            badge.textContent = map.name;
+            badge.textContent = (map.icon ? map.icon + " " : "") + map.name;
+        }
+        const hudBadge = document.getElementById("hud-map-name");
+        if (hudBadge) {
+            hudBadge.textContent = (map.icon ? map.icon + " " : "") + map.name;
         }
     }
 
@@ -7482,6 +7552,7 @@ class PaymentSystem {
         if (!this.unlockedMaps.includes(mapId)) return;
         this.selectedMap = mapId;
         localStorage.setItem("roadster_selected_map", mapId);
+        this.saveAccountData(this.currentUser);
         this.updateMapBadge();
         this.renderMapsCards();
         if (typeof this.applyMapEnvironment === "function") {

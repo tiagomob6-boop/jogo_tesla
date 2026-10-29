@@ -3,14 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ROADSTER DASH // Sunset Coastal Highway</title>
+    <!-- SEO Básico & Indexação Google -->
+    <title>Roadster Dash 3D - Jogo de Carro Grátis no Navegador (Synthwave Runner)</title>
+    <meta name="description" content="Jogue Roadster Dash 3D grátis online no navegador! Jogo de corrida infinita estilo synthwave retro-futurista com carros 3D desbloqueáveis, saltos em rampas, multiplayer em tempo real e pistas dinâmicas.">
+    <meta name="keywords" content="jogo de corrida, jogo de carro 3d, jogo no navegador, roadster dash, corrida synthwave, jogo tesla online, corrida 3d gratis, three.js game, webgl racing">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="tiagomob6-boop">
+    <link rel="canonical" href="https://tiagomob6-boop.github.io/jogo_tesla/">
+
+    <!-- Open Graph / Redes Sociais / WhatsApp -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tiagomob6-boop.github.io/jogo_tesla/">
+    <meta property="og:title" content="Roadster Dash 3D - Jogo de Corrida Synthwave no Navegador">
+    <meta property="og:description" content="Acelere em alta velocidade na rodovia synthwave com saltos, manobras acrobáticas, missões diárias e disputas multiplayer online!">
+    <meta property="og:site_name" content="Roadster Dash 3D">
+    <meta property="og:locale" content="pt_BR">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Roadster Dash 3D - Jogo de Corrida Synthwave no Navegador">
+    <meta name="twitter:description" content="Jogue grátis direto no seu navegador. Corra, desvie de tráfego pesado e faça manobras aéreas insanas!">
+
+    <!-- Schema.org Dados Estruturados para o Google (Rich Snippets VideoGame) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "VideoGame",
+      "name": "Roadster Dash 3D",
+      "url": "https://tiagomob6-boop.github.io/jogo_tesla/",
+      "description": "Jogo de corrida infinita em 3D retro-futurista com física arcade, turbos aéreos, modo multiplayer e garagem de supercarros personalizáveis.",
+      "genre": ["Racing", "Arcade", "Action", "Endless Runner"],
+      "gamePlatform": ["Web Browser", "PC", "Mobile"],
+      "applicationCategory": "Game",
+      "operatingSystem": "Any modern web browser (Chrome, Edge, Firefox, Safari)",
+      "playMode": ["SinglePlayer", "MultiPlayer"],
+      "inLanguage": "pt-BR",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "BRL"
+      }
+    }
+    </script>
+
     <!-- Three.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <!-- Módulos de Estilo CSS Desacoplados (Fase 1) -->
     <link rel="stylesheet" href="src/styles/style.css">
 </head>
 <body>
-</head>
 
     <!-- Flash de Dano -->
     <div id="damage-flash"></div>
@@ -34,6 +75,7 @@
                     <div class="hud-coins-display" id="hud-coins-box">🪙 <span id="hud-coins">0</span></div>
                     <div class="user-badge" id="hud-user-badge" title="Clique para alterar seu Nickname">👤 <span id="hud-username">Piloto</span></div>
                     <div class="user-badge" id="hud-pilot-badge" style="background: rgba(56, 189, 248, 0.22); border-color: rgba(56, 189, 248, 0.5); cursor: pointer;" title="Piloto Ativo & Habilidade">🧑‍🚀 <span id="hud-pilot-name">Aria</span></div>
+                    <div class="user-badge" id="hud-map-badge" style="background: rgba(168, 85, 247, 0.22); border-color: rgba(168, 85, 247, 0.5); cursor: default;" title="Pista / Circuito Ativo">🗺️ <span id="hud-map-name">Rodovia Dupla</span></div>
                     <div class="hud-shield-indicator" id="hud-shield-indicator" style="display: none;">
                         <div>🛡️ ESCUDO: <span id="hud-shield-timer">5.0s</span></div>
                         <div class="hud-shield-bar"><div class="hud-shield-fill" id="hud-shield-fill"></div></div>

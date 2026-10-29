@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tiagomob6-boop.github.io/jogo_tesla/sitemap.xml
