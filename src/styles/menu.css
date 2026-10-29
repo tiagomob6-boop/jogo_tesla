@@ -1,0 +1,213 @@
+/* ================= TELAS DE MENU E GAMEOVER ================= */
+        .modal-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(16, 9, 24, 0.65);
+            backdrop-filter: blur(14px);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+        }
+
+        .modal-screen.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .glass-box {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+            border-radius: 22px;
+            padding: 34px 28px;
+            max-width: 480px;
+            width: 100%;
+            transform: scale(0.96);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(20px);
+        }
+
+        .modal-screen.active .glass-box {
+            transform: scale(1);
+        }
+
+        .game-title {
+            font-size: 2.3rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: #ffffff;
+            margin-bottom: 4px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .game-subtitle {
+            font-size: 0.85rem;
+            color: #f97316;
+            letter-spacing: 2px;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .controls-guide {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 22px;
+            font-size: 0.85rem;
+            color: #f1f5f9;
+            line-height: 1.8;
+            text-align: left;
+        }
+
+        .controls-guide strong {
+            color: #22d3ee;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #f97316, #ec4899);
+            color: #ffffff;
+            border: none;
+            border-radius: 30px;
+            font-family: inherit;
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            padding: 15px 40px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(249, 115, 22, 0.45);
+            transition: transform 0.15s, box-shadow 0.15s;
+            outline: none;
+            text-transform: uppercase;
+            touch-action: none;
+        }
+
+        .action-btn:active {
+            transform: scale(0.96);
+        }
+
+        .gameover-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 18px 0 24px 0;
+        }
+
+        .gameover-stat-item {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 12px;
+            border-radius: 12px;
+        }
+
+        .stat-label {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .stat-val {
+            font-size: 1.7rem;
+            font-weight: 900;
+            color: #fff;
+            margin-top: 3px;
+        }
+
+        /* Speed Meta (Level & Timer a cada 30 segundos) */
+        .speed-meta {
+            font-size: 0.82rem;
+            font-weight: 900;
+            color: #38bdf8;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95), 0 0 10px rgba(56, 189, 248, 0.7);
+        }
+
+        /* Marcador de Moedas no HUD */
+        .hud-coins-display {
+            font-size: 1.05rem;
+            font-weight: 900;
+            color: 
+            #fbbf24;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95), 0 0 10px rgba(251, 191, 36, 0.7);
+            margin-top: 2px;
+        }
+
+        /* Badge do Piloto / Usuário */
+        .user-badge {
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: #f1f5f9;
+            background: rgba(255, 255, 255, 0.16);
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(6px);
+            margin-top: 4px;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+            display: inline-block;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: all 0.2s;
+        }
+
+        .user-badge:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: #22d3ee;
+        }
+
+        /* Grade de Botões do Menu */
+        .menu-btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 14px;
+            width: 100%;
+        }
+
+        .secondary-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 14px;
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            padding: 12px 10px;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: all 0.2s;
+            text-transform: uppercase;
+            touch-action: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #38bdf8;
+            transform: translateY(-2px);
+        }
+
+        .secondary-btn:active {
+            transform: scale(0.96);
+        }

@@ -1,0 +1,436 @@
+/* ================= HUD IDÊNTICO À IMAGEM DO ROADSTER DASH ================= */
+        #hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: calc(env(safe-area-inset-top, 16px) + 12px) 20px calc(env(safe-area-inset-bottom, 16px) + 14px) 20px;
+        }
+
+        /* Top Bar: Botões à esquerda e Placar à direita */
+        .hud-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .top-btn-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .hud-icon-btn {
+            pointer-events: auto;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(18, 12, 28, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s;
+        }
+
+        .hud-icon-btn:active {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0.95);
+        }
+
+        /* Painéis com vidro fosco escuro translúcido para leitura impecável */
+        .hud-telemetry-panel {
+            background: rgba(12, 10, 20, 0.68);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 14px;
+            padding: 10px 14px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            pointer-events: auto;
+            min-width: 140px;
+        }
+
+        .hud-score-panel {
+            background: rgba(12, 10, 20, 0.68);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 14px;
+            padding: 8px 16px 12px 16px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            pointer-events: auto;
+        }
+
+        .distance-display {
+            font-size: 1.28rem;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95);
+        }
+
+        .speed-display {
+            font-size: 1.05rem;
+            font-weight: 900;
+            color: #fde047;
+            letter-spacing: 1.5px;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95), 0 0 12px rgba(253, 224, 71, 0.7);
+        }
+
+        /* Top Right: Score limpo */
+        .header-right {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .main-score {
+            font-size: 2.8rem;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: -1px;
+            line-height: 1;
+            text-shadow: 0 3px 14px rgba(0, 0, 0, 0.9), 0 0 18px rgba(255, 255, 255, 0.25);
+        }
+
+        .rocket-sub-bar {
+            width: 140px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            margin-top: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rocket-sub-fill {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff5e97, #ffb347);
+        }
+
+        .rocket-label {
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.75);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        /* ===== FEED DE COMBOS / STREAK (estilo Roadster Dash) ===== */
+        .combo-feed {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 3px;
+            margin-top: 10px;
+            min-height: 20px;
+            pointer-events: none;
+        }
+
+        .streak-line {
+            font-size: 0.8rem;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            color: #ffd166;
+            text-shadow: 0 0 10px rgba(255, 140, 60, 0.9), 0 2px 4px rgba(0, 0, 0, 0.7);
+            opacity: 0;
+            transition: opacity 0.25s, transform 0.25s;
+            transform: translateX(10px);
+        }
+
+        .streak-line.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .streak-line.bump {
+            animation: streakBump 0.28s ease-out;
+        }
+
+        @keyframes streakBump {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        .combo-item {
+            display: flex;
+            gap: 8px;
+            align-items: baseline;
+            font-size: 0.82rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #ffffff;
+            text-transform: uppercase;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75);
+            animation: comboIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), comboOut 0.45s ease-in 1.55s forwards;
+        }
+
+        .combo-item .pts {
+            color: #ffb347;
+            font-weight: 900;
+            text-shadow: 0 0 8px rgba(255, 140, 60, 0.85), 0 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        .combo-item.big {
+            font-size: 1rem;
+        }
+
+        .combo-item.big .pts {
+            color: #5eead4;
+            text-shadow: 0 0 10px rgba(45, 212, 191, 0.9), 0 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        @keyframes comboIn {
+            from { opacity: 0; transform: translateX(30px) scale(0.85); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+
+        @keyframes comboOut {
+            to { opacity: 0; transform: translateY(-8px); }
+        }
+
+        .hearts-box {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .heart-badge {
+            font-size: 1.25rem;
+            filter: drop-shadow(0 0 6px rgba(255, 42, 90, 0.8));
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .heart-badge.empty {
+            opacity: 0.2;
+            filter: grayscale(1);
+        }
+
+        /* Notificação central de ação */
+        .action-popup {
+            position: absolute;
+            top: 26%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            font-size: 1.25rem;
+            font-weight: 900;
+            color: #fde047;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0;
+            transition: all 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-shadow: 0 0 16px rgba(253, 224, 71, 0.8), 0 2px 6px rgba(0, 0, 0, 0.6);
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .action-popup.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* ================= BOTTOM BAR: RESPONSIVO NO CELULAR ================= */
+        .hud-bottom {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+        }
+
+        /* Linha de Controles Touchscreen (Dois Polegares) */
+        .touch-controls-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            width: 100%;
+            pointer-events: none;
+        }
+
+        /* Grupo Esquerdo: Botões de Direção ◀ e ▶ */
+        .steer-btn-group {
+            display: flex;
+            gap: 12px;
+            pointer-events: auto;
+        }
+
+        .mobile-dir-btn {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            background: rgba(18, 12, 28, 0.55);
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            color: #ffffff;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            transition: transform 0.1s, background 0.1s;
+            touch-action: none;
+        }
+
+        .mobile-dir-btn:active {
+            transform: scale(0.9);
+            background: rgba(34, 211, 238, 0.45);
+            border-color: #22d3ee;
+        }
+
+        /* Grupo Direito: Slam ⬇ e Boost ⇪ */
+        .action-btn-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            pointer-events: auto;
+        }
+
+        .mobile-slam-btn {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: rgba(18, 12, 28, 0.55);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: transform 0.1s;
+            touch-action: none;
+        }
+
+        .mobile-slam-btn:active {
+            transform: scale(0.9);
+            background: rgba(249, 115, 22, 0.5);
+            border-color: #f97316;
+        }
+
+        /* Botão circular de Boost/Voo à direita */
+        .boost-touch-btn {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(34, 211, 238, 0.4) 0%, rgba(14, 116, 144, 0.7) 100%);
+            border: 2px solid rgba(34, 211, 238, 0.85);
+            box-shadow: 0 0 22px rgba(34, 211, 238, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: transform 0.1s, box-shadow 0.1s;
+            touch-action: none;
+        }
+
+        .boost-touch-btn:active {
+            transform: scale(0.92);
+            box-shadow: 0 0 35px rgba(34, 211, 238, 0.95);
+        }
+
+        .boost-icon {
+            font-size: 1.4rem;
+            color: #ffffff;
+            line-height: 1;
+        }
+
+        .boost-text {
+            font-size: 0.65rem;
+            font-weight: 900;
+            color: #22d3ee;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        /* Barra de AR Segmentada (10 blocos) */
+        .air-segment-box {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .air-meta-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: #e2e8f0;
+            text-transform: uppercase;
+        }
+
+        .air-segmented-bar {
+            width: 100%;
+            height: 14px;
+            display: flex;
+            gap: 3px;
+            padding: 2px;
+            background: rgba(10, 8, 18, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 4px;
+            backdrop-filter: blur(8px);
+        }
+
+        .air-segment {
+            flex: 1;
+            height: 100%;
+            background: #22d3ee;
+            border-radius: 2px;
+            box-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
+            transition: opacity 0.15s, background-color 0.2s;
+        }
+
+        .air-segment.depleted {
+            opacity: 0.12;
+            background: #64748b;
+            box-shadow: none;
+        }
+
+        /* Efeito de Flash na tela ao colidir */
+        #damage-flash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle, rgba(255, 60, 100, 0) 30%, rgba(255, 60, 100, 0.7) 100%);
+            opacity: 0;
+            transition: opacity 0.25s ease-out;
+            z-index: 8;
+        }

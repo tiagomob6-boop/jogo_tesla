@@ -1,0 +1,162 @@
+/* ===== ESTILOS DA LOJA DE MOEDAS & MERCADO PAGO ===== */
+        .coin-packages-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 14px 0;
+        }
+
+        .coin-package-card {
+            background: linear-gradient(145deg, rgba(20, 24, 40, 0.85), rgba(10, 14, 25, 0.95));
+            border: 2px solid rgba(251, 191, 36, 0.25);
+            border-radius: 16px;
+            padding: 16px 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+        }
+
+        .coin-package-card:hover {
+            transform: translateY(-3px);
+            border-color: #fbbf24;
+            box-shadow: 0 8px 25px rgba(251, 191, 36, 0.35);
+        }
+
+        .coin-package-card.popular {
+            border-color: #38bdf8;
+            background: linear-gradient(145deg, rgba(14, 45, 80, 0.85), rgba(10, 18, 38, 0.95));
+        }
+
+        .coin-package-card.popular:hover {
+            border-color: #38bdf8;
+            box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4);
+        }
+
+        .pkg-badge {
+            position: absolute;
+            top: -10px;
+            right: 10px;
+            background: linear-gradient(135deg, #06b6d4, #3b82f6);
+            color: #ffffff;
+            font-size: 0.68rem;
+            font-weight: 900;
+            padding: 3px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(6, 182, 212, 0.5);
+        }
+
+        .pkg-badge.gold {
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.5);
+        }
+
+        .pkg-icon {
+            font-size: 2.2rem;
+            margin-bottom: 6px;
+            filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.6));
+        }
+
+        .pkg-coins-amount {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #fde047;
+            text-shadow: 0 0 12px rgba(253, 224, 71, 0.6);
+            letter-spacing: -0.5px;
+        }
+
+        .pkg-title {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 4px 0 6px 0;
+        }
+
+        .pkg-desc {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            line-height: 1.35;
+            flex: 1;
+            margin-bottom: 12px;
+        }
+
+        .pkg-price-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: 1px solid #fbbf24;
+            color: #111827;
+            font-weight: 900;
+            font-size: 0.95rem;
+            padding: 10px 6px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 3px 12px rgba(245, 158, 11, 0.35);
+            font-family: inherit;
+        }
+
+        .pkg-price-btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 5px 18px rgba(245, 158, 11, 0.6);
+        }
+
+        .popular .pkg-price-btn {
+            background: linear-gradient(135deg, #06b6d4, #2563eb);
+            border-color: #38bdf8;
+            color: #ffffff;
+            box-shadow: 0 3px 12px rgba(6, 182, 212, 0.4);
+        }
+
+        /* Modal Checkout Mercado Pago */
+        .mp-checkout-box {
+            background: rgba(10, 16, 32, 0.92);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 14px;
+            padding: 16px;
+            margin: 12px 0;
+            text-align: center;
+        }
+
+        .mp-logo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 158, 227, 0.15);
+            border: 1px solid #009ee3;
+            color: #38bdf8;
+            font-weight: 800;
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+
+        .pix-code-container {
+            background: rgba(0, 0, 0, 0.55);
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 0.72rem;
+            word-break: break-all;
+            color: #cbd5e1;
+            margin: 10px 0;
+            user-select: all;
+        }
+
+        /* Ajustes específicos para Celular */
+        @media (max-width: 600px) {
+            #hud { padding: 14px 14px 12px 14px; }
+            .main-score { font-size: 2.3rem; }
+            .mobile-dir-btn { width: 56px; height: 56px; font-size: 1.25rem; }
+            .boost-touch-btn { width: 68px; height: 68px; }
+            .mobile-slam-btn { width: 48px; height: 48px; }
+            .glass-box { padding: 26px 18px; }
+            .game-title { font-size: 1.9rem; }
+            .garage-grid { grid-template-columns: 1fr; }
+            .menu-btn-grid { grid-template-columns: 1fr; }
+        }

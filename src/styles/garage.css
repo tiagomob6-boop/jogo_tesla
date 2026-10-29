@@ -1,0 +1,363 @@
+/* Modais Específicos: Garagem, Ranking e Perfil */
+        .modal-large-box {
+            max-width: 680px;
+            max-height: 88vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .modal-large-box::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .modal-large-box::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 4px;
+        }
+
+        /* Cards da Garagem / Loja de Carros */
+        .garage-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-top: 10px;
+            text-align: left;
+        }
+
+        .car-card {
+            background: rgba(18, 12, 28, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .car-card.selected {
+            border-color: #22d3ee;
+            box-shadow: 0 0 16px rgba(34, 211, 238, 0.4);
+            background: rgba(34, 211, 238, 0.1);
+        }
+
+        .car-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .car-title {
+            font-size: 1.05rem;
+            font-weight: 900;
+            color: #ffffff;
+        }
+
+        .car-badge {
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .car-badge.owned {
+            background: rgba(34, 197, 94, 0.25);
+            color: #4ade80;
+            border: 1px solid #4ade80;
+        }
+
+        .car-badge.selected-tag {
+            background: rgba(34, 211, 238, 0.3);
+            color: #22d3ee;
+            border: 1px solid #22d3ee;
+        }
+
+        .car-desc {
+            font-size: 0.75rem;
+            color: #cbd5e1;
+            margin: 6px 0 10px 0;
+            line-height: 1.4;
+        }
+
+        .car-bonus {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #fde047;
+            margin-bottom: 12px;
+        }
+
+        .car-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            gap: 8px;
+        }
+
+        .car-price-tag {
+            font-size: 0.95rem;
+            font-weight: 900;
+            color: #fbbf24;
+        }
+
+        .car-action-btn {
+            flex: 1;
+            padding: 9px 12px;
+            border-radius: 10px;
+            border: none;
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-transform: uppercase;
+        }
+
+        .car-action-btn.btn-equip {
+            background: linear-gradient(135deg, #22d3ee, #0284c7);
+            color: #ffffff;
+        }
+
+        .car-action-btn.btn-buy {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+        }
+
+        .car-action-btn.btn-disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        /* Upgrades dos Carros na Garagem */
+        .upgrade-section {
+            margin-top: 8px;
+            margin-bottom: 8px;
+            padding: 8px 10px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .upgrade-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.72rem;
+            color: #cbd5e1;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .upgrade-badge {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 800;
+        }
+
+        .btn-upgrade {
+            width: 100%;
+            padding: 7px 10px;
+            border-radius: 8px;
+            border: none;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 0.75rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-transform: uppercase;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-upgrade:disabled, .btn-upgrade.btn-disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Chips de Seleção Rápida de Contas */
+        .account-chip {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #f1f5f9;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+
+        .account-chip:hover, .account-chip.active {
+            background: rgba(34, 211, 238, 0.2);
+            border-color: #22d3ee;
+            color: #38bdf8;
+        }
+
+        /* Indicador de Escudo Ativo no HUD */
+        .hud-shield-indicator {
+            display: inline-flex;
+            flex-direction: column;
+            gap: 3px;
+            background: rgba(6, 182, 212, 0.28);
+            border: 1px solid #22d3ee;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #22d3ee;
+            text-shadow: 0 0 8px rgba(34, 211, 238, 0.75);
+            animation: shieldPulse 1.1s infinite alternate;
+        }
+
+        .hud-shield-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(0, 0, 0, 0.55);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .hud-shield-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #22d3ee, #38bdf8);
+            border-radius: 2px;
+            transition: width 0.1s linear;
+        }
+
+        @keyframes shieldPulse {
+            0% { box-shadow: 0 0 6px rgba(34, 211, 238, 0.4); }
+            100% { box-shadow: 0 0 16px rgba(34, 211, 238, 0.9); }
+        }
+
+        /* Estilos dos Cards de Pilotos */
+        .pilot-card {
+            background: rgba(18, 12, 28, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.25s;
+            position: relative;
+            text-align: left;
+        }
+
+        .pilot-card.selected {
+            border-color: #38bdf8;
+            box-shadow: 0 0 16px rgba(56, 189, 248, 0.45);
+            background: rgba(56, 189, 248, 0.12);
+        }
+
+        .pilot-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .pilot-avatar {
+            font-size: 1.8rem;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .pilot-name {
+            font-size: 1.05rem;
+            font-weight: 900;
+            color: #ffffff;
+        }
+
+        .pilot-title {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .pilot-skill-box {
+            margin: 8px 0;
+            padding: 8px 10px;
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px dashed rgba(56, 189, 248, 0.35);
+            border-radius: 10px;
+        }
+
+        .pilot-skill-name {
+            font-size: 0.78rem;
+            font-weight: 900;
+            color: #38bdf8;
+            margin-bottom: 3px;
+        }
+
+        .pilot-skill-desc {
+            font-size: 0.72rem;
+            color: #cbd5e1;
+            line-height: 1.35;
+        }
+
+        /* Indicador de Mega Boost no HUD */
+        .hud-megaboost-indicator {
+            display: inline-flex;
+            flex-direction: column;
+            gap: 3px;
+            background: rgba(16, 185, 129, 0.28);
+            border: 1px solid #10b981;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #34d399;
+            text-shadow: 0 0 8px rgba(52, 211, 153, 0.85);
+            animation: megaBoostPulse 0.9s infinite alternate;
+        }
+
+        @keyframes megaBoostPulse {
+            0% { box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
+            100% { box-shadow: 0 0 18px rgba(16, 185, 129, 0.95), 0 0 30px rgba(6, 182, 212, 0.6); }
+        }
+
+        /* Indicador de Ímã de Moedas no HUD */
+        .hud-magnet-indicator {
+            display: inline-flex;
+            flex-direction: column;
+            gap: 3px;
+            background: rgba(245, 158, 11, 0.28);
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #fbbf24;
+            text-shadow: 0 0 8px rgba(251, 191, 36, 0.85);
+            animation: magnetPulse 0.9s infinite alternate;
+        }
+
+        @keyframes magnetPulse {
+            0% { box-shadow: 0 0 6px rgba(245, 158, 11, 0.4); }
+            100% { box-shadow: 0 0 18px rgba(245, 158, 11, 0.95), 0 0 30px rgba(236, 72, 153, 0.6); }
+        }

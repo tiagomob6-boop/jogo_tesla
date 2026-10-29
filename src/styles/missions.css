@@ -1,0 +1,319 @@
+/* Estilos do Modal de Missões Diárias */
+        .missions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 4px;
+            margin-top: 10px;
+        }
+
+        .mission-card {
+            background: rgba(18, 12, 28, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .mission-card.completed {
+            border-color: #fbbf24;
+            background: rgba(251, 191, 36, 0.1);
+            box-shadow: 0 0 14px rgba(251, 191, 36, 0.25);
+        }
+
+        .mission-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mission-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mission-icon {
+            font-size: 1.5rem;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+        }
+
+        .mission-title-text {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .mission-desc-text {
+            font-size: 0.75rem;
+            color: #cbd5e1;
+        }
+
+        .mission-reward-badge {
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: #fbbf24;
+            background: rgba(251, 191, 36, 0.15);
+            padding: 4px 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(251, 191, 36, 0.35);
+        }
+
+        .mission-progress-bar-wrap {
+            width: 100%;
+            height: 7px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .mission-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #38bdf8, #22d3ee);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .mission-card.completed .mission-progress-fill {
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+        }
+
+        .mission-bottom-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mission-count-text {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #94a3b8;
+        }
+
+        .btn-claim-reward {
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: none;
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            color: #1c1917;
+            font-size: 0.75rem;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(245, 158, 11, 0.5);
+            animation: pulseClaim 1s infinite alternate;
+        }
+
+        @keyframes pulseClaim {
+            0% { transform: scale(1.0); }
+            100% { transform: scale(1.05); }
+        }
+
+        .badge-claimed {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #4ade80;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Estilos do Modal de Configurações & Pause */
+        .settings-box {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin: 12px 0;
+            text-align: left;
+        }
+
+        .setting-item {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .setting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .setting-title {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .setting-val {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: #38bdf8;
+        }
+
+        .setting-slider {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .setting-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #22d3ee;
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.8);
+            cursor: pointer;
+        }
+
+        .setting-toggle-btn {
+            padding: 5px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            font-size: 0.78rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .setting-toggle-btn.active {
+            background: rgba(34, 197, 94, 0.25);
+            border-color: #22c55e;
+            color: #4ade80;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.35);
+        }
+
+        /* Leaderboard Table */
+        .leaderboard-box {
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 380px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .leaderboard-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            transition: transform 0.15s;
+        }
+
+        .leaderboard-row.top-1 {
+            background: linear-gradient(90deg, rgba(234, 179, 8, 0.25), rgba(0, 0, 0, 0.4));
+            border-color: #eab308;
+        }
+        .leaderboard-row.top-2 {
+            background: linear-gradient(90deg, rgba(203, 213, 225, 0.2), rgba(0, 0, 0, 0.4));
+            border-color: #cbd5e1;
+        }
+        .leaderboard-row.top-3 {
+            background: linear-gradient(90deg, rgba(217, 119, 6, 0.2), rgba(0, 0, 0, 0.4));
+            border-color: #d97706;
+        }
+
+        .rank-pos {
+            font-size: 1.1rem;
+            font-weight: 900;
+            width: 32px;
+            color: #94a3b8;
+        }
+
+        .top-1 .rank-pos { color: #fde047; }
+        .top-2 .rank-pos { color: #f1f5f9; }
+        .top-3 .rank-pos { color: #fb923c; }
+
+        .rank-user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            flex: 1;
+            margin-left: 10px;
+        }
+
+        .rank-username {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .rank-car-tag {
+            font-size: 0.65rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+        }
+
+        .rank-score-val {
+            font-size: 1.25rem;
+            font-weight: 900;
+            color: #22d3ee;
+            letter-spacing: -0.5px;
+        }
+
+        /* Input Estilizado do Usuário */
+        .styled-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-family: inherit;
+            font-size: 1.1rem;
+            color: #ffffff;
+            outline: none;
+            transition: all 0.2s;
+            margin: 12px 0;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .styled-input:focus {
+            border-color: #22d3ee;
+            box-shadow: 0 0 14px rgba(34, 211, 238, 0.5);
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .status-msg {
+            font-size: 0.8rem;
+            min-height: 20px;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .status-msg.error { color: #f87171; }
+        .status-msg.success { color: #4ade80; }

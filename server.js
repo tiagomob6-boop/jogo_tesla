@@ -935,22 +935,37 @@ app.post('/api/payment/simulate', async (req, res) => {
     }
 });
 
-// 4. Webhook do Mercado Pago para Confirmação Automática de Pagamento
+// Cache de pagamentos processados para controle de idempotência (evita crédito duplicado)
+const processedPayments = new Set();
+
+// 4. Webhook do Mercado Pago para Confirmação Automática de Pagamento (com Idempotência e Auditoria)
 app.post('/api/payment/webhook', async (req, res) => {
     try {
         const { type, data } = req.body;
-        if (type === 'payment' && data && data.id && mpClient) {
+        const paymentId = data && data.id ? String(data.id) : (req.query && req.query['data.id'] ? String(req.query['data.id']) : null);
+
+        if ((type === 'payment' || req.query.topic === 'payment') && paymentId && mpClient) {
+            // Verificação de idempotência contra retries do webhook
+            if (processedPayments.has(paymentId)) {
+                console.log(`ℹ️ [Webhook MP] Pagamento ${paymentId} já processado anteriormente. Ignorando retry.`);
+                return res.sendStatus(200);
+            }
+
             const payment = new Payment(mpClient);
-            const pInfo = await payment.get({ id: data.id });
+            const pInfo = await payment.get({ id: paymentId });
 
             if (pInfo && pInfo.status === 'approved' && pInfo.external_reference) {
                 try {
                     const extRef = JSON.parse(pInfo.external_reference);
                     if (extRef.username && extRef.coins) {
+                        // Registra no controle de idempotência
+                        processedPayments.add(paymentId);
                         await creditUserCoins(extRef.username, extRef.coins);
-                        console.log(`💰 Moedas creditadas via Mercado Pago: +${extRef.coins} para ${extRef.username}`);
+                        console.log(`💰 [Webhook MP] Moedas creditadas com sucesso via Mercado Pago: +${extRef.coins} para ${extRef.username} (ID: ${paymentId})`);
                     }
-                } catch (e) {}
+                } catch (e) {
+                    console.error('Erro ao processar external_reference do pagamento:', e);
+                }
             }
         }
         res.sendStatus(200);
