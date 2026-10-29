@@ -272,6 +272,30 @@ const COIN_PACKAGES = {
                 tag: '+50% Bônus 👑',
                 icon: '👑',
                 desc: '10.000 Moedas - Compre todos os carros e upgrades com facilidade!'
+            },
+            pista_premium: {
+                id: 'pista_premium',
+                name: 'Pista Premium Cyber Super-Speedway',
+                type: 'map',
+                coins: 0,
+                price: 10.90,
+                priceBRL: 10.90,
+                tag: 'VIP Exclusivo ⚡',
+                icon: '⚡',
+                badge: 'R$ 10,90 Exclusivo',
+                desc: 'Desbloqueio Permanente do Mapa 5: +50% Pontuação Global E Moedas em Dobro (2x Moedas)!'
+            },
+            map_cyber_premium: {
+                id: 'map_cyber_premium',
+                name: 'Pista Premium Cyber Super-Speedway',
+                type: 'map',
+                coins: 0,
+                price: 10.90,
+                priceBRL: 10.90,
+                tag: 'VIP Exclusivo ⚡',
+                icon: '⚡',
+                badge: 'R$ 10,90 Exclusivo',
+                desc: 'Desbloqueio Permanente do Mapa 5: +50% Pontuação Global E Moedas em Dobro (2x Moedas)!'
             }
         };
 
@@ -7047,7 +7071,16 @@ class PaymentSystem {
         this.mpPixCode = document.getElementById("mp-pix-code");
         this.copyPixBtn = document.getElementById("copy-pix-btn");
         this.simulatePaymentBtn = document.getElementById("simulate-payment-btn");
-        this.mpPaymentStatus = document.getElementById("mp-payment-status");
+        this.mpPaymentModal = document.getElementById("mp-payment-modal");
+        this.closePaymentModalBtn = document.getElementById("close-payment-modal-btn");
+        this.copyPixBtn = document.getElementById("copy-pix-btn");
+        this.pixCopyPasteBox = document.getElementById("pix-copy-paste-box");
+        this.payMercadoPagoLink = document.getElementById("pay-mercadopago-link");
+        this.payRedirectSection = document.getElementById("pay-redirect-section");
+        this.paySimulateBtn = document.getElementById("pay-simulate-btn");
+        this.payPkgName = document.getElementById("pay-pkg-name");
+        this.payPkgPrice = document.getElementById("pay-pkg-price");
+        this.payPkgUsername = document.getElementById("pay-pkg-username");
         this.openCoinShopBtn = document.getElementById("open-coin-shop-btn");
         this.garageBuyCoinsBtn = document.getElementById("garage-buy-coins-btn");
 
@@ -7072,28 +7105,39 @@ class PaymentSystem {
             });
         }
 
-        if (this.closeMpModalBtn) {
-            this.closeMpModalBtn.addEventListener("click", () => {
-                if (this.mpPaymentModal) this.mpPaymentModal.classList.remove("active");
-            });
-        }
+        const closeMpModal = () => {
+            if (this.mpPaymentModal) this.mpPaymentModal.classList.remove("active");
+            if (this.activePaymentPolling) {
+                clearInterval(this.activePaymentPolling);
+                this.activePaymentPolling = null;
+            }
+        };
 
-        if (this.copyPixBtn && this.mpPixCode) {
+        if (this.closePaymentModalBtn) this.closePaymentModalBtn.addEventListener("click", closeMpModal);
+        const altCloseBtn = document.getElementById("close-mp-modal-btn");
+        if (altCloseBtn) altCloseBtn.addEventListener("click", closeMpModal);
+
+        if (this.copyPixBtn) {
             this.copyPixBtn.addEventListener("click", () => {
-                const code = this.mpPixCode.textContent || "";
-                if (navigator.clipboard && code) {
-                    navigator.clipboard.writeText(code).then(() => {
-                        this.copyPixBtn.textContent = "COPIADO! ✅";
-                        setTimeout(() => { if (this.copyPixBtn) this.copyPixBtn.textContent = "COPIAR CÓDIGO PIX"; }, 2500);
-                    }).catch(() => {
-                        this.copyPixBtn.textContent = "SELECIONADO!";
-                    });
+                const pixEl = this.pixCopyPasteBox || document.getElementById("pix-copy-paste-box") || document.getElementById("mp-pix-code");
+                const code = pixEl ? (pixEl.textContent || pixEl.value || "") : "";
+                if (code) {
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(code).then(() => {
+                            this.copyPixBtn.textContent = "COPIADO COM SUCESSO! ✅";
+                            setTimeout(() => { if (this.copyPixBtn) this.copyPixBtn.textContent = "📋 COPIAR CÓDIGO PIX"; }, 2500);
+                        }).catch(() => {
+                            this.copyPixBtn.textContent = "SELECIONADO!";
+                        });
+                    } else {
+                        this.copyPixBtn.textContent = "CÓDIGO PRONTO!";
+                    }
                 }
             });
         }
 
-        if (this.simulatePaymentBtn) {
-            this.simulatePaymentBtn.addEventListener("click", () => {
+        if (this.paySimulateBtn) {
+            this.paySimulateBtn.addEventListener("click", () => {
                 this.simulatePaymentApproval();
             });
         }
@@ -7117,16 +7161,18 @@ class PaymentSystem {
         if (!this.coinPackagesContainer) return;
         this.coinPackagesContainer.innerHTML = "";
 
-        COIN_PACKAGES.forEach(pkg => {
+        const packagesList = Object.values(COIN_PACKAGES).filter(p => !p.type || p.type !== 'map');
+        packagesList.forEach(pkg => {
             const card = document.createElement("div");
             card.className = "coin-package-card";
+            const priceVal = Number(pkg.priceBRL || pkg.price || 0);
             card.innerHTML = `
-                ${pkg.badge ? `<div class="pkg-badge">${pkg.badge}</div>` : ""}
-                <div class="pkg-icon">${pkg.icon}</div>
-                <div class="pkg-coins">${pkg.coins.toLocaleString()} MOEDAS</div>
-                <div class="pkg-tag">${pkg.tag}</div>
+                ${pkg.tag ? `<div class="pkg-badge">${pkg.tag}</div>` : ""}
+                <div class="pkg-icon">${pkg.icon || '🪙'}</div>
+                <div class="pkg-coins">${(pkg.coins || 0).toLocaleString()} MOEDAS</div>
+                <div class="pkg-tag">${pkg.desc || pkg.name}</div>
                 <button class="pkg-price-btn" data-pkg="${pkg.id}">
-                    💳 R$ ${pkg.priceBRL.toFixed(2).replace('.', ',')}
+                    💳 R$ ${priceVal.toFixed(2).replace('.', ',')}
                 </button>
             `;
 
@@ -7142,17 +7188,21 @@ class PaymentSystem {
     }
 
     async openPaymentCheckout(packageId) {
-        const pkg = COIN_PACKAGES.find(p => p.id === packageId);
+        const pkg = COIN_PACKAGES[packageId] || Object.values(COIN_PACKAGES).find(p => p.id === packageId);
         if (!pkg) return;
 
         this.selectedCheckoutPackage = pkg;
+        const priceVal = Number(pkg.priceBRL || pkg.price || 0);
 
-        if (this.mpPkgName) this.mpPkgName.textContent = `${pkg.coins.toLocaleString()} Moedas (${pkg.tag})`;
-        if (this.mpPkgPrice) this.mpPkgPrice.textContent = `R$ ${pkg.priceBRL.toFixed(2).replace('.', ',')}`;
-        if (this.mpPaymentStatus) {
-            this.mpPaymentStatus.className = "status-msg";
-            this.mpPaymentStatus.textContent = "Conectando ao gateway Mercado Pago...";
-        }
+        if (this.payPkgName) this.payPkgName.textContent = pkg.type === 'map' ? pkg.name : `${(pkg.coins || 0).toLocaleString()} Moedas (${pkg.tag || pkg.name})`;
+        if (this.payPkgPrice) this.payPkgPrice.textContent = `R$ ${priceVal.toFixed(2).replace('.', ',')}`;
+        if (this.payPkgUsername) this.payPkgUsername.textContent = this.currentUser || 'Piloto';
+
+        const pixBox = this.pixCopyPasteBox || document.getElementById("pix-copy-paste-box");
+        if (pixBox) pixBox.textContent = "Gerando cobrança oficial com Mercado Pago...";
+
+        const redirSec = this.payRedirectSection || document.getElementById("pay-redirect-section");
+        if (redirSec) redirSec.style.display = "none";
 
         if (this.mpPaymentModal) this.mpPaymentModal.classList.add("active");
 
@@ -7172,46 +7222,97 @@ class PaymentSystem {
 
             const data = await res.json();
             if (data.success) {
-                if (this.mpCheckoutLink) {
-                    this.mpCheckoutLink.href = data.init_point || "#";
-                    this.mpCheckoutLink.target = "_blank";
-                    this.mpCheckoutLink.style.display = "block";
+                const checkoutLink = this.payMercadoPagoLink || document.getElementById("pay-mercadopago-link");
+                if (data.init_point && checkoutLink) {
+                    checkoutLink.href = data.init_point;
+                    checkoutLink.target = "_blank";
+                    if (redirSec) redirSec.style.display = "block";
                 }
-                if (this.mpPixCode) {
-                    this.mpPixCode.textContent = data.pixCode || "00020126580014br.gov.bcb.pix0136pix-mercadopago-roadsterdash-coins5204000053039865802BR5916ROADSTER DASH6009SAO PAULO";
+
+                if (pixBox) {
+                    const fallbackPix = `00020126580014br.gov.bcb.pix0136pix-mercadopago-roadsterdash-pkg${pkg.id}520400005303986540${priceVal.toFixed(2)}5802BR5916ROADSTER DASH6009SAO PAULO`;
+                    pixBox.textContent = data.pixCode || fallbackPix;
                 }
-                if (this.mpPaymentStatus) {
-                    this.mpPaymentStatus.className = "status-msg success";
-                    this.mpPaymentStatus.textContent = data.mode === "live" 
-                        ? "Link de pagamento seguro gerado com sucesso!" 
-                        : "Modo Demonstração / Teste Ativo! Use o simulador abaixo para aprovar:";
+
+                // Inicia polling para detectar aprovação automática em segundo plano
+                if (data.orderId) {
+                    this.startPaymentApprovalPolling(data.orderId, pkg);
                 }
             } else {
-                throw new Error(data.error || "Falha ao gerar preferência");
+                throw new Error(data.error || "Falha ao gerar cobrança");
             }
         } catch(err) {
-            // Fallback offline / sem conexão backend
-            if (this.mpPixCode) {
-                this.mpPixCode.textContent = `00020126580014br.gov.bcb.pix0136pix-roadsterdash-${pkg.id}520400005303986540${pkg.priceBRL.toFixed(2)}5802BR5916ROADSTER DASH`;
+            console.warn("[Payment] Falha na preferência do Mercado Pago, usando fallback seguro:", err);
+            if (pixBox) {
+                pixBox.textContent = `00020126580014br.gov.bcb.pix0136pix-mercadopago-${pkg.id}520400005303986540${priceVal.toFixed(2)}5802BR5916ROADSTER DASH`;
             }
-            if (this.mpCheckoutLink) {
-                this.mpCheckoutLink.href = "https://www.mercadopago.com.br";
-            }
-            if (this.mpPaymentStatus) {
-                this.mpPaymentStatus.className = "status-msg";
-                this.mpPaymentStatus.textContent = "Ambiente offline. Você pode testar e aprovar instantaneamente clicando em SIMULAR APROVAÇÃO!";
+            const checkoutLink = this.payMercadoPagoLink || document.getElementById("pay-mercadopago-link");
+            if (checkoutLink) {
+                checkoutLink.href = "https://www.mercadopago.com.br";
+                if (redirSec) redirSec.style.display = "block";
             }
         }
+    }
+
+    startPaymentApprovalPolling(orderId, pkg) {
+        if (this.activePaymentPolling) clearInterval(this.activePaymentPolling);
+        const loc = window.location;
+        const isLocal = loc.hostname === "localhost" || loc.hostname === "127.0.0.1";
+        const apiBase = isLocal ? `http://${loc.hostname}:${loc.port || 3000}` : "https://jogo-tesla.onrender.com";
+
+        let attempts = 0;
+        this.activePaymentPolling = setInterval(async () => {
+            attempts++;
+            if (attempts > 90) { // encerra após 4.5 minutos
+                clearInterval(this.activePaymentPolling);
+                this.activePaymentPolling = null;
+                return;
+            }
+            try {
+                const res = await fetch(`${apiBase}/api/payment/check-status?orderId=${encodeURIComponent(orderId)}&username=${encodeURIComponent(this.currentUser)}`);
+                if (res.ok) {
+                    const status = await res.json();
+                    if (status.approved) {
+                        clearInterval(this.activePaymentPolling);
+                        this.activePaymentPolling = null;
+                        this.onPaymentApprovedSuccess(pkg);
+                    }
+                }
+            } catch(e) {}
+        }, 3000);
+    }
+
+    onPaymentApprovedSuccess(pkg) {
+        if (pkg.type === 'map' || pkg.id === 'pista_premium' || pkg.id === 'map_cyber_premium') {
+            if (!this.unlockedMaps.includes("pista_premium")) {
+                this.unlockedMaps.push("pista_premium");
+            }
+            localStorage.setItem("roadster_unlocked_maps", JSON.stringify(this.unlockedMaps));
+            this.selectMap("pista_premium");
+            this.updateMapBadge();
+            this.triggerActionPopup("💎 PISTA PREMIUM DESBLOQUEADA COM SUCESSO!");
+            this.speakAnnouncer("Super Speedway Unlocked!", true);
+        } else {
+            const coinsToAdd = pkg.coins || 0;
+            this.totalCoins += coinsToAdd;
+            localStorage.setItem("roadster_coins", this.totalCoins.toString());
+            this.updateUserCoinsEverywhere();
+            this.triggerActionPopup(`+${coinsToAdd.toLocaleString()} MOEDAS VIP!`);
+            this.speakAnnouncer("Payment Approved! Coins Added!", true);
+        }
+
+        this.sound.playMissionComplete();
+        this.saveAccountData(this.currentUser);
+
+        setTimeout(() => {
+            if (this.mpPaymentModal) this.mpPaymentModal.classList.remove("active");
+            if (this.coinShopModal) this.coinShopModal.classList.remove("active");
+        }, 1200);
     }
 
     async simulatePaymentApproval() {
         if (!this.selectedCheckoutPackage) return;
         const pkg = this.selectedCheckoutPackage;
-
-        if (this.mpPaymentStatus) {
-            this.mpPaymentStatus.className = "status-msg";
-            this.mpPaymentStatus.textContent = "Processando confirmação Pix / Cartão...";
-        }
 
         const loc = window.location;
         const isLocal = loc.hostname === "localhost" || loc.hostname === "127.0.0.1";
@@ -7227,31 +7328,12 @@ class PaymentSystem {
                 })
             });
             const data = await res.json();
-            if (data.success && data.newBalance !== undefined) {
-                this.totalCoins = data.newBalance;
-            } else {
-                this.totalCoins += pkg.coins;
+            if (data.success && data.totalCoins !== undefined) {
+                this.totalCoins = data.totalCoins;
             }
-        } catch(e) {
-            this.totalCoins += pkg.coins;
-        }
+        } catch(e) {}
 
-        localStorage.setItem("roadster_coins", this.totalCoins.toString());
-        this.updateUserCoinsEverywhere();
-
-        if (this.mpPaymentStatus) {
-            this.mpPaymentStatus.className = "status-msg success";
-            this.mpPaymentStatus.textContent = `🎉 Pagamento Aprovado! +${pkg.coins.toLocaleString()} Moedas creditadas na sua conta!`;
-        }
-
-        this.sound.playMissionComplete();
-        this.speakAnnouncer("Payment Approved! Coins Added!", true);
-        this.triggerActionPopup(`+${pkg.coins.toLocaleString()} MOEDAS VIP!`);
-
-        setTimeout(() => {
-            if (this.mpPaymentModal) this.mpPaymentModal.classList.remove("active");
-            if (this.shopUserBalance) this.shopUserBalance.textContent = this.totalCoins.toLocaleString();
-        }, 1800);
+        this.onPaymentApprovedSuccess(pkg);
     }
 
 
@@ -7367,24 +7449,7 @@ class PaymentSystem {
         this.sound.init();
         const modal = document.getElementById("maps-modal");
         if (modal) modal.classList.remove("active");
-
-        if (typeof window.PaymentSystem !== "undefined") {
-            const ps = new window.PaymentSystem(typeof API_URL !== "undefined" ? API_URL : "");
-            ps.checkoutPremiumMap(this.currentUser, () => {
-                if (!this.unlockedMaps.includes("pista_premium")) {
-                    this.unlockedMaps.push("pista_premium");
-                    localStorage.setItem("roadster_unlocked_maps", JSON.stringify(this.unlockedMaps));
-                }
-                this.selectMap("pista_premium");
-                this.triggerActionPopup("💎 PISTA PREMIUM DESBLOQUEADA COM SUCESSO!");
-                this.speakAnnouncer("Super Speedway Unlocked!", true);
-            }, (errMsg) => {
-                this.triggerActionPopup(`⚠️ Falha no checkout: ${errMsg}`);
-            });
-        } else {
-            this.openCoinShop();
-            this.triggerActionPopup("⚡ Selecione o Pacote de R$ 10,90 para desbloquear a Pista Premium!");
-        }
+        this.openPaymentCheckout('pista_premium');
     }
 
     updateUserCoinsEverywhere() {

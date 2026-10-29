@@ -59,12 +59,13 @@ export class PaymentSystem {
             return;
         }
 
-        const modalTitle = document.getElementById("mp-modal-title");
-        const modalDesc = document.getElementById("mp-modal-desc");
+        const modalTitle = document.getElementById("pay-modal-title") || document.getElementById("mp-modal-title");
+        const modalDesc = document.getElementById("pay-modal-subtitle") || document.getElementById("mp-modal-desc");
         const qrImg = document.getElementById("mp-qr-image");
-        const pixCopyInput = document.getElementById("mp-pix-copy-input");
-        const checkoutBtn = document.getElementById("mp-checkout-link-btn");
-        const simulateBtn = document.getElementById("mp-simulate-pay-btn");
+        const pixCopyInput = document.getElementById("pix-copy-paste-box") || document.getElementById("mp-pix-copy-input");
+        const checkoutBtn = document.getElementById("pay-mercadopago-link") || document.getElementById("mp-checkout-link-btn");
+        const simulateBtn = document.getElementById("pay-simulate-btn") || document.getElementById("mp-simulate-pay-btn");
+        const redirSection = document.getElementById("pay-redirect-section");
 
         if (modalTitle) modalTitle.textContent = "DESBLOQUEIO PISTA PREMIUM ⚡";
         if (modalDesc) modalDesc.textContent = "Pista Premium Cyber Super-Speedway — R$ 10,90 (+50% Score e 2x Moedas)";
@@ -72,8 +73,9 @@ export class PaymentSystem {
         // Se o Mercado Pago estiver em produção ou sandbox com link direto:
         if (paymentData.init_point) {
             if (checkoutBtn) {
-                checkoutBtn.style.display = "block";
-                checkoutBtn.onclick = () => window.open(paymentData.init_point, "_blank");
+                checkoutBtn.href = paymentData.init_point;
+                checkoutBtn.target = "_blank";
+                if (redirSection) redirSection.style.display = "block";
             }
         }
 
