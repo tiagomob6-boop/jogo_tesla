@@ -96,6 +96,16 @@ export const UIManager = (Base) => class extends Base {
         if (this.resumeGameBtn) {
             this.resumeGameBtn.addEventListener("click", () => this.togglePause(false));
         }
+
+        const customTouchBtn = document.getElementById("custom-touch-btn");
+        if (customTouchBtn) {
+            customTouchBtn.addEventListener("click", () => {
+                this.togglePause(false);
+                if (typeof this.toggleTouchEditMode === "function") {
+                    this.toggleTouchEditMode(true);
+                }
+            });
+        }
         if (this.restartFromPauseBtn) {
             this.restartFromPauseBtn.addEventListener("click", () => {
                 this.togglePause(false);

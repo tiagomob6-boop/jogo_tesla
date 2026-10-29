@@ -290,8 +290,8 @@ class CoreGame {
         this.activePilotPerks = (PILOT_CATALOG[this.selectedPilot] || PILOT_CATALOG.aria).perks || {};
 
         // Sistema de Velocidade a Cada 30 Segundos
-        this.speedIntervalDuration = 30.0;
-        this.speedIntervalTimer = 30.0;
+        this.speedIntervalDuration = 60.0;
+        this.speedIntervalTimer = 60.0;
         this.speedLevel = 1;
 
         // Perfil do Usuário e Economia
@@ -420,7 +420,7 @@ class CoreGame {
         }
 
         // Reset de Velocidade e Intervalo de 30 Segundos
-        this.speedIntervalDuration = 30.0;
+        this.speedIntervalDuration = 60.0;
         this.speedIntervalTimer = this.speedIntervalDuration;
         this.speedLevel = 1;
 
@@ -729,6 +729,7 @@ class CoreGame {
 
         // Ciclo Dia/Noite Synthwave Dinâmico (Sunset to Midnight)
         this.updateDayNightCycle(delta);
+        this.updateCyberTunnel(delta);
 
         // Gerenciamento do Item Raro Mega Boost (Ar Infinito e Hiper-Aceleração)
         if (this.megaBoostTimer > 0) {

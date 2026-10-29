@@ -384,6 +384,51 @@ const PILOT_CATALOG = {
                 skillDesc: 'Invulnerabilidade após dano dura 3.2s e raspões de trânsito (Near Miss) dão o triplo de pontos (+225) e recarregam ar.',
                 perk: { invulnDuration: 3.2, nearMissMult: 3.0, nearMissBonus: 225, nearMissAir: 15 },
                 perks: { invulnDuration: 3.2, nearMissMult: 3.0, nearMissBonus: 225, nearMissAir: 15 }
+            },
+            ayrton: {
+                id: 'ayrton',
+                name: 'Ayrton "Magic" Silva',
+                title: 'Lenda Imortal do Asfalto 🇧🇷',
+                avatar: '🏎️',
+                theme: '#eab308',
+                price: 1200,
+                desc: 'Inspirado no maior ícone do automobilismo mundial. Domínio absoluto da pista sob qualquer clima.',
+                skill: 'Traçado Perfeito',
+                skillName: 'Traçado Perfeito',
+                perkDesc: 'Aceleração +20%, aderência absoluta na chuva/noite e Escudos duram +3.5s.',
+                skillDesc: 'Aceleração +20%, aderência absoluta na chuva/noite e Escudos duram +3.5s.',
+                perk: { accelMult: 1.2, shieldDurationBonus: 3.5, gripBonus: 1.5, airRechargeMult: 1.3 },
+                perks: { accelMult: 1.2, shieldDurationBonus: 3.5, gripBonus: 1.5, airRechargeMult: 1.3 }
+            },
+            lewis: {
+                id: 'lewis',
+                name: 'Lewis "Hammer" King',
+                title: 'Heptacampeão da Velocidade ⚡',
+                avatar: '👑',
+                theme: '#8b5cf6',
+                price: 1500,
+                desc: 'Consistência cirúrgica e reflexos biônicos. Extrai a velocidade máxima de qualquer bólido.',
+                skill: 'Vácuo Hiperdrive',
+                skillName: 'Vácuo Hiperdrive',
+                perkDesc: 'Velocidade máxima aumentada em +15%, ímã magnético com raio ampliado para 10m e +30% de moedas.',
+                skillDesc: 'Velocidade máxima aumentada em +15%, ímã magnético com raio ampliado para 10m e +30% de moedas.',
+                perk: { maxSpeedMult: 1.15, coinMagnetRadius: 10.0, coinBonusMult: 1.3 },
+                perks: { maxSpeedMult: 1.15, coinMagnetRadius: 10.0, coinBonusMult: 1.3 }
+            },
+            michael: {
+                id: 'michael',
+                name: 'Michael "Kaiser" Schumi',
+                title: 'O Barão Vermelho 🔴',
+                avatar: '🏆',
+                theme: '#ef4444',
+                price: 1800,
+                desc: 'Agressividade implacável e determinação de ferro. Cada raspão no tráfego recarrega ar e energia.',
+                skill: 'Mestre da Demolição',
+                skillName: 'Mestre da Demolição',
+                perkDesc: 'Near Miss concede o quádruplo de pontos (+300) e recarrega ar instantaneamente; invulnerabilidade dura 4.0s.',
+                skillDesc: 'Near Miss concede o quádruplo de pontos (+300) e recarrega ar instantaneamente; invulnerabilidade dura 4.0s.',
+                perk: { nearMissMult: 4.0, nearMissBonus: 300, nearMissAir: 30, invulnDuration: 4.0 },
+                perks: { nearMissMult: 4.0, nearMissBonus: 300, nearMissAir: 30, invulnDuration: 4.0 }
             }
         };
 
@@ -545,7 +590,7 @@ class SnapshotInterpolator {
 
 
 
-    // 2. Classe Unificada RoadsterDashGame (Construída a partir dos Módulos)
+    // 2. Classe Unificada RoadsterDashGame (Construída a partir dos Módulos da Fase 3)
     class RoadsterDashGame {
 
     constructor() {
@@ -830,8 +875,8 @@ class SnapshotInterpolator {
         this.activePilotPerks = (PILOT_CATALOG[this.selectedPilot] || PILOT_CATALOG.aria).perks || {};
 
         // Sistema de Velocidade a Cada 30 Segundos
-        this.speedIntervalDuration = 30.0;
-        this.speedIntervalTimer = 30.0;
+        this.speedIntervalDuration = 60.0;
+        this.speedIntervalTimer = 60.0;
         this.speedLevel = 1;
 
         // Perfil do Usuário e Economia
@@ -960,7 +1005,7 @@ class SnapshotInterpolator {
         }
 
         // Reset de Velocidade e Intervalo de 30 Segundos
-        this.speedIntervalDuration = 30.0;
+        this.speedIntervalDuration = 60.0;
         this.speedIntervalTimer = this.speedIntervalDuration;
         this.speedLevel = 1;
 
@@ -1269,6 +1314,7 @@ class SnapshotInterpolator {
 
         // Ciclo Dia/Noite Synthwave Dinâmico (Sunset to Midnight)
         this.updateDayNightCycle(delta);
+        this.updateCyberTunnel(delta);
 
         // Gerenciamento do Item Raro Mega Boost (Ar Infinito e Hiper-Aceleração)
         if (this.megaBoostTimer > 0) {
@@ -3031,6 +3077,94 @@ class SnapshotInterpolator {
     // A frente do perfil (x positivo) aponta para -Z (sentido da pista)
 
 
+    
+    buildCyberTunnel() {
+        const tunnelGroup = new THREE.Group();
+        const tunnelLen = 280;
+        const radius = 8.5;
+
+        // Estrutura em arco do túnel (semi-cilindro invertido)
+        const archGeo = new THREE.CylinderGeometry(radius, radius, tunnelLen, 32, 1, true, Math.PI, Math.PI);
+        const tunnelMat = new THREE.MeshStandardMaterial({
+            color: 0x0f111a,
+            roughness: 0.85,
+            metalness: 0.25,
+            side: THREE.BackSide
+        });
+        const archMesh = new THREE.Mesh(archGeo, tunnelMat);
+        archMesh.rotation.z = Math.PI / 2;
+        archMesh.position.y = 0.5;
+        tunnelGroup.add(archMesh);
+
+        // Arcos de Neon Futuristas ao longo do túnel (Ciano e Magenta)
+        const ringGeo = new THREE.TorusGeometry(radius - 0.05, 0.14, 8, 32, Math.PI);
+        this.tunnelNeons = [];
+        const ringSpacing = 20;
+        const numRings = Math.floor(tunnelLen / ringSpacing);
+
+        for (let i = 0; i <= numRings; i++) {
+            const zPos = -tunnelLen / 2 + (i * ringSpacing);
+            const isCyan = i % 2 === 0;
+            const ringColor = isCyan ? 0x00f0ff : 0xff0077;
+            const ringMat = new THREE.MeshBasicMaterial({ color: ringColor });
+            const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+            ringMesh.rotation.y = Math.PI / 2;
+            ringMesh.position.set(0, 0.5, zPos);
+            tunnelGroup.add(ringMesh);
+            this.tunnelNeons.push(ringMesh);
+        }
+
+        // Posicionamento inicial do túnel à frente na rodovia
+        tunnelGroup.position.set(0, 0, -1400);
+        tunnelGroup.visible = true;
+        this.scene.add(tunnelGroup);
+        this.cyberTunnel = tunnelGroup;
+        this.tunnelLength = tunnelLen;
+        this.nextTunnelDistance = 1400;
+        this.inTunnelMode = false;
+    }
+
+    updateCyberTunnel(delta) {
+        if (!this.cyberTunnel) return;
+
+        // Movimentação do túnel em relação à velocidade do jogador
+        this.cyberTunnel.position.z += this.currentSpeed * delta;
+
+        // Verifica se o jogador está dentro do túnel
+        const tunnelZ = this.cyberTunnel.position.z;
+        const halfLen = this.tunnelLength / 2;
+        const inside = (tunnelZ > -halfLen && tunnelZ < halfLen + 50);
+
+        if (inside && !this.inTunnelMode) {
+            this.inTunnelMode = true;
+            this.triggerActionPopup("🚇 ZONA DE TÚNEL CYBERPUNK - ALTA VELOCIDADE!");
+            this.speakAnnouncer("Entering Tunnel Zone!", true);
+            this.sound.playSpeedUp();
+            // Efeito de iluminação interna: reduz luz ambiente externa
+            if (this.ambientLight) this.ambientLight.intensity = 0.25;
+            if (this.dirLight) this.dirLight.intensity = 0.35;
+        } else if (!inside && this.inTunnelMode) {
+            this.inTunnelMode = false;
+            // Restaura luz ambiente pós-túnel
+            if (this.ambientLight) this.ambientLight.intensity = 0.75;
+            if (this.dirLight) this.dirLight.intensity = 1.1;
+        }
+
+        // Pulsação suave dos neons do túnel
+        if (this.tunnelNeons) {
+            const time = performance.now() * 0.005;
+            this.tunnelNeons.forEach((ring, idx) => {
+                const wave = Math.sin(time + idx * 0.5) * 0.5 + 0.5;
+                ring.scale.set(1, 1 + wave * 0.05, 1);
+            });
+        }
+
+        // Quando o túnel ficar totalmente para trás, respawna 1.600m à frente
+        if (this.cyberTunnel.position.z > halfLen + 150) {
+            this.cyberTunnel.position.z = -1600;
+        }
+    }
+
     updateDayNightCycle(delta) {
         if (!this.skyMaterial) return;
         // Transiciona gradualmente com base na distância (Ciclo completo a cada 3.200m)
@@ -3759,6 +3893,20 @@ class SnapshotInterpolator {
     initControls() {
         // Teclado
         window.addEventListener("keydown", (e) => {
+            // Tecla [R] dedicada para reiniciar o jogo (apenas quando não estiver digitando em inputs)
+            if ((e.key === "r" || e.key === "R") && !e.target.matches("input, textarea")) {
+                if (!this.isRunning || (this.gameOverScreen && this.gameOverScreen.classList.contains("active"))) {
+                    this.sound.init();
+                    this.startGame();
+                    return;
+                }
+            }
+
+            // Desativa completamente a tecla [Enter] de reiniciar ou interferir na corrida
+            if (e.key === "Enter" && !e.target.matches("input, textarea")) {
+                e.preventDefault();
+            }
+
             if (!this.isRunning || this.isPaused) return;
 
             // Modo 2 Jogadores no Mesmo Teclado (Local Versus)
@@ -4043,6 +4191,134 @@ class SnapshotInterpolator {
     // VOZ SINTETIZADA DO LOCUTOR DE ARCADE (WEB SPEECH SYNTHESIS API)
     // =================================================================
 
+
+    
+    initTouchCustomizer() {
+        // Carrega layout personalizado salvo no LocalStorage
+        try {
+            const savedLayout = JSON.parse(localStorage.getItem("roadster_touch_layout") || "null");
+            if (savedLayout) {
+                const btnMap = {
+                    left: this.btnLeft,
+                    right: this.btnRight,
+                    slam: this.btnSlam,
+                    boost: this.boostTouchBtn
+                };
+                Object.keys(savedLayout).forEach(k => {
+                    const btn = btnMap[k];
+                    if (btn && savedLayout[k]) {
+                        btn.style.position = "fixed";
+                        btn.style.left = savedLayout[k].left + "px";
+                        btn.style.top = savedLayout[k].top + "px";
+                        btn.style.bottom = "auto";
+                        btn.style.right = "auto";
+                        btn.style.zIndex = "99";
+                    }
+                });
+            }
+        } catch(e) {}
+
+        // Cria o Banner de Controle de Edição de HUD caso não exista
+        let banner = document.getElementById("touch-edit-banner");
+        if (!banner) {
+            banner = document.createElement("div");
+            banner.id = "touch-edit-banner";
+            banner.className = "touch-edit-banner";
+            banner.innerHTML = `
+                <span style="color: #f59e0b; font-weight: bold; font-size: 0.95rem;">🎮 MODO DE EDIÇÃO: Arraste os botões para onde quiser!</span>
+                <div class="touch-edit-btn-row">
+                    <button id="save-touch-layout-btn" class="primary-btn" style="padding: 6px 14px; font-size: 0.85rem;">✅ Salvar Posições</button>
+                    <button id="reset-touch-layout-btn" class="secondary-btn" style="padding: 6px 14px; font-size: 0.85rem;">🔄 Redefinir Padrão</button>
+                </div>
+            `;
+            document.body.appendChild(banner);
+
+            document.getElementById("save-touch-layout-btn").addEventListener("click", () => {
+                this.toggleTouchEditMode(false);
+            });
+
+            document.getElementById("reset-touch-layout-btn").addEventListener("click", () => {
+                localStorage.removeItem("roadster_touch_layout");
+                [this.btnLeft, this.btnRight, this.btnSlam, this.boostTouchBtn].forEach(btn => {
+                    if (btn) {
+                        btn.style.position = "";
+                        btn.style.left = "";
+                        btn.style.top = "";
+                        btn.style.bottom = "";
+                        btn.style.right = "";
+                    }
+                });
+                this.toggleTouchEditMode(false);
+                this.triggerActionPopup("🔄 Controles Redefinidos para o Padrão!");
+            });
+        }
+
+        // Suporte a Arrastar (Drag and Drop Touch) em cada botão
+        const setupDraggableBtn = (btn, key) => {
+            if (!btn) return;
+            let isDragging = false;
+            let offsetLeft = 0;
+            let offsetTop = 0;
+
+            btn.addEventListener("touchstart", (e) => {
+                if (!document.body.classList.contains("touch-edit-active")) return;
+                isDragging = true;
+                const touch = e.touches[0];
+                const rect = btn.getBoundingClientRect();
+                offsetLeft = touch.clientX - rect.left;
+                offsetTop = touch.clientY - rect.top;
+                btn.style.position = "fixed";
+                btn.style.zIndex = "101";
+                e.preventDefault();
+            }, { passive: false });
+
+            btn.addEventListener("touchmove", (e) => {
+                if (!isDragging || !document.body.classList.contains("touch-edit-active")) return;
+                const touch = e.touches[0];
+                const newX = Math.max(10, Math.min(window.innerWidth - 70, touch.clientX - offsetLeft));
+                const newY = Math.max(50, Math.min(window.innerHeight - 70, touch.clientY - offsetTop));
+                btn.style.left = newX + "px";
+                btn.style.top = newY + "px";
+                btn.style.bottom = "auto";
+                btn.style.right = "auto";
+                e.preventDefault();
+            }, { passive: false });
+
+            btn.addEventListener("touchend", () => {
+                if (isDragging) {
+                    isDragging = false;
+                    // Salva posição individual
+                    try {
+                        const saved = JSON.parse(localStorage.getItem("roadster_touch_layout") || "{}");
+                        const rect = btn.getBoundingClientRect();
+                        saved[key] = { left: Math.round(rect.left), top: Math.round(rect.top) };
+                        localStorage.setItem("roadster_touch_layout", JSON.stringify(saved));
+                    } catch(e) {}
+                }
+            });
+        };
+
+        setupDraggableBtn(this.btnLeft, "left");
+        setupDraggableBtn(this.btnRight, "right");
+        setupDraggableBtn(this.btnSlam, "slam");
+        setupDraggableBtn(this.boostTouchBtn, "boost");
+    }
+
+    toggleTouchEditMode(forceState) {
+        const body = document.body;
+        const banner = document.getElementById("touch-edit-banner");
+        const active = forceState !== undefined ? forceState : !body.classList.contains("touch-edit-active");
+
+        if (active) {
+            body.classList.add("touch-edit-active");
+            if (banner) banner.classList.add("active");
+            this.triggerActionPopup("🎮 Arraste os botões para onde preferir na tela!");
+        } else {
+            body.classList.remove("touch-edit-active");
+            if (banner) banner.classList.remove("active");
+            this.triggerActionPopup("✅ Layout de Controles Salvo!");
+        }
+    }
 
     speakAnnouncer(text, priority = false) {
         if (!this.settings || this.settings.announcer === false) return;
@@ -4852,6 +5128,16 @@ class SnapshotInterpolator {
         // Ações do Modal de Pause
         if (this.resumeGameBtn) {
             this.resumeGameBtn.addEventListener("click", () => this.togglePause(false));
+        }
+
+        const customTouchBtn = document.getElementById("custom-touch-btn");
+        if (customTouchBtn) {
+            customTouchBtn.addEventListener("click", () => {
+                this.togglePause(false);
+                if (typeof this.toggleTouchEditMode === "function") {
+                    this.toggleTouchEditMode(true);
+                }
+            });
         }
         if (this.restartFromPauseBtn) {
             this.restartFromPauseBtn.addEventListener("click", () => {
@@ -5936,6 +6222,9 @@ class SnapshotInterpolator {
         const garageCoins = document.getElementById("garage-coins");
         if (garageCoins) garageCoins.textContent = this.totalCoins.toLocaleString();
     }
+
+
+
     }
 
     window.RoadsterDashGame = RoadsterDashGame;

@@ -150,6 +150,51 @@ export const PILOT_CATALOG = {
                 skillDesc: 'Invulnerabilidade após dano dura 3.2s e raspões de trânsito (Near Miss) dão o triplo de pontos (+225) e recarregam ar.',
                 perk: { invulnDuration: 3.2, nearMissMult: 3.0, nearMissBonus: 225, nearMissAir: 15 },
                 perks: { invulnDuration: 3.2, nearMissMult: 3.0, nearMissBonus: 225, nearMissAir: 15 }
+            },
+            ayrton: {
+                id: 'ayrton',
+                name: 'Ayrton "Magic" Silva',
+                title: 'Lenda Imortal do Asfalto 🇧🇷',
+                avatar: '🏎️',
+                theme: '#eab308',
+                price: 1200,
+                desc: 'Inspirado no maior ícone do automobilismo mundial. Domínio absoluto da pista sob qualquer clima.',
+                skill: 'Traçado Perfeito',
+                skillName: 'Traçado Perfeito',
+                perkDesc: 'Aceleração +20%, aderência absoluta na chuva/noite e Escudos duram +3.5s.',
+                skillDesc: 'Aceleração +20%, aderência absoluta na chuva/noite e Escudos duram +3.5s.',
+                perk: { accelMult: 1.2, shieldDurationBonus: 3.5, gripBonus: 1.5, airRechargeMult: 1.3 },
+                perks: { accelMult: 1.2, shieldDurationBonus: 3.5, gripBonus: 1.5, airRechargeMult: 1.3 }
+            },
+            lewis: {
+                id: 'lewis',
+                name: 'Lewis "Hammer" King',
+                title: 'Heptacampeão da Velocidade ⚡',
+                avatar: '👑',
+                theme: '#8b5cf6',
+                price: 1500,
+                desc: 'Consistência cirúrgica e reflexos biônicos. Extrai a velocidade máxima de qualquer bólido.',
+                skill: 'Vácuo Hiperdrive',
+                skillName: 'Vácuo Hiperdrive',
+                perkDesc: 'Velocidade máxima aumentada em +15%, ímã magnético com raio ampliado para 10m e +30% de moedas.',
+                skillDesc: 'Velocidade máxima aumentada em +15%, ímã magnético com raio ampliado para 10m e +30% de moedas.',
+                perk: { maxSpeedMult: 1.15, coinMagnetRadius: 10.0, coinBonusMult: 1.3 },
+                perks: { maxSpeedMult: 1.15, coinMagnetRadius: 10.0, coinBonusMult: 1.3 }
+            },
+            michael: {
+                id: 'michael',
+                name: 'Michael "Kaiser" Schumi',
+                title: 'O Barão Vermelho 🔴',
+                avatar: '🏆',
+                theme: '#ef4444',
+                price: 1800,
+                desc: 'Agressividade implacável e determinação de ferro. Cada raspão no tráfego recarrega ar e energia.',
+                skill: 'Mestre da Demolição',
+                skillName: 'Mestre da Demolição',
+                perkDesc: 'Near Miss concede o quádruplo de pontos (+300) e recarrega ar instantaneamente; invulnerabilidade dura 4.0s.',
+                skillDesc: 'Near Miss concede o quádruplo de pontos (+300) e recarrega ar instantaneamente; invulnerabilidade dura 4.0s.',
+                perk: { nearMissMult: 4.0, nearMissBonus: 300, nearMissAir: 30, invulnDuration: 4.0 },
+                perks: { nearMissMult: 4.0, nearMissBonus: 300, nearMissAir: 30, invulnDuration: 4.0 }
             }
         };
 

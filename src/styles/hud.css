@@ -434,3 +434,68 @@
             transition: opacity 0.25s ease-out;
             z-index: 8;
         }
+
+        /* MODO DE EDIÇÃO DE CONTROLES TOUCH CUSTOMIZÁVEIS */
+        .touch-edit-active .mobile-dir-btn,
+        .touch-edit-active .mobile-slam-btn,
+        .touch-edit-active .mobile-boost-btn {
+            border: 2px dashed #f59e0b !important;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.6) !important;
+            animation: pulse-edit 1.2s infinite alternate;
+            cursor: move;
+        }
+
+        @keyframes pulse-edit {
+            from { transform: scale(1); }
+            to { transform: scale(1.08); }
+        }
+
+        .touch-edit-banner {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.92);
+            border: 2px solid #f59e0b;
+            border-radius: 14px;
+            padding: 10px 18px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            z-index: 100;
+            pointer-events: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        }
+
+        .touch-edit-banner.active {
+            display: flex;
+        }
+
+        .touch-edit-btn-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* OTIMIZAÇÃO MOBILE: Eliminação de barras laterais que bloqueiam a pista */
+        @media (max-width: 768px) {
+            #hud {
+                padding: calc(env(safe-area-inset-top, 12px) + 6px) 10px calc(env(safe-area-inset-bottom, 12px) + 8px) 10px;
+            }
+
+            .header-left {
+                max-width: 48vw;
+                gap: 6px;
+            }
+
+            .speed-panel {
+                transform: scale(0.85);
+                transform-origin: top left;
+                margin-top: -6px;
+            }
+
+            .mobile-dir-btn, .mobile-slam-btn, .mobile-boost-btn {
+                opacity: 0.72;
+                backdrop-filter: blur(4px);
+            }
+        }

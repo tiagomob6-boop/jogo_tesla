@@ -1,7 +1,8 @@
 /* Modais Específicos: Garagem, Ranking e Perfil */
         .modal-large-box {
-            max-width: 680px;
-            max-height: 88vh;
+            width: min(95vw, 980px);
+            max-width: 980px;
+            max-height: 92vh;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -20,7 +21,7 @@
         /* Cards da Garagem / Loja de Carros */
         .garage-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 14px;
             margin-top: 10px;
             text-align: left;

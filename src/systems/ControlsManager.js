@@ -4,6 +4,20 @@ export const ControlsManager = (Base) => class extends Base {
     initControls() {
         // Teclado
         window.addEventListener("keydown", (e) => {
+            // Tecla [R] dedicada para reiniciar o jogo (apenas quando não estiver digitando em inputs)
+            if ((e.key === "r" || e.key === "R") && !e.target.matches("input, textarea")) {
+                if (!this.isRunning || (this.gameOverScreen && this.gameOverScreen.classList.contains("active"))) {
+                    this.sound.init();
+                    this.startGame();
+                    return;
+                }
+            }
+
+            // Desativa completamente a tecla [Enter] de reiniciar ou interferir na corrida
+            if (e.key === "Enter" && !e.target.matches("input, textarea")) {
+                e.preventDefault();
+            }
+
             if (!this.isRunning || this.isPaused) return;
 
             // Modo 2 Jogadores no Mesmo Teclado (Local Versus)
@@ -288,6 +302,134 @@ export const ControlsManager = (Base) => class extends Base {
     // VOZ SINTETIZADA DO LOCUTOR DE ARCADE (WEB SPEECH SYNTHESIS API)
     // =================================================================
 
+
+    
+    initTouchCustomizer() {
+        // Carrega layout personalizado salvo no LocalStorage
+        try {
+            const savedLayout = JSON.parse(localStorage.getItem("roadster_touch_layout") || "null");
+            if (savedLayout) {
+                const btnMap = {
+                    left: this.btnLeft,
+                    right: this.btnRight,
+                    slam: this.btnSlam,
+                    boost: this.boostTouchBtn
+                };
+                Object.keys(savedLayout).forEach(k => {
+                    const btn = btnMap[k];
+                    if (btn && savedLayout[k]) {
+                        btn.style.position = "fixed";
+                        btn.style.left = savedLayout[k].left + "px";
+                        btn.style.top = savedLayout[k].top + "px";
+                        btn.style.bottom = "auto";
+                        btn.style.right = "auto";
+                        btn.style.zIndex = "99";
+                    }
+                });
+            }
+        } catch(e) {}
+
+        // Cria o Banner de Controle de Edição de HUD caso não exista
+        let banner = document.getElementById("touch-edit-banner");
+        if (!banner) {
+            banner = document.createElement("div");
+            banner.id = "touch-edit-banner";
+            banner.className = "touch-edit-banner";
+            banner.innerHTML = `
+                <span style="color: #f59e0b; font-weight: bold; font-size: 0.95rem;">🎮 MODO DE EDIÇÃO: Arraste os botões para onde quiser!</span>
+                <div class="touch-edit-btn-row">
+                    <button id="save-touch-layout-btn" class="primary-btn" style="padding: 6px 14px; font-size: 0.85rem;">✅ Salvar Posições</button>
+                    <button id="reset-touch-layout-btn" class="secondary-btn" style="padding: 6px 14px; font-size: 0.85rem;">🔄 Redefinir Padrão</button>
+                </div>
+            `;
+            document.body.appendChild(banner);
+
+            document.getElementById("save-touch-layout-btn").addEventListener("click", () => {
+                this.toggleTouchEditMode(false);
+            });
+
+            document.getElementById("reset-touch-layout-btn").addEventListener("click", () => {
+                localStorage.removeItem("roadster_touch_layout");
+                [this.btnLeft, this.btnRight, this.btnSlam, this.boostTouchBtn].forEach(btn => {
+                    if (btn) {
+                        btn.style.position = "";
+                        btn.style.left = "";
+                        btn.style.top = "";
+                        btn.style.bottom = "";
+                        btn.style.right = "";
+                    }
+                });
+                this.toggleTouchEditMode(false);
+                this.triggerActionPopup("🔄 Controles Redefinidos para o Padrão!");
+            });
+        }
+
+        // Suporte a Arrastar (Drag and Drop Touch) em cada botão
+        const setupDraggableBtn = (btn, key) => {
+            if (!btn) return;
+            let isDragging = false;
+            let offsetLeft = 0;
+            let offsetTop = 0;
+
+            btn.addEventListener("touchstart", (e) => {
+                if (!document.body.classList.contains("touch-edit-active")) return;
+                isDragging = true;
+                const touch = e.touches[0];
+                const rect = btn.getBoundingClientRect();
+                offsetLeft = touch.clientX - rect.left;
+                offsetTop = touch.clientY - rect.top;
+                btn.style.position = "fixed";
+                btn.style.zIndex = "101";
+                e.preventDefault();
+            }, { passive: false });
+
+            btn.addEventListener("touchmove", (e) => {
+                if (!isDragging || !document.body.classList.contains("touch-edit-active")) return;
+                const touch = e.touches[0];
+                const newX = Math.max(10, Math.min(window.innerWidth - 70, touch.clientX - offsetLeft));
+                const newY = Math.max(50, Math.min(window.innerHeight - 70, touch.clientY - offsetTop));
+                btn.style.left = newX + "px";
+                btn.style.top = newY + "px";
+                btn.style.bottom = "auto";
+                btn.style.right = "auto";
+                e.preventDefault();
+            }, { passive: false });
+
+            btn.addEventListener("touchend", () => {
+                if (isDragging) {
+                    isDragging = false;
+                    // Salva posição individual
+                    try {
+                        const saved = JSON.parse(localStorage.getItem("roadster_touch_layout") || "{}");
+                        const rect = btn.getBoundingClientRect();
+                        saved[key] = { left: Math.round(rect.left), top: Math.round(rect.top) };
+                        localStorage.setItem("roadster_touch_layout", JSON.stringify(saved));
+                    } catch(e) {}
+                }
+            });
+        };
+
+        setupDraggableBtn(this.btnLeft, "left");
+        setupDraggableBtn(this.btnRight, "right");
+        setupDraggableBtn(this.btnSlam, "slam");
+        setupDraggableBtn(this.boostTouchBtn, "boost");
+    }
+
+    toggleTouchEditMode(forceState) {
+        const body = document.body;
+        const banner = document.getElementById("touch-edit-banner");
+        const active = forceState !== undefined ? forceState : !body.classList.contains("touch-edit-active");
+
+        if (active) {
+            body.classList.add("touch-edit-active");
+            if (banner) banner.classList.add("active");
+            this.triggerActionPopup("🎮 Arraste os botões para onde preferir na tela!");
+        } else {
+            body.classList.remove("touch-edit-active");
+            if (banner) banner.classList.remove("active");
+            this.triggerActionPopup("✅ Layout de Controles Salvo!");
+        }
+    }
 
     speakAnnouncer(text, priority = false) {
         if (!this.settings || this.settings.announcer === false) return;

@@ -660,6 +660,94 @@ export const EnvironmentBuilder = (Base) => class extends Base {
     // A frente do perfil (x positivo) aponta para -Z (sentido da pista)
 
 
+    
+    buildCyberTunnel() {
+        const tunnelGroup = new THREE.Group();
+        const tunnelLen = 280;
+        const radius = 8.5;
+
+        // Estrutura em arco do túnel (semi-cilindro invertido)
+        const archGeo = new THREE.CylinderGeometry(radius, radius, tunnelLen, 32, 1, true, Math.PI, Math.PI);
+        const tunnelMat = new THREE.MeshStandardMaterial({
+            color: 0x0f111a,
+            roughness: 0.85,
+            metalness: 0.25,
+            side: THREE.BackSide
+        });
+        const archMesh = new THREE.Mesh(archGeo, tunnelMat);
+        archMesh.rotation.z = Math.PI / 2;
+        archMesh.position.y = 0.5;
+        tunnelGroup.add(archMesh);
+
+        // Arcos de Neon Futuristas ao longo do túnel (Ciano e Magenta)
+        const ringGeo = new THREE.TorusGeometry(radius - 0.05, 0.14, 8, 32, Math.PI);
+        this.tunnelNeons = [];
+        const ringSpacing = 20;
+        const numRings = Math.floor(tunnelLen / ringSpacing);
+
+        for (let i = 0; i <= numRings; i++) {
+            const zPos = -tunnelLen / 2 + (i * ringSpacing);
+            const isCyan = i % 2 === 0;
+            const ringColor = isCyan ? 0x00f0ff : 0xff0077;
+            const ringMat = new THREE.MeshBasicMaterial({ color: ringColor });
+            const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+            ringMesh.rotation.y = Math.PI / 2;
+            ringMesh.position.set(0, 0.5, zPos);
+            tunnelGroup.add(ringMesh);
+            this.tunnelNeons.push(ringMesh);
+        }
+
+        // Posicionamento inicial do túnel à frente na rodovia
+        tunnelGroup.position.set(0, 0, -1400);
+        tunnelGroup.visible = true;
+        this.scene.add(tunnelGroup);
+        this.cyberTunnel = tunnelGroup;
+        this.tunnelLength = tunnelLen;
+        this.nextTunnelDistance = 1400;
+        this.inTunnelMode = false;
+    }
+
+    updateCyberTunnel(delta) {
+        if (!this.cyberTunnel) return;
+
+        // Movimentação do túnel em relação à velocidade do jogador
+        this.cyberTunnel.position.z += this.currentSpeed * delta;
+
+        // Verifica se o jogador está dentro do túnel
+        const tunnelZ = this.cyberTunnel.position.z;
+        const halfLen = this.tunnelLength / 2;
+        const inside = (tunnelZ > -halfLen && tunnelZ < halfLen + 50);
+
+        if (inside && !this.inTunnelMode) {
+            this.inTunnelMode = true;
+            this.triggerActionPopup("🚇 ZONA DE TÚNEL CYBERPUNK - ALTA VELOCIDADE!");
+            this.speakAnnouncer("Entering Tunnel Zone!", true);
+            this.sound.playSpeedUp();
+            // Efeito de iluminação interna: reduz luz ambiente externa
+            if (this.ambientLight) this.ambientLight.intensity = 0.25;
+            if (this.dirLight) this.dirLight.intensity = 0.35;
+        } else if (!inside && this.inTunnelMode) {
+            this.inTunnelMode = false;
+            // Restaura luz ambiente pós-túnel
+            if (this.ambientLight) this.ambientLight.intensity = 0.75;
+            if (this.dirLight) this.dirLight.intensity = 1.1;
+        }
+
+        // Pulsação suave dos neons do túnel
+        if (this.tunnelNeons) {
+            const time = performance.now() * 0.005;
+            this.tunnelNeons.forEach((ring, idx) => {
+                const wave = Math.sin(time + idx * 0.5) * 0.5 + 0.5;
+                ring.scale.set(1, 1 + wave * 0.05, 1);
+            });
+        }
+
+        // Quando o túnel ficar totalmente para trás, respawna 1.600m à frente
+        if (this.cyberTunnel.position.z > halfLen + 150) {
+            this.cyberTunnel.position.z = -1600;
+        }
+    }
+
     updateDayNightCycle(delta) {
         if (!this.skyMaterial) return;
         // Transiciona gradualmente com base na distância (Ciclo completo a cada 3.200m)
