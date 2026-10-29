@@ -7234,17 +7234,32 @@ class PaymentSystem {
                     if (redirSec) redirSec.style.display = "block";
                 }
 
-                const fallbackPix = `00020126580014br.gov.bcb.pix0136pix-mercadopago-roadsterdash-pkg${pkg.id}520400005303986540${priceVal.toFixed(2)}5802BR5916ROADSTER DASH6009SAO PAULO`;
-                const finalPix = data.pixCode || fallbackPix;
-                if (pixBox) {
-                    pixBox.textContent = finalPix;
-                }
+                const pixSection = document.getElementById("pay-pix-section");
                 const qrImg = document.getElementById("pay-qr-image") || document.getElementById("mp-qr-image");
-                if (qrImg) {
-                    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=6&data=${encodeURIComponent(finalPix)}`;
+
+                // Se o Mercado Pago retornou QR Code Pix real oficial da API
+                if (data.qrCodeBase64 && qrImg) {
+                    qrImg.src = "data:image/png;base64," + data.qrCodeBase64;
+                    if (pixBox) pixBox.textContent = data.pixCode || "";
+                    if (pixSection) pixSection.style.display = "block";
+                } else if (data.pixCode) {
+                    if (qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=6&data=${encodeURIComponent(data.pixCode)}`;
+                    if (pixBox) pixBox.textContent = data.pixCode;
+                    if (pixSection) pixSection.style.display = "block";
+                } else {
+                    // Quando a conta do Mercado Pago ainda não tem chave Pix cadastrada para emissão direta via API,
+                    // oculta o bloco de código simulado para não confundir o cliente e foca no checkout oficial seguro
+                    if (pixSection) pixSection.style.display = "none";
+                    if (redirSec) {
+                        redirSec.style.display = "block";
+                        if (checkoutLink) {
+                            checkoutLink.textContent = "💳 CLIQUE AQUI PARA PAGAR VIA PIX OU CARTÃO NO MERCADO PAGO ➔";
+                            checkoutLink.style.padding = "16px";
+                            checkoutLink.style.fontSize = "0.95rem";
+                        }
+                    }
                 }
 
-                // Inicia polling para detectar aprovação automática em segundo plano
                 if (data.orderId) {
                     this.startPaymentApprovalPolling(data.orderId, pkg);
                 }

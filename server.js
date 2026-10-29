@@ -1077,12 +1077,54 @@ app.post('/api/payment/create-preference', async (req, res) => {
                 }
             });
 
+            let realPixCode = null;
+            let realQrBase64 = null;
+            let realTicketUrl = null;
+
+            // Tenta gerar a cobrança Pix Direta oficial com QR Code real do Banco Central
+            try {
+                const payment = new Payment(mpClient);
+                const pixPayment = await payment.create({
+                    body: {
+                        transaction_amount: Number(pkg.price),
+                        description: `Roadster Dash - ${pkg.name}`,
+                        payment_method_id: 'pix',
+                        payer: {
+                            email: `${safeUser.toLowerCase().replace(/[^a-z0-9]/g, '') || 'piloto'}@roadsterdash.com`,
+                            first_name: safeUser
+                        },
+                        external_reference: JSON.stringify({
+                            orderId,
+                            username: safeUser,
+                            packageId: pkg.id,
+                            coins: pkg.coins
+                        }),
+                        notification_url: `${req.protocol}://${req.get('host')}/api/payment/webhook`
+                    }
+                });
+
+                if (pixPayment && pixPayment.point_of_interaction && pixPayment.point_of_interaction.transaction_data) {
+                    const tData = pixPayment.point_of_interaction.transaction_data;
+                    realPixCode = tData.qr_code;
+                    realQrBase64 = tData.qr_code_base64;
+                    realTicketUrl = tData.ticket_url;
+                    if (pixPayment.id) {
+                        processedPayments.add(String(pixPayment.id));
+                    }
+                }
+            } catch (pixErr) {
+                console.warn('ℹ️ Pix direto via API requer chave Pix cadastrada na conta do Mercado Pago:', pixErr.message || pixErr);
+            }
+
             return res.json({
                 success: true,
                 orderId,
                 mode: 'production',
                 init_point: prefResponse.init_point,
                 sandbox_init_point: prefResponse.sandbox_init_point,
+                pixCode: realPixCode,
+                qrCodeBase64: realQrBase64,
+                ticketUrl: realTicketUrl,
                 package: pkg
             });
         }
