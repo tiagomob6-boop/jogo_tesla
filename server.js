@@ -93,6 +93,14 @@ const COIN_PACKAGES = {
         price: 10.90,
         tag: 'Exclusivo VIP ⚡',
         desc: 'Desbloqueio Permanente do Mapa 5: +50% Pontuação Global E Moedas em Dobro (2x Moedas)!'
+    },
+    pista_premium: {
+        id: 'pista_premium',
+        name: 'Pista Premium Cyber Super-Speedway',
+        type: 'map',
+        price: 10.90,
+        tag: 'Exclusivo VIP ⚡',
+        desc: 'Desbloqueio Permanente do Mapa 5: +50% Pontuação Global E Moedas em Dobro (2x Moedas)!'
     }
 };
 
@@ -964,6 +972,32 @@ app.get('/api/cars', (req, res) => {
 // =============================================================================
 // ENDPOINTS DE PAGAMENTO & COMPRA DE MOEDAS (MERCADO PAGO)
 // =============================================================================
+async function unlockUserMap(username, mapId) {
+    if (!username || !mapId) return null;
+    const targetMaps = ['pista_premium', 'map_cyber_premium'];
+    if (useDb && pool) {
+        try {
+            for (const m of targetMaps) {
+                await pool.query(`
+                    UPDATE users
+                    SET unlocked_maps = array_append(array_remove(COALESCE(unlocked_maps, ARRAY['rodovia_dupla']::text[]), $1), $1),
+                        last_seen = CURRENT_TIMESTAMP
+                    WHERE LOWER(username) = LOWER($2)
+                `, [m, username]);
+            }
+        } catch(e) {
+            console.error('Erro ao desbloquear mapa no DB:', e);
+        }
+    }
+    const user = memoryStore.users.get(username);
+    if (user) {
+        if (!user.unlocked_maps) user.unlocked_maps = ['rodovia_dupla'];
+        targetMaps.forEach(m => {
+            if (!user.unlocked_maps.includes(m)) user.unlocked_maps.push(m);
+        });
+    }
+}
+
 async function creditUserCoins(username, amount) {
     const coinsToAdd = Math.max(0, parseInt(amount, 10) || 0);
     if (!username || coinsToAdd <= 0) return null;
@@ -1084,8 +1118,17 @@ app.post('/api/payment/simulate', async (req, res) => {
         if (!pkg) return res.status(400).json({ success: false, error: 'Pacote inválido.' });
 
         const safeUser = (username || 'Piloto').trim();
-        const updated = await creditUserCoins(safeUser, pkg.coins);
+        if (pkg.type === 'map' || pkg.id === 'map_cyber_premium') {
+            await unlockUserMap(safeUser, 'map_cyber_premium');
+            return res.json({
+                success: true,
+                isMap: true,
+                mapUnlocked: 'map_cyber_premium',
+                message: 'Pagamento aprovado! Pista Premium Cyber Super-Speedway desbloqueada com sucesso!'
+            });
+        }
 
+        const updated = await creditUserCoins(safeUser, pkg.coins);
         return res.json({
             success: true,
             message: `Pagamento aprovado! +${pkg.coins} moedas creditadas.`,
@@ -1122,8 +1165,13 @@ app.post('/api/payment/webhook', async (req, res) => {
                     if (extRef.username && extRef.coins) {
                         // Registra no controle de idempotência
                         processedPayments.add(paymentId);
-                        await creditUserCoins(extRef.username, extRef.coins);
-                        console.log(`💰 [Webhook MP] Moedas creditadas com sucesso via Mercado Pago: +${extRef.coins} para ${extRef.username} (ID: ${paymentId})`);
+                        if (extRef.packageId === 'map_cyber_premium') {
+                            await unlockUserMap(extRef.username, 'map_cyber_premium');
+                            console.log(`⚡ [Webhook MP] Pista Premium desbloqueada com sucesso para ${extRef.username} (ID: ${paymentId})`);
+                        } else if (extRef.coins) {
+                            await creditUserCoins(extRef.username, extRef.coins);
+                            console.log(`💰 [Webhook MP] Moedas creditadas com sucesso via Mercado Pago: +${extRef.coins} para ${extRef.username} (ID: ${paymentId})`);
+                        }
                     }
                 } catch (e) {
                     console.error('Erro ao processar external_reference do pagamento:', e);
