@@ -744,6 +744,8 @@ wss.on('connection', (ws) => {
                     broadcastToRoom(room, {
                         type: 'rival_update',
                         playerId,
+                        clientTime: data.clientTime || Date.now(),
+                        serverTime: Date.now(),
                         username: data.username,
                         selectedCar: data.selectedCar,
                         x: data.x,

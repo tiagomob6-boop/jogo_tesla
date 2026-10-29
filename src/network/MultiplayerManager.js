@@ -1,7 +1,10 @@
 import { LANES, GROUND_Y, FLIGHT_Y, SLAM_FORCE, API_URL, CAR_CATALOG, PILOT_CATALOG } from '../core/Config.js';
+import { SnapshotInterpolator } from './SnapshotInterpolator.js';
 
 export const MultiplayerManager = {
     initMultiplayer() {
+        this.mpInterpolator = new SnapshotInterpolator(100);
+        this.mpLastRivalX = 0;
         // Abas do Modal Multiplayer
         const tabs = [
             { btn: document.getElementById("tab-btn-online"), content: document.getElementById("tab-online") },
@@ -209,6 +212,9 @@ export const MultiplayerManager = {
                     shield: data.shield,
                     name: data.username || 'Rival'
                 };
+                if (this.mpInterpolator) {
+                    this.mpInterpolator.addSnapshot(data);
+                }
                 break;
             case "rival_crashed":
                 this.rivalCrashed = true;
@@ -300,6 +306,8 @@ export const MultiplayerManager = {
 
     startMultiplayerRace(mode, rivalInfo) {
         this.isMultiplayer = true;
+        if (this.mpInterpolator) this.mpInterpolator.reset();
+        this.mpLastRivalX = 0;
         this.mpMode = mode;
         // Prepara P1 na faixa esquerda (faixa 0)
         this.currentLane = 0;
@@ -479,33 +487,49 @@ export const MultiplayerManager = {
             rivalDist = this.rivalCrashed ? this.rivalFinalDist : this.mpRivalData.dist;
         }
         // 3. MODO ONLINE (WEBSOCKET REAL-TIME)
+        // 3. MODO ONLINE (WEBSOCKET COM INTERPOLAÇÃO 20Hz - ZERO STUTTER)
         else if (this.mpMode === 'online') {
-            // Interpolação suave das coordenadas recebidas
-            this.mpRivalVehicle.position.x += (this.mpRivalData.x - this.mpRivalVehicle.position.x) * 12.0 * delta;
-            this.mpRivalVehicle.position.y += (this.mpRivalData.y - this.mpRivalVehicle.position.y) * 12.0 * delta;
-            const relativeZ = this.truckGroup.position.z + (this.mpRivalData.dist - this.scoreDistance);
+            // Interpolação precisa de snapshots com buffer de 100ms (Elimina stutter e jitter)
+            const state = this.mpInterpolator ? this.mpInterpolator.getInterpolatedState() : this.mpRivalData;
+
+            this.mpRivalVehicle.position.x = state.x;
+            this.mpRivalVehicle.position.y = state.y;
+
+            // Sincronização contínua do Z relativo baseado na distância real do rival
+            const relativeZ = this.truckGroup.position.z + (state.dist - this.scoreDistance);
             this.mpRivalVehicle.position.z = relativeZ;
-            // Envio de telemetria local via WebSocket (~25Hz)
+
+            // Rotação suave da lataria em desvios laterais
+            const deltaX = state.x - (this.mpLastRivalX || state.x);
+            const targetRotY = Math.max(-0.25, Math.min(0.25, -deltaX * 1.5));
+            this.mpRivalVehicle.rotation.y += (targetRotY - this.mpRivalVehicle.rotation.y) * 12 * delta;
+            this.mpLastRivalX = state.x;
+
+            // Ajuste de inclinação se estiver voando
+            this.mpRivalVehicle.rotation.x += ((state.isFlying ? -0.06 : 0) - this.mpRivalVehicle.rotation.x) * 10 * delta;
+
+            // Envio de telemetria local via WebSocket com tickrate fixo de 20Hz (0.05s)
             if (this.mpWs && this.mpWs.readyState === WebSocket.OPEN && !this.p1Crashed) {
                 this.mpTelemetryTimer += delta;
-                if (this.mpTelemetryTimer >= 0.04) {
+                if (this.mpTelemetryTimer >= 0.05) {
                     this.mpTelemetryTimer = 0;
                     this.mpWs.send(JSON.stringify({
                         type: 'player_state',
+                        clientTime: performance.now(),
                         username: this.currentUser,
                         selectedCar: this.selectedCar,
                         x: this.playerX,
                         y: this.playerY,
                         lane: this.currentLane,
-                        dist: Math.floor(this.scoreDistance),
-                        speed: Math.floor(this.currentSpeed),
+                        dist: this.scoreDistance,
+                        speed: this.currentSpeed,
                         isFlying: this.isFlying,
                         shield: this.shieldTimer > 0,
                         score: Math.floor(this.scorePoints)
                     }));
                 }
             }
-            rivalDist = this.rivalCrashed ? this.rivalFinalDist : this.mpRivalData.dist;
+            rivalDist = this.rivalCrashed ? this.rivalFinalDist : state.dist;
         }
         // Atualização dos números no Banner HUD
         const displayP1Dist = this.p1Crashed ? this.p1FinalDist : Math.floor(this.scoreDistance);
