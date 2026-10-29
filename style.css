@@ -1,0 +1,173 @@
+/* =====================================================================
+   ROADSTER DASH - MASTER STYLESHEET (style.css)
+   Fase 3: UI Mobile Otimizada, Garagem Expandida, Tema dos 5 Mapas & Touch HUD
+   ===================================================================== */
+@import "./src/styles/base.css";
+@import "./src/styles/hud.css";
+@import "./src/styles/menu.css";
+@import "./src/styles/garage.css";
+@import "./src/styles/missions.css";
+@import "./src/styles/multiplayer.css";
+@import "./src/styles/shop.css";
+
+/* =====================================================================
+   ESTILOS EXCLUSIVOS DO SELETOR DE MAPAS & CIRCUITOS (5 MAPAS)
+   ===================================================================== */
+.maps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 14px;
+    text-align: left;
+}
+
+.map-card {
+    background: rgba(15, 23, 42, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 18px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.25s ease-in-out;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(12px);
+}
+
+.map-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(34, 211, 238, 0.5);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.map-card.selected {
+    border: 2px solid #22d3ee;
+    background: rgba(8, 51, 68, 0.65);
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+}
+
+.map-card.premium-card {
+    border: 2px solid #f59e0b;
+    background: linear-gradient(145deg, rgba(30, 27, 75, 0.85) 0%, rgba(69, 26, 3, 0.7) 100%);
+    box-shadow: 0 0 22px rgba(245, 158, 11, 0.35);
+}
+
+.map-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.map-icon {
+    font-size: 2.2rem;
+}
+
+.map-badge {
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(34, 211, 238, 0.2);
+    border: 1px solid rgba(34, 211, 238, 0.4);
+    color: #22d3ee;
+}
+
+.map-badge.gold {
+    background: rgba(245, 158, 11, 0.25);
+    border-color: #f59e0b;
+    color: #fbbf24;
+}
+
+.map-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 2px;
+}
+
+.map-subtitle {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-bottom: 10px;
+}
+
+.map-desc {
+    font-size: 0.76rem;
+    color: #cbd5e1;
+    line-height: 1.4;
+    margin-bottom: 12px;
+}
+
+.map-perks-box {
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin-bottom: 12px;
+    font-size: 0.75rem;
+}
+
+.map-perk-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.map-perk-item:last-child {
+    margin-bottom: 0;
+}
+
+.map-perk-label {
+    color: #94a3b8;
+}
+
+.map-perk-val {
+    font-weight: 700;
+    color: #38bdf8;
+}
+
+.map-perk-val.gold {
+    color: #f59e0b;
+}
+
+/* =====================================================================
+   ESTILOS DO MINI-LOGIN / GESTOR DE CONTAS
+   ===================================================================== */
+.auth-box {
+    background: rgba(15, 23, 42, 0.94);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 20px;
+    padding: 24px;
+    max-width: 440px;
+    width: 90vw;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75);
+    text-align: center;
+}
+
+.auth-input {
+    width: 100%;
+    background: rgba(2, 6, 23, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    color: #ffffff;
+    margin-top: 10px;
+    margin-bottom: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.auth-input:focus {
+    border-color: #22d3ee;
+    box-shadow: 0 0 12px rgba(34, 211, 238, 0.3);
+}
+
+/* Responsividade Mobile sem barras que tampem a visão da pista */
+@media (max-width: 768px) {
+    .maps-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1242,8 +1242,9 @@ class CoreGame {
             const dist = this.truckGroup.position.distanceTo(item.position);
             if (dist < 2.4) {
                 if (item.itemType === "coin") {
-                    const bonus = (this.activePilotPerks && this.activePilotPerks.coinBonusMult) || 1.0;
-                    const coinEarned = Math.max(1, Math.round(1 * bonus));
+                    const pilotBonus = (this.activePilotPerks && this.activePilotPerks.coinBonusMult) || 1.0;
+                    const mapCoinMult = (this.getActiveMapData && this.getActiveMapData().coinMultiplier) || 1.0;
+                    const coinEarned = Math.max(1, Math.round(1 * pilotBonus * mapCoinMult));
                     this.coinsCollected++;
                     this.coinsEarnedThisRun += coinEarned;
                     this.addScoreEvent("COIN", 150);
@@ -1338,6 +1339,33 @@ class CoreGame {
     }
 
 
+
+    
+    getActiveMapData() {
+        if (!this.selectedMap) this.selectedMap = "rodovia_dupla";
+        return (typeof MAPS_CATALOG !== "undefined" && MAPS_CATALOG[this.selectedMap]) 
+            ? MAPS_CATALOG[this.selectedMap] 
+            : { coinMultiplier: 1.0, scoreMultiplier: 1.0, tunnelSpacing: 1500 };
+    }
+
+    applyMapEnvironment(mapId) {
+        const map = (typeof MAPS_CATALOG !== "undefined" && MAPS_CATALOG[mapId]) ? MAPS_CATALOG[mapId] : null;
+        if (!map) return;
+
+        // Atualiza espaçamento do túnel de acordo com a pista
+        if (map.tunnelSpacing) {
+            this.nextTunnelDistance = map.tunnelSpacing;
+        }
+
+        // Iluminação e atmosfera diferenciada
+        if (map.theme === 'midnight_city') {
+            if (this.ambientLight) this.ambientLight.intensity = 0.45;
+        } else if (map.theme === 'dirt_road') {
+            if (this.ambientLight) this.ambientLight.intensity = 0.85;
+        } else if (map.theme === 'cyber_super_speedway') {
+            if (this.ambientLight) this.ambientLight.intensity = 0.65;
+        }
+    }
 
     updateHUD() {
         this.hudDistance.textContent = `${Math.floor(this.scoreDistance)} m`;

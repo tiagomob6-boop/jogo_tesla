@@ -147,6 +147,9 @@
                 <div class="user-badge" id="menu-pilot-badge" style="font-size: 0.85rem; padding: 6px 14px; background: rgba(56, 189, 248, 0.2); border-color: rgba(56, 189, 248, 0.45); cursor: pointer;" title="Clique para escolher seu Piloto">
                     🧑‍🚀 <span id="menu-pilot-name">Aria Vortex</span>
                 </div>
+                <div class="user-badge" id="menu-map-badge" style="font-size: 0.85rem; padding: 6px 14px; background: rgba(14, 165, 233, 0.25); border-color: rgba(14, 165, 233, 0.6); cursor: pointer;" title="Clique para escolher a Pista">
+                    🗺️ <span id="menu-map-name">Rodovia Dupla</span>
+                </div>
             </div>
 
             <div class="controls-guide">
@@ -163,6 +166,7 @@
             <div class="menu-btn-grid" style="grid-template-columns: 1fr 1fr; gap: 8px;">
                 <button class="secondary-btn" id="open-garage-btn">🚗 Garagem</button>
                 <button class="secondary-btn" id="open-coin-shop-btn" style="border-color: #fbbf24; color: #fde047; box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);">🪙 Comprar Moedas</button>
+                <button class="secondary-btn" id="open-maps-btn" style="border-color: #38bdf8; color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);">🗺️ Pistas & Mapas</button>
                 <button class="secondary-btn" id="open-pilot-btn">🧑‍🚀 Pilotos</button>
                 <button class="secondary-btn" id="open-missions-btn">📜 Missões</button>
                 <button class="secondary-btn" id="open-leaderboard-btn">🏆 Ranking</button>
@@ -233,6 +237,27 @@
             </div>
 
             <button class="secondary-btn" id="close-user-modal-btn" style="margin-top: 12px; width: 100%;">VOLTAR AO JOGO</button>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- MODAL DE SELEÇÃO DE PISTAS E CIRCUITOS (5 MAPAS)                  -->
+    <!-- ================================================================= -->
+    <div class="modal-screen" id="maps-modal">
+        <div class="glass-box modal-large-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.15); padding-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                <div>
+                    <h2 class="game-title" style="font-size: 1.7rem; margin-bottom: 2px;">CIRCUITOS & MAPAS</h2>
+                    <div class="game-subtitle">ESCOLHA SEU TRAÇADO, DIFICULDADE E MULTIPLICADORES</div>
+                </div>
+                <div class="hud-coins-display" style="font-size: 1.1rem;">
+                    🪙 <span id="maps-user-coins">0</span>
+                </div>
+            </div>
+
+            <div class="maps-grid" id="maps-grid-container"></div>
+
+            <button class="secondary-btn" id="close-maps-btn" style="width: 100%; margin-top: 14px;">FECHAR / VOLTAR</button>
         </div>
     </div>
 

@@ -44,6 +44,103 @@ export const COIN_PACKAGES = {
         // =====================================================================
         // CATÁLOGO OFICIAL DE CARROS
         // =====================================================================
+
+// =====================================================================
+// CATÁLOGO OFICIAL DOS 5 MAPAS E CIRCUITOS
+// =====================================================================
+export const MAPS_CATALOG = {
+    rodovia_dupla: {
+        id: 'rodovia_dupla',
+        name: 'Rodovia Dupla',
+        subtitle: 'Pista Padrão Costeira',
+        desc: '4 pistas com fluxo contrário, brisa do oceano e túnel intermediário.',
+        icon: '🌉',
+        theme: 'sunset_bridge',
+        unlockType: 'free',
+        cost: 0,
+        priceBRL: 0,
+        badge: 'Padrão (Grátis)',
+        coinMultiplier: 1.0,
+        scoreMultiplier: 1.0,
+        skyColor: '#2b1136',
+        roadTexture: 'asphalt_standard',
+        tunnelSpacing: 1500,
+        frictionFactor: 1.0
+    },
+    circuito_urbano: {
+        id: 'circuito_urbano',
+        name: 'Circuito Urbano',
+        subtitle: 'Metrópole Noturna Cyber',
+        desc: 'Corrida noturna entre arranha-céus, iluminação de postes de neon e túnel subterrâneo.',
+        icon: '🏙️',
+        theme: 'midnight_city',
+        unlockType: 'coins',
+        cost: 500,
+        priceBRL: 0,
+        badge: '+10% Pontos ⭐',
+        coinMultiplier: 1.0,
+        scoreMultiplier: 1.10,
+        skyColor: '#090a15',
+        roadTexture: 'wet_asphalt',
+        tunnelSpacing: 1200,
+        frictionFactor: 1.02
+    },
+    estrada_terra: {
+        id: 'estrada_terra',
+        name: 'Estrada de Terra / Rural',
+        subtitle: 'Off-Road com Poeira & Atrito',
+        desc: 'Pista de cascalho e terra irregular com física de atrito diferenciada. Moedas em Dobro permanente!',
+        icon: '🏜️',
+        theme: 'dirt_road',
+        unlockType: 'coins',
+        cost: 1000,
+        priceBRL: 0,
+        badge: 'Moedas em Dobro (2x) 🪙',
+        coinMultiplier: 2.0,
+        scoreMultiplier: 1.0,
+        skyColor: '#451a03',
+        roadTexture: 'dirt_gravel',
+        tunnelSpacing: 2500,
+        frictionFactor: 0.88
+    },
+    serra_sinuosa: {
+        id: 'serra_sinuosa',
+        name: 'Serra Sinuosa',
+        subtitle: 'Curvas Fechadas & Penhascos',
+        desc: 'Traçado técnico com curvas fechadas, declives acentuados e múltiplos túneis em sequência rápida.',
+        icon: '⛰️',
+        theme: 'mountain_pass',
+        unlockType: 'coins',
+        cost: 2000,
+        priceBRL: 0,
+        badge: '+25% Score & +15% Moedas 🔥',
+        coinMultiplier: 1.15,
+        scoreMultiplier: 1.25,
+        skyColor: '#1e1b4b',
+        roadTexture: 'mountain_tarmac',
+        tunnelSpacing: 900,
+        frictionFactor: 0.94
+    },
+    pista_premium: {
+        id: 'pista_premium',
+        name: 'Pista Premium Cyber Super-Speedway',
+        subtitle: 'Edição Exclusiva VIP / Dinheiro Real',
+        desc: 'Super-rodovia holográfica iluminada com super-túneis neon. Concede +50% de Pontuação E Moedas em Dobro permanente!',
+        icon: '⚡',
+        theme: 'cyber_super_speedway',
+        unlockType: 'real_money',
+        cost: 0,
+        priceBRL: 10.90,
+        badge: '+50% Pontos & 2x Moedas 💎',
+        coinMultiplier: 2.0,
+        scoreMultiplier: 1.50,
+        skyColor: '#050510',
+        roadTexture: 'neon_grid_road',
+        tunnelSpacing: 1000,
+        frictionFactor: 1.10
+    }
+};
+
 export const CAR_CATALOG = {
             roadster: {
                 id: 'roadster',

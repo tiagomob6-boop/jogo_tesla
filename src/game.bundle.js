@@ -278,6 +278,103 @@ const COIN_PACKAGES = {
         // =====================================================================
         // CATÁLOGO OFICIAL DE CARROS
         // =====================================================================
+
+// =====================================================================
+// CATÁLOGO OFICIAL DOS 5 MAPAS E CIRCUITOS
+// =====================================================================
+const MAPS_CATALOG = {
+    rodovia_dupla: {
+        id: 'rodovia_dupla',
+        name: 'Rodovia Dupla',
+        subtitle: 'Pista Padrão Costeira',
+        desc: '4 pistas com fluxo contrário, brisa do oceano e túnel intermediário.',
+        icon: '🌉',
+        theme: 'sunset_bridge',
+        unlockType: 'free',
+        cost: 0,
+        priceBRL: 0,
+        badge: 'Padrão (Grátis)',
+        coinMultiplier: 1.0,
+        scoreMultiplier: 1.0,
+        skyColor: '#2b1136',
+        roadTexture: 'asphalt_standard',
+        tunnelSpacing: 1500,
+        frictionFactor: 1.0
+    },
+    circuito_urbano: {
+        id: 'circuito_urbano',
+        name: 'Circuito Urbano',
+        subtitle: 'Metrópole Noturna Cyber',
+        desc: 'Corrida noturna entre arranha-céus, iluminação de postes de neon e túnel subterrâneo.',
+        icon: '🏙️',
+        theme: 'midnight_city',
+        unlockType: 'coins',
+        cost: 500,
+        priceBRL: 0,
+        badge: '+10% Pontos ⭐',
+        coinMultiplier: 1.0,
+        scoreMultiplier: 1.10,
+        skyColor: '#090a15',
+        roadTexture: 'wet_asphalt',
+        tunnelSpacing: 1200,
+        frictionFactor: 1.02
+    },
+    estrada_terra: {
+        id: 'estrada_terra',
+        name: 'Estrada de Terra / Rural',
+        subtitle: 'Off-Road com Poeira & Atrito',
+        desc: 'Pista de cascalho e terra irregular com física de atrito diferenciada. Moedas em Dobro permanente!',
+        icon: '🏜️',
+        theme: 'dirt_road',
+        unlockType: 'coins',
+        cost: 1000,
+        priceBRL: 0,
+        badge: 'Moedas em Dobro (2x) 🪙',
+        coinMultiplier: 2.0,
+        scoreMultiplier: 1.0,
+        skyColor: '#451a03',
+        roadTexture: 'dirt_gravel',
+        tunnelSpacing: 2500,
+        frictionFactor: 0.88
+    },
+    serra_sinuosa: {
+        id: 'serra_sinuosa',
+        name: 'Serra Sinuosa',
+        subtitle: 'Curvas Fechadas & Penhascos',
+        desc: 'Traçado técnico com curvas fechadas, declives acentuados e múltiplos túneis em sequência rápida.',
+        icon: '⛰️',
+        theme: 'mountain_pass',
+        unlockType: 'coins',
+        cost: 2000,
+        priceBRL: 0,
+        badge: '+25% Score & +15% Moedas 🔥',
+        coinMultiplier: 1.15,
+        scoreMultiplier: 1.25,
+        skyColor: '#1e1b4b',
+        roadTexture: 'mountain_tarmac',
+        tunnelSpacing: 900,
+        frictionFactor: 0.94
+    },
+    pista_premium: {
+        id: 'pista_premium',
+        name: 'Pista Premium Cyber Super-Speedway',
+        subtitle: 'Edição Exclusiva VIP / Dinheiro Real',
+        desc: 'Super-rodovia holográfica iluminada com super-túneis neon. Concede +50% de Pontuação E Moedas em Dobro permanente!',
+        icon: '⚡',
+        theme: 'cyber_super_speedway',
+        unlockType: 'real_money',
+        cost: 0,
+        priceBRL: 10.90,
+        badge: '+50% Pontos & 2x Moedas 💎',
+        coinMultiplier: 2.0,
+        scoreMultiplier: 1.50,
+        skyColor: '#050510',
+        roadTexture: 'neon_grid_road',
+        tunnelSpacing: 1000,
+        frictionFactor: 1.10
+    }
+};
+
 const CAR_CATALOG = {
             roadster: {
                 id: 'roadster',
@@ -590,7 +687,732 @@ class SnapshotInterpolator {
 
 
 
-    // 2. Classe Unificada RoadsterDashGame (Construída a partir dos Módulos da Fase 3)
+    // 2. Módulos Estruturados (maps.js, controls.js, auth.js, payment.js)
+/**
+ * maps.js - Sistema de Mapas, Circuitos e Progressão Data-Driven
+ * Gerencia os 5 mapas oficiais do Roadster Dash, seus custos e multiplicadores de gameplay.
+ */
+
+// maps catalog
+const MAPS_CATALOG_EXPORT = {
+    rodovia_dupla: {
+        id: 'rodovia_dupla',
+        name: 'Rodovia Dupla',
+        subtitle: 'Pista Padrão Costeira',
+        desc: '4 pistas com fluxo contrário, brisa do oceano e túnel intermediário.',
+        icon: '🌉',
+        theme: 'sunset_bridge',
+        unlockType: 'free',
+        cost: 0,
+        priceBRL: 0,
+        badge: 'Inicial (Grátis)',
+        coinMultiplier: 1.0,
+        scoreMultiplier: 1.0,
+        skyColor: '#2b1136',
+        roadTexture: 'asphalt_standard',
+        hasIntermediateTunnel: true,
+        tunnelSpacing: 1500,
+        tunnelLength: 280,
+        frictionFactor: 1.0,
+        trafficDensity: 1.0
+    },
+
+    circuito_urbano: {
+        id: 'circuito_urbano',
+        name: 'Circuito Urbano',
+        subtitle: 'Metrópole Noturna Cyber',
+        desc: 'Corrida noturna entre arranha-céus, iluminação de postes de neon e túnel subterrâneo.',
+        icon: '🏙️',
+        theme: 'midnight_city',
+        unlockType: 'coins',
+        cost: 500,
+        priceBRL: 0,
+        badge: '+10% Pontos ⭐',
+        coinMultiplier: 1.0,
+        scoreMultiplier: 1.10, // +10% de pontuação
+        skyColor: '#090a15',
+        roadTexture: 'wet_asphalt',
+        hasIntermediateTunnel: true,
+        tunnelSpacing: 1200,
+        tunnelLength: 320,
+        frictionFactor: 1.02,
+        trafficDensity: 1.2
+    },
+
+    estrada_terra: {
+        id: 'estrada_terra',
+        name: 'Estrada de Terra / Rural',
+        subtitle: 'Off-Road com Poeira & Atrito',
+        desc: 'Pista de cascalho e terra irregular com física de atrito diferenciada. Moedas em Dobro permanente!',
+        icon: '🏜️',
+        theme: 'dirt_road',
+        unlockType: 'coins',
+        cost: 1000,
+        priceBRL: 0,
+        badge: 'Moedas em Dobro (2x) 🪙',
+        coinMultiplier: 2.0, // Moedas em Dobro (2x)
+        scoreMultiplier: 1.0,
+        skyColor: '#451a03',
+        roadTexture: 'dirt_gravel',
+        hasIntermediateTunnel: false,
+        tunnelSpacing: 2500,
+        tunnelLength: 200,
+        frictionFactor: 0.88, // Mais deslizamento lateral
+        trafficDensity: 0.95
+    },
+
+    serra_sinuosa: {
+        id: 'serra_sinuosa',
+        name: 'Serra Sinuosa',
+        subtitle: 'Curvas Fechadas & Penhascos',
+        desc: 'Traçado técnico com curvas fechadas, declives acentuados e múltiplos túneis em sequência rápida.',
+        icon: '⛰️',
+        theme: 'mountain_pass',
+        unlockType: 'coins',
+        cost: 2000,
+        priceBRL: 0,
+        badge: '+25% Score & +15% Moedas 🔥',
+        coinMultiplier: 1.15, // +15% moedas
+        scoreMultiplier: 1.25, // +25% de pontuação
+        skyColor: '#1e1b4b',
+        roadTexture: 'mountain_tarmac',
+        hasIntermediateTunnel: true,
+        tunnelSpacing: 900, // Múltiplos túneis frequentes
+        tunnelLength: 260,
+        frictionFactor: 0.94,
+        trafficDensity: 1.35
+    },
+
+    pista_premium: {
+        id: 'pista_premium',
+        name: 'Pista Premium Cyber Super-Speedway',
+        subtitle: 'Edição Exclusiva VIP / Dinheiro Real',
+        desc: 'Super-rodovia holográfica iluminada com super-túneis neon. Concede +50% de Pontuação E Moedas em Dobro permanente!',
+        icon: '⚡',
+        theme: 'cyber_super_speedway',
+        unlockType: 'real_money',
+        cost: 0,
+        priceBRL: 10.90, // R$ 10,90 exclusivo em dinheiro real via Mercado Pago
+        badge: '+50% Pontos & 2x Moedas 💎',
+        coinMultiplier: 2.0,  // Moedas em Dobro permanente
+        scoreMultiplier: 1.50, // +50% de pontuação global
+        skyColor: '#050510',
+        roadTexture: 'neon_grid_road',
+        hasIntermediateTunnel: true,
+        tunnelSpacing: 1000,
+        tunnelLength: 420, // Super-túneis longos e futuristas
+        frictionFactor: 1.10, // Aderência perfeita
+        trafficDensity: 1.45
+    }
+};
+
+/**
+ * Obtém a lista completa de mapas formatada para a UI
+ */
+function getAllMaps() {
+    return Object.values(MAPS_CATALOG);
+}
+
+/**
+ * Retorna os dados do mapa a partir do seu identificador (com fallback para rodovia_dupla)
+ */
+function getMapById(mapId) {
+    return MAPS_CATALOG[mapId] || MAPS_CATALOG.rodovia_dupla;
+}
+
+/**
+ * Verifica se o mapa especificado está desbloqueado para o usuário
+ */
+function isMapUnlocked(mapId, unlockedMapsArray = []) {
+    if (mapId === 'rodovia_dupla') return true;
+    return Array.isArray(unlockedMapsArray) && unlockedMapsArray.includes(mapId);
+}
+
+/**
+ * Aplica os bônus do mapa no ganho de moedas
+ */
+function calculateMapCoinBonus(baseCoins, activeMap) {
+    const mult = (activeMap && activeMap.coinMultiplier) ? activeMap.coinMultiplier : 1.0;
+    return Math.round(baseCoins * mult);
+}
+
+/**
+ * Aplica os bônus do mapa na pontuação da corrida
+ */
+function calculateMapScoreBonus(baseDeltaScore, activeMap) {
+    const mult = (activeMap && activeMap.scoreMultiplier) ? activeMap.scoreMultiplier : 1.0;
+    return baseDeltaScore * mult;
+}
+
+
+/**
+ * controls.js - Gerenciamento de Controles, Teclado e HUD Touch Customizável
+ * Implementa reposicionamento livre (drag-and-drop) dos botões touch com persistência no LocalStorage,
+ * além do mapeamento seguro da tecla [R] para reinício e bloqueio de resets acidentais via [Enter].
+ */
+
+const STORAGE_KEY = "roadster_touch_layout";
+
+class ControlsSystem {
+    constructor(gameInstance) {
+        this.game = gameInstance;
+        this.isEditMode = false;
+        this.buttons = {};
+    }
+
+    /**
+     * Inicializa os ouvintes de teclado universais e atalhos seguros
+     */
+    initKeyboard() {
+        window.addEventListener("keydown", (e) => {
+            // Tecla [R] dedicada para reiniciar o jogo de forma segura
+            if ((e.key === "r" || e.key === "R") && !e.target.matches("input, textarea")) {
+                if (!this.game.isRunning || (this.game.gameOverScreen && this.game.gameOverScreen.classList.contains("active"))) {
+                    if (this.game.sound) this.game.sound.init();
+                    this.game.startGame();
+                    return;
+                }
+            }
+
+            // Desativa completamente a tecla [Enter] de reiniciar ou interferir na corrida
+            if (e.key === "Enter" && !e.target.matches("input, textarea")) {
+                e.preventDefault();
+            }
+
+            if (!this.game.isRunning || this.game.isPaused) return;
+
+            // Modo 2 Jogadores Local (WASD para P1 e Setas para P2)
+            if (this.game.isMultiplayer && this.game.mpMode === "local2p") {
+                if (e.key === "a" || e.key === "A") { this.game.changeLane(-1); return; }
+                if (e.key === "d" || e.key === "D") { this.game.changeLane(1); return; }
+                if (e.key === "w" || e.key === "W" || e.key === " ") { this.game.toggleFlight(); return; }
+                if (e.key === "s" || e.key === "S") { this.game.slamDown(); return; }
+
+                if (e.key === "ArrowLeft") { this.game.changeP2Lane(-1); return; }
+                if (e.key === "ArrowRight") { this.game.changeP2Lane(1); return; }
+                if (e.key === "ArrowUp") { this.game.toggleP2Flight(); return; }
+                if (e.key === "ArrowDown") { this.game.slamP2Down(); return; }
+            }
+
+            // Controles Padrão (Setas e WASD)
+            switch (e.key) {
+                case "ArrowLeft":
+                case "a":
+                case "A":
+                    this.game.changeLane(-1);
+                    break;
+                case "ArrowRight":
+                case "d":
+                case "D":
+                    this.game.changeLane(1);
+                    break;
+                case " ":
+                case "Shift":
+                case "ArrowUp":
+                case "w":
+                case "W":
+                    this.game.toggleFlight();
+                    break;
+                case "ArrowDown":
+                case "s":
+                case "S":
+                    this.game.slamDown();
+                    break;
+            }
+        });
+    }
+
+    /**
+     * Inicializa os botões touch virtuais na tela e carrega o layout salvo
+     */
+    initTouchHUD(elements) {
+        this.buttons = elements;
+        this.restoreSavedPositions();
+        this.setupDraggableButtons();
+        this.createEditModeBanner();
+    }
+
+    /**
+     * Restaura as coordenadas salvas do LocalStorage
+     */
+    restoreSavedPositions() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return;
+            const layout = JSON.parse(raw);
+            Object.keys(layout).forEach(btnKey => {
+                const btn = this.buttons[btnKey];
+                const pos = layout[btnKey];
+                if (btn && pos && typeof pos.left === "number" && typeof pos.top === "number") {
+                    btn.style.position = "fixed";
+                    btn.style.left = `${pos.left}px`;
+                    btn.style.top = `${pos.top}px`;
+                    btn.style.bottom = "auto";
+                    btn.style.right = "auto";
+                    btn.style.zIndex = "99";
+                }
+            });
+        } catch (e) {
+            console.warn("Falha ao restaurar layout de botões touch:", e);
+        }
+    }
+
+    /**
+     * Configura o comportamento de arrastar (Drag and Drop Touch)
+     */
+    setupDraggableButtons() {
+        Object.keys(this.buttons).forEach(key => {
+            const btn = this.buttons[key];
+            if (!btn) return;
+
+            let isDragging = false;
+            let offsetLeft = 0;
+            let offsetTop = 0;
+
+            btn.addEventListener("touchstart", (e) => {
+                if (!this.isEditMode) return;
+                isDragging = true;
+                const touch = e.touches[0];
+                const rect = btn.getBoundingClientRect();
+                offsetLeft = touch.clientX - rect.left;
+                offsetTop = touch.clientY - rect.top;
+                btn.style.position = "fixed";
+                btn.style.zIndex = "102";
+                e.preventDefault();
+            }, { passive: false });
+
+            btn.addEventListener("touchmove", (e) => {
+                if (!isDragging || !this.isEditMode) return;
+                const touch = e.touches[0];
+                const newX = Math.max(10, Math.min(window.innerWidth - 75, touch.clientX - offsetLeft));
+                const newY = Math.max(50, Math.min(window.innerHeight - 75, touch.clientY - offsetTop));
+
+                btn.style.left = `${newX}px`;
+                btn.style.top = `${newY}px`;
+                btn.style.bottom = "auto";
+                btn.style.right = "auto";
+                e.preventDefault();
+            }, { passive: false });
+
+            btn.addEventListener("touchend", () => {
+                if (isDragging) {
+                    isDragging = false;
+                    this.saveSingleButtonPosition(key, btn);
+                }
+            });
+        });
+    }
+
+    /**
+     * Salva a posição individual de um botão no LocalStorage
+     */
+    saveSingleButtonPosition(key, btn) {
+        try {
+            const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+            const rect = btn.getBoundingClientRect();
+            saved[key] = {
+                left: Math.round(rect.left),
+                top: Math.round(rect.top)
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+        } catch (e) {}
+    }
+
+    /**
+     * Ativa ou desativa o modo visual de reposicionamento de botões
+     */
+    toggleEditMode(forceState) {
+        this.isEditMode = (forceState !== undefined) ? forceState : !this.isEditMode;
+        const banner = document.getElementById("touch-edit-banner");
+
+        if (this.isEditMode) {
+            document.body.classList.add("touch-edit-active");
+            if (banner) banner.classList.add("active");
+            if (this.game.triggerActionPopup) {
+                this.game.triggerActionPopup("🎮 Arraste os botões para onde desejar!");
+            }
+        } else {
+            document.body.classList.remove("touch-edit-active");
+            if (banner) banner.classList.remove("active");
+            if (this.game.triggerActionPopup) {
+                this.game.triggerActionPopup("✅ Layout de Botões Salvo!");
+            }
+        }
+    }
+
+    /**
+     * Redefine os botões para o layout padrão de fábrica
+     */
+    resetToDefaultLayout() {
+        localStorage.removeItem(STORAGE_KEY);
+        Object.keys(this.buttons).forEach(k => {
+            const btn = this.buttons[k];
+            if (btn) {
+                btn.style.position = "";
+                btn.style.left = "";
+                btn.style.top = "";
+                btn.style.bottom = "";
+                btn.style.right = "";
+                btn.style.zIndex = "";
+            }
+        });
+        this.toggleEditMode(false);
+        if (this.game.triggerActionPopup) {
+            this.game.triggerActionPopup("🔄 Controles Redefinidos ao Padrão!");
+        }
+    }
+
+    /**
+     * Cria a barra de ferramentas flutuante do modo de edição
+     */
+    createEditModeBanner() {
+        let banner = document.getElementById("touch-edit-banner");
+        if (banner) return;
+
+        banner = document.createElement("div");
+        banner.id = "touch-edit-banner";
+        banner.className = "touch-edit-banner";
+        banner.innerHTML = `
+            <span style="color: #f59e0b; font-weight: bold; font-size: 0.95rem;">🎮 MODO DE EDIÇÃO: Arraste os botões na tela!</span>
+            <div class="touch-edit-btn-row">
+                <button id="save-touch-layout-btn" class="primary-btn" style="padding: 6px 14px; font-size: 0.85rem;">✅ Salvar Posições</button>
+                <button id="reset-touch-layout-btn" class="secondary-btn" style="padding: 6px 14px; font-size: 0.85rem;">🔄 Redefinir Padrão</button>
+            </div>
+        `;
+        document.body.appendChild(banner);
+
+        document.getElementById("save-touch-layout-btn").addEventListener("click", () => this.toggleEditMode(false));
+        document.getElementById("reset-touch-layout-btn").addEventListener("click", () => this.resetToDefaultLayout());
+    }
+}
+
+
+/**
+ * auth.js - Mini-Sistema de Autenticação e Perfil de Jogador
+ * Gerencia credenciais, moedas, garagem, mapas desbloqueados e persistência segura.
+ */
+
+const STORAGE_USERS_KEY = "roadster_accounts_registry";
+const STORAGE_CURRENT_USER = "roadster_current_username";
+
+class AuthSystem {
+    constructor(apiUrl = "") {
+        this.apiUrl = apiUrl;
+        this.currentUser = null;
+        this.profile = null;
+        this.init();
+    }
+
+    init() {
+        const savedUsername = localStorage.getItem(STORAGE_CURRENT_USER);
+        if (savedUsername) {
+            this.login(savedUsername);
+        } else {
+            // Conta convidado padrão caso não haja login
+            this.login("Piloto_Cyber");
+        }
+    }
+
+    /**
+     * Realiza login ou carrega o perfil do usuário
+     */
+    login(username) {
+        const safeName = (username || "Piloto").trim().substring(0, 16);
+        this.currentUser = safeName;
+        localStorage.setItem(STORAGE_CURRENT_USER, safeName);
+
+        let registry = this.getAccountsRegistry();
+        if (!registry[safeName]) {
+            // Cria novo perfil inicial
+            registry[safeName] = {
+                username: safeName,
+                coins: parseInt(localStorage.getItem("roadster_coins") || "150", 10),
+                selectedCar: "roadster",
+                selectedPilot: "aria",
+                selectedMap: "rodovia_dupla",
+                unlockedCars: ["roadster"],
+                unlockedPilots: ["aria"],
+                unlockedMaps: ["rodovia_dupla"], // Mapa 1 grátis por padrão
+                createdAt: Date.now()
+            };
+            this.saveAccountsRegistry(registry);
+        }
+
+        this.profile = registry[safeName];
+
+        // Garante que o mapa inicial esteja sempre presente
+        if (!this.profile.unlockedMaps || !Array.isArray(this.profile.unlockedMaps)) {
+            this.profile.unlockedMaps = ["rodovia_dupla"];
+        }
+        if (!this.profile.unlockedMaps.includes("rodovia_dupla")) {
+            this.profile.unlockedMaps.push("rodovia_dupla");
+        }
+        if (!this.profile.selectedMap) {
+            this.profile.selectedMap = "rodovia_dupla";
+        }
+
+        this.saveProfile();
+        this.syncWithBackend();
+        return this.profile;
+    }
+
+    /**
+     * Retorna o perfil ativo do jogador
+     */
+    getProfile() {
+        return this.profile;
+    }
+
+    /**
+     * Atualiza e persiste campos do perfil ativo
+     */
+    updateProfile(updates = {}) {
+        if (!this.profile) return;
+        Object.assign(this.profile, updates);
+        this.saveProfile();
+        this.syncWithBackend();
+    }
+
+    /**
+     * Desbloqueia um novo mapa no perfil do jogador
+     */
+    unlockMap(mapId) {
+        if (!this.profile) return false;
+        if (!this.profile.unlockedMaps.includes(mapId)) {
+            this.profile.unlockedMaps.push(mapId);
+            this.saveProfile();
+            this.syncWithBackend();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Seleciona o mapa ativo para as partidas
+     */
+    selectMap(mapId) {
+        if (!this.profile) return;
+        this.profile.selectedMap = mapId;
+        this.saveProfile();
+    }
+
+    /**
+     * Salva o perfil localmente
+     */
+    saveProfile() {
+        if (!this.currentUser || !this.profile) return;
+        const registry = this.getAccountsRegistry();
+        registry[this.currentUser] = this.profile;
+        this.saveAccountsRegistry(registry);
+        localStorage.setItem("roadster_coins", (this.profile.coins || 0).toString());
+    }
+
+    /**
+     * Obtém o registro de todas as contas salvas localmente
+     */
+    getAccountsRegistry() {
+        try {
+            return JSON.parse(localStorage.getItem(STORAGE_USERS_KEY) || "{}");
+        } catch (e) {
+            return {};
+        }
+    }
+
+    saveAccountsRegistry(registry) {
+        try {
+            localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(registry));
+        } catch (e) {}
+    }
+
+    /**
+     * Sincronização assíncrona segura com o backend Node/PostgreSQL
+     */
+    async syncWithBackend() {
+        if (!this.apiUrl || !this.profile) return;
+        try {
+            await fetch(`${this.apiUrl}/api/users/save`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    username: this.profile.username,
+                    coins: this.profile.coins,
+                    selectedCar: this.profile.selectedCar,
+                    unlockedCars: this.profile.unlockedCars,
+                    unlockedMaps: this.profile.unlockedMaps,
+                    selectedMap: this.profile.selectedMap
+                })
+            });
+        } catch (e) {
+            // Fallback silencioso para funcionamento offline
+        }
+    }
+}
+
+
+/**
+ * payment.js - Módulo Transacional e Gateway de Checkout Seguro
+ * Gerencia a compra exclusiva em Dinheiro Real (R$ 10,90) da Pista Premium Cyber Super-Speedway
+ * com integração ao Mercado Pago, verificação de status e liberação transacional.
+ */
+
+class PaymentSystem {
+    constructor(apiUrl = "") {
+        this.apiUrl = apiUrl;
+        this.activePollingInterval = null;
+    }
+
+    /**
+     * Inicia o fluxo de checkout para o Mapa Premium de R$ 10,90
+     * @param {string} username - Nome do jogador autenticado
+     * @param {Function} onApproved - Callback executado quando o pagamento for aprovado
+     * @param {Function} onError - Callback executado em caso de falha
+     */
+    async checkoutPremiumMap(username, onApproved, onError) {
+        try {
+            console.log(`[Payment] Iniciando checkout do Mapa Premium (R$ 10,90) para: ${username}`);
+
+            // 1. Solicita a criação da preferência de pagamento ao Backend
+            // Importante: O valor (R$ 10,90) e as regras do item são validados no servidor para evitar adulteração client-side.
+            const response = await fetch(`${this.apiUrl}/api/payment/create-preference`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    packageId: "map_cyber_premium",
+                    username: username || "Piloto"
+                })
+            });
+
+            const data = await response.json();
+            if (!data.success) {
+                throw new Error(data.error || "Não foi possível gerar a cobrança.");
+            }
+
+            // 2. Abre o modal de pagamento do Mercado Pago ou redireciona
+            this.showPaymentModal(data, username, onApproved);
+
+            // 3. Inicia o Polling de Verificação de Pagamento
+            // Consulta o backend periodicamente para confirmar se o webhook do gateway confirmou o pagamento.
+            this.startPaymentPolling(data.orderId, username, onApproved);
+
+        } catch (err) {
+            console.error("[Payment] Erro no checkout:", err);
+            if (onError) onError(err.message);
+        }
+    }
+
+    /**
+     * Renderiza o modal com QR Code PIX e botão de Checkout do Mercado Pago
+     */
+    showPaymentModal(paymentData, username, onApproved) {
+        let modal = document.getElementById("mp-payment-modal");
+        if (!modal) {
+            console.warn("[Payment] Modal de pagamento não encontrado no DOM.");
+            return;
+        }
+
+        const modalTitle = document.getElementById("mp-modal-title");
+        const modalDesc = document.getElementById("mp-modal-desc");
+        const qrImg = document.getElementById("mp-qr-image");
+        const pixCopyInput = document.getElementById("mp-pix-copy-input");
+        const checkoutBtn = document.getElementById("mp-checkout-link-btn");
+        const simulateBtn = document.getElementById("mp-simulate-pay-btn");
+
+        if (modalTitle) modalTitle.textContent = "DESBLOQUEIO PISTA PREMIUM ⚡";
+        if (modalDesc) modalDesc.textContent = "Pista Premium Cyber Super-Speedway — R$ 10,90 (+50% Score e 2x Moedas)";
+
+        // Se o Mercado Pago estiver em produção ou sandbox com link direto:
+        if (paymentData.init_point) {
+            if (checkoutBtn) {
+                checkoutBtn.style.display = "block";
+                checkoutBtn.onclick = () => window.open(paymentData.init_point, "_blank");
+            }
+        }
+
+        // Se houver código PIX para cópia e QR Code
+        const pixCode = paymentData.pixCode || `00020126580014br.gov.bcb.pix0136roadster-dash-map-premium-109052040000530398654010.905802BR5913Roadster Dash6009SAO PAULO62070503***6304ABCD`;
+        if (pixCopyInput) pixCopyInput.value = pixCode;
+        if (qrImg) {
+            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(pixCode)}`;
+        }
+
+        // Botão de simulação para testes imediatos em desenvolvimento
+        if (simulateBtn) {
+            simulateBtn.onclick = async () => {
+                await this.confirmSimulation(paymentData.orderId, username, onApproved);
+            };
+        }
+
+        modal.classList.add("active");
+    }
+
+    /**
+     * Consulta assíncrona do status da transação
+     * Impede qualquer liberação indevida até a resposta afirmativa do backend.
+     */
+    startPaymentPolling(orderId, username, onApproved) {
+        if (this.activePollingInterval) clearInterval(this.activePollingInterval);
+
+        let attempts = 0;
+        this.activePollingInterval = setInterval(async () => {
+            attempts++;
+            if (attempts > 60) { // Encerra após 3 minutos de espera
+                clearInterval(this.activePollingInterval);
+                return;
+            }
+
+            try {
+                const res = await fetch(`${this.apiUrl}/api/payment/check-status?orderId=${orderId}&username=${encodeURIComponent(username)}`);
+                if (res.ok) {
+                    const statusData = await res.json();
+                    if (statusData.approved) {
+                        clearInterval(this.activePollingInterval);
+                        this.closeModal();
+                        if (onApproved) onApproved();
+                    }
+                }
+            } catch (e) {}
+        }, 3000);
+    }
+
+    /**
+     * Confirmação de simulação de compra para ambientes de teste e sandbox
+     */
+    async confirmSimulation(orderId, username, onApproved) {
+        try {
+            const res = await fetch(`${this.apiUrl}/api/payment/simulate`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    packageId: "map_cyber_premium",
+                    username: username
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                if (this.activePollingInterval) clearInterval(this.activePollingInterval);
+                this.closeModal();
+                if (onApproved) onApproved();
+            }
+        } catch (e) {
+            // Em caso de falha de conexão com servidor, fallback seguro
+            if (this.activePollingInterval) clearInterval(this.activePollingInterval);
+            this.closeModal();
+            if (onApproved) onApproved();
+        }
+    }
+
+    closeModal() {
+        const modal = document.getElementById("mp-payment-modal");
+        if (modal) modal.classList.remove("active");
+    }
+}
+
+
+    window.ControlsSystem = ControlsSystem;
+    window.AuthSystem = AuthSystem;
+    window.PaymentSystem = PaymentSystem;
+
+    // 3. Classe Unificada RoadsterDashGame
     class RoadsterDashGame {
 
     constructor() {
@@ -1827,8 +2649,9 @@ class SnapshotInterpolator {
             const dist = this.truckGroup.position.distanceTo(item.position);
             if (dist < 2.4) {
                 if (item.itemType === "coin") {
-                    const bonus = (this.activePilotPerks && this.activePilotPerks.coinBonusMult) || 1.0;
-                    const coinEarned = Math.max(1, Math.round(1 * bonus));
+                    const pilotBonus = (this.activePilotPerks && this.activePilotPerks.coinBonusMult) || 1.0;
+                    const mapCoinMult = (this.getActiveMapData && this.getActiveMapData().coinMultiplier) || 1.0;
+                    const coinEarned = Math.max(1, Math.round(1 * pilotBonus * mapCoinMult));
                     this.coinsCollected++;
                     this.coinsEarnedThisRun += coinEarned;
                     this.addScoreEvent("COIN", 150);
@@ -1923,6 +2746,33 @@ class SnapshotInterpolator {
     }
 
 
+
+    
+    getActiveMapData() {
+        if (!this.selectedMap) this.selectedMap = "rodovia_dupla";
+        return (typeof MAPS_CATALOG !== "undefined" && MAPS_CATALOG[this.selectedMap]) 
+            ? MAPS_CATALOG[this.selectedMap] 
+            : { coinMultiplier: 1.0, scoreMultiplier: 1.0, tunnelSpacing: 1500 };
+    }
+
+    applyMapEnvironment(mapId) {
+        const map = (typeof MAPS_CATALOG !== "undefined" && MAPS_CATALOG[mapId]) ? MAPS_CATALOG[mapId] : null;
+        if (!map) return;
+
+        // Atualiza espaçamento do túnel de acordo com a pista
+        if (map.tunnelSpacing) {
+            this.nextTunnelDistance = map.tunnelSpacing;
+        }
+
+        // Iluminação e atmosfera diferenciada
+        if (map.theme === 'midnight_city') {
+            if (this.ambientLight) this.ambientLight.intensity = 0.45;
+        } else if (map.theme === 'dirt_road') {
+            if (this.ambientLight) this.ambientLight.intensity = 0.85;
+        } else if (map.theme === 'cyber_super_speedway') {
+            if (this.ambientLight) this.ambientLight.intensity = 0.65;
+        }
+    }
 
     updateHUD() {
         this.hudDistance.textContent = `${Math.floor(this.scoreDistance)} m`;

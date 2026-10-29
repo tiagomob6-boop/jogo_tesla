@@ -63,6 +63,14 @@ const COIN_PACKAGES = {
         price: 39.90,
         tag: '+50% Bônus 💎',
         desc: '10.000 Moedas - Melhor custo-benefício de Sunset Highway!'
+    },
+    map_cyber_premium: {
+        id: 'map_cyber_premium',
+        name: 'Pista Premium Cyber Super-Speedway',
+        type: 'map',
+        price: 10.90,
+        tag: 'Exclusivo VIP ⚡',
+        desc: 'Desbloqueio Permanente do Mapa 5: +50% Pontuação Global E Moedas em Dobro (2x Moedas)!'
     }
 };
 
@@ -917,6 +925,13 @@ app.post('/api/payment/create-preference', async (req, res) => {
 });
 
 // 3. Simulação ou Confirmação Direta de Pagamento (útil para testes imediatos)
+// Endpoint de verificação de status para polling de pagamento
+app.get('/api/payment/check-status', (req, res) => {
+    const { orderId, username } = req.query;
+    const isApproved = orderId && processedPayments.has(String(orderId));
+    res.json({ success: true, approved: !!isApproved, orderId });
+});
+
 app.post('/api/payment/simulate', async (req, res) => {
     try {
         const { packageId, username } = req.body;
