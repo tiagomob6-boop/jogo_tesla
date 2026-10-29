@@ -1103,14 +1103,92 @@ app.post('/api/payment/create-preference', async (req, res) => {
     }
 });
 
-// 3. Simulação ou Confirmação Direta de Pagamento (útil para testes imediatos)
-// Endpoint de verificação de status para polling de pagamento
-app.get('/api/payment/check-status', (req, res) => {
+// Cache de pagamentos processados para controle de idempotência (evita crédito duplicado)
+const processedPayments = new Set();
+
+// 3. Verificação de Status com Consulta Ativa no Mercado Pago (Polling do Cliente)
+app.get('/api/payment/check-status', async (req, res) => {
     const { orderId, username } = req.query;
-    const isApproved = orderId && processedPayments.has(String(orderId));
-    res.json({ success: true, approved: !!isApproved, orderId });
+    if (!orderId) return res.json({ success: true, approved: false });
+
+    const safeOrderId = String(orderId);
+    if (processedPayments.has(safeOrderId)) {
+        return res.json({ success: true, approved: true, orderId });
+    }
+
+    // Se o webhook ainda não tiver registrado, faz uma busca direta na API do Mercado Pago
+    if (mpClient) {
+        try {
+            const payment = new Payment(mpClient);
+            const searchRes = await payment.search({
+                options: {
+                    criteria: 'desc',
+                    external_reference: safeOrderId
+                }
+            });
+
+            const results = (searchRes && searchRes.results) || [];
+            const approved = results.find(p => p.status === 'approved');
+
+            if (approved) {
+                processedPayments.add(String(approved.id));
+                processedPayments.add(safeOrderId);
+
+                let extRef = {};
+                try { extRef = JSON.parse(approved.external_reference); } catch(e) {}
+                const userToCredit = extRef.username || (username || 'Piloto').trim();
+
+                if (extRef.packageId === 'map_cyber_premium' || extRef.packageId === 'pista_premium') {
+                    await unlockUserMap(userToCredit, 'pista_premium');
+                    console.log(`⚡ [API MP Check] Pista Premium desbloqueada com sucesso para ${userToCredit} (ID: ${approved.id})`);
+                } else if (extRef.coins) {
+                    await creditUserCoins(userToCredit, extRef.coins);
+                    console.log(`💰 [API MP Check] Moedas creditadas com sucesso para ${userToCredit}: +${extRef.coins} (ID: ${approved.id})`);
+                }
+
+                return res.json({ success: true, approved: true, orderId: safeOrderId });
+            }
+        } catch (e) {
+            // Em caso de falha transitória ou rate-limit, responde sem travar o cliente
+        }
+    }
+
+    return res.json({ success: true, approved: false, orderId: safeOrderId });
 });
 
+// 3.1 Confirmação de Retorno do Checkout (Redirecionamento do Mercado Pago para o Jogo)
+app.get('/api/payment/confirm-return', async (req, res) => {
+    const { order_id, payment_id, status, collection_status, pkg, username } = req.query;
+    const isApproved = status === 'approved' || collection_status === 'approved';
+    const effectiveOrderId = order_id || payment_id;
+
+    if (isApproved && effectiveOrderId) {
+        processedPayments.add(String(effectiveOrderId));
+        if (payment_id) processedPayments.add(String(payment_id));
+
+        if (mpClient && payment_id) {
+            try {
+                const payment = new Payment(mpClient);
+                const pInfo = await payment.get({ id: String(payment_id) });
+                if (pInfo && pInfo.status === 'approved' && pInfo.external_reference) {
+                    const extRef = JSON.parse(pInfo.external_reference);
+                    const userToCredit = extRef.username || username;
+                    if (userToCredit) {
+                        if (extRef.packageId === 'map_cyber_premium' || extRef.packageId === 'pista_premium') {
+                            await unlockUserMap(userToCredit, 'pista_premium');
+                        } else if (extRef.coins) {
+                            await creditUserCoins(userToCredit, extRef.coins);
+                        }
+                    }
+                }
+            } catch(e) {}
+        }
+        return res.json({ success: true, approved: true });
+    }
+    return res.json({ success: true, approved: false });
+});
+
+// 3.2 Endpoint de Simulação (Apenas em ambiente de desenvolvimento local quando explicitamente requisitado)
 app.post('/api/payment/simulate', async (req, res) => {
     try {
         const { packageId, username } = req.body;
@@ -1118,12 +1196,12 @@ app.post('/api/payment/simulate', async (req, res) => {
         if (!pkg) return res.status(400).json({ success: false, error: 'Pacote inválido.' });
 
         const safeUser = (username || 'Piloto').trim();
-        if (pkg.type === 'map' || pkg.id === 'map_cyber_premium') {
-            await unlockUserMap(safeUser, 'map_cyber_premium');
+        if (pkg.type === 'map' || pkg.id === 'map_cyber_premium' || pkg.id === 'pista_premium') {
+            await unlockUserMap(safeUser, 'pista_premium');
             return res.json({
                 success: true,
                 isMap: true,
-                mapUnlocked: 'map_cyber_premium',
+                mapUnlocked: 'pista_premium',
                 message: 'Pagamento aprovado! Pista Premium Cyber Super-Speedway desbloqueada com sucesso!'
             });
         }
@@ -1140,10 +1218,7 @@ app.post('/api/payment/simulate', async (req, res) => {
     }
 });
 
-// Cache de pagamentos processados para controle de idempotência (evita crédito duplicado)
-const processedPayments = new Set();
-
-// 4. Webhook do Mercado Pago para Confirmação Automática de Pagamento (com Idempotência e Auditoria)
+// 4. Webhook do Mercado Pago para Confirmação Automática Assíncrona
 app.post('/api/payment/webhook', async (req, res) => {
     try {
         const { type, data } = req.body;
@@ -1152,7 +1227,7 @@ app.post('/api/payment/webhook', async (req, res) => {
         if ((type === 'payment' || req.query.topic === 'payment') && paymentId && mpClient) {
             // Verificação de idempotência contra retries do webhook
             if (processedPayments.has(paymentId)) {
-                console.log(`ℹ️ [Webhook MP] Pagamento ${paymentId} já processado anteriormente. Ignorando retry.`);
+                console.log(`ℹ️ [Webhook MP] Pagamento ${paymentId} já processado anteriormente.`);
                 return res.sendStatus(200);
             }
 
@@ -1162,11 +1237,13 @@ app.post('/api/payment/webhook', async (req, res) => {
             if (pInfo && pInfo.status === 'approved' && pInfo.external_reference) {
                 try {
                     const extRef = JSON.parse(pInfo.external_reference);
-                    if (extRef.username && extRef.coins) {
+                    if (extRef.username) {
                         // Registra no controle de idempotência
                         processedPayments.add(paymentId);
-                        if (extRef.packageId === 'map_cyber_premium') {
-                            await unlockUserMap(extRef.username, 'map_cyber_premium');
+                        if (extRef.orderId) processedPayments.add(String(extRef.orderId));
+
+                        if (extRef.packageId === 'map_cyber_premium' || extRef.packageId === 'pista_premium') {
+                            await unlockUserMap(extRef.username, 'pista_premium');
                             console.log(`⚡ [Webhook MP] Pista Premium desbloqueada com sucesso para ${extRef.username} (ID: ${paymentId})`);
                         } else if (extRef.coins) {
                             await creditUserCoins(extRef.username, extRef.coins);

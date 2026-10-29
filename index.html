@@ -589,10 +589,17 @@
                     </a>
                 </div>
 
-                <div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 14px; padding-top: 12px;">
-                    <div style="font-size: 0.72rem; color: #94a3b8; margin-bottom: 8px;">Simulação / Confirmação imediata para testes:</div>
-                    <button class="action-btn" id="pay-simulate-btn" style="width: 100%; font-size: 0.85rem; padding: 10px; background: linear-gradient(135deg, #10b981, #059669);">
-                        ✅ CONFIRMAR PAGAMENTO (SIMULAR APROVAÇÃO)
+                <!-- Indicador de Espera Real de Pagamento -->
+                <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 14px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px;">
+                    <div style="color: #38bdf8; font-weight: 700; margin-bottom: 4px;">⏳ AGUARDANDO PAGAMENTO</div>
+                    <div>A liberação ocorre <strong>automaticamente em tempo real</strong> assim que o Mercado Pago ou seu banco confirmar a transação.</div>
+                </div>
+
+                <!-- Simulação de Testes (Oculta em Produção, visível apenas com ?debug=true) -->
+                <div id="pay-simulate-container" style="display: none; border-top: 1px dashed rgba(255,255,255,0.15); margin-top: 10px; padding-top: 10px;">
+                    <div style="font-size: 0.7rem; color: #e2e8f0; margin-bottom: 6px;">🛠️ Modo Desenvolvedor / Teste:</div>
+                    <button class="action-btn" id="pay-simulate-btn" style="width: 100%; font-size: 0.82rem; padding: 8px; background: linear-gradient(135deg, #10b981, #059669);">
+                        SIMULAR APROVAÇÃO (DEBUG)
                     </button>
                 </div>
             </div>

@@ -1800,6 +1800,7 @@ class PaymentSystem {
         this.initUserData();
         this.initMultiplayer();
         this.initCoinShop();
+        this.checkPaymentReturnOnLoad();
     }
 
     // =================================================================
@@ -7204,6 +7205,10 @@ class PaymentSystem {
         const redirSec = this.payRedirectSection || document.getElementById("pay-redirect-section");
         if (redirSec) redirSec.style.display = "none";
 
+        const simContainer = document.getElementById("pay-simulate-container");
+        if (simContainer) {
+            simContainer.style.display = (window.location.search.includes("debug=true") || window.location.hostname === "localhost") ? "block" : "none";
+        }
         if (this.mpPaymentModal) this.mpPaymentModal.classList.add("active");
 
         const loc = window.location;
@@ -7339,6 +7344,38 @@ class PaymentSystem {
 
 
     
+    async checkPaymentReturnOnLoad() {
+        if (typeof window === "undefined" || !window.location) return;
+        const params = new URLSearchParams(window.location.search);
+        const status = params.get('mp_status') || params.get('collection_status') || params.get('status');
+        const orderId = params.get('order_id') || params.get('external_reference');
+        const paymentId = params.get('payment_id') || params.get('collection_id');
+        const pkgId = params.get('pkg') || params.get('package_id');
+
+        if (status === 'approved' && (orderId || paymentId)) {
+            const loc = window.location;
+            const isLocal = loc.hostname === "localhost" || loc.hostname === "127.0.0.1";
+            const apiBase = isLocal ? `http://${loc.hostname}:${loc.port || 3000}` : "https://jogo-tesla.onrender.com";
+
+            try {
+                const res = await fetch(`${apiBase}/api/payment/confirm-return?order_id=${encodeURIComponent(orderId || '')}&payment_id=${encodeURIComponent(paymentId || '')}&status=approved&username=${encodeURIComponent(this.currentUser)}&pkg=${encodeURIComponent(pkgId || '')}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.approved) {
+                        const pkg = COIN_PACKAGES[pkgId] || Object.values(COIN_PACKAGES).find(p => p.id === pkgId) || { id: pkgId, name: 'Compra Aprovada' };
+                        this.onPaymentApprovedSuccess(pkg);
+                        this.triggerActionPopup("🎉 PAGAMENTO APROVADO PELO MERCADO PAGO!");
+                    }
+                }
+            } catch(e) {}
+
+            if (window.history && window.history.replaceState) {
+                const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                window.history.replaceState({}, document.title, cleanUrl);
+            }
+        }
+    }
+
     updateMapBadge() {
         if (!this.selectedMap) this.selectedMap = "rodovia_dupla";
         const map = (typeof MAPS_CATALOG !== "undefined" && MAPS_CATALOG[this.selectedMap]) || { name: "Rodovia Dupla" };
