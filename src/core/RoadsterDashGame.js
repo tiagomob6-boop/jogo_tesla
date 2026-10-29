@@ -1351,21 +1351,255 @@ class CoreGame {
     }
 
     applyMapEnvironment(mapId) {
+        if (!mapId) mapId = this.selectedMap || "rodovia_dupla";
         const map = (typeof MAPS_CATALOG !== "undefined" && MAPS_CATALOG[mapId]) ? MAPS_CATALOG[mapId] : null;
         if (!map) return;
 
-        // Atualiza espaçamento do túnel de acordo com a pista
+        const theme = map.theme || 'sunset_bridge';
+
+        // 1. Túnel e física de atrito
         if (map.tunnelSpacing) {
             this.nextTunnelDistance = map.tunnelSpacing;
         }
+        this.currentFriction = map.frictionFactor || 1.0;
 
-        // Iluminação e atmosfera diferenciada
-        if (map.theme === 'midnight_city') {
-            if (this.ambientLight) this.ambientLight.intensity = 0.45;
-        } else if (map.theme === 'dirt_road') {
-            if (this.ambientLight) this.ambientLight.intensity = 0.85;
-        } else if (map.theme === 'cyber_super_speedway') {
-            if (this.ambientLight) this.ambientLight.intensity = 0.65;
+        // 2. Cores da Pista (Asfalto / Chão / Muretas)
+        if (this.roadMat) {
+            if (theme === 'midnight_city') {
+                this.roadMat.color.setHex(0x111827); // Asfalto molhado ultra-escuro
+                this.roadMat.roughness = 0.16;
+                this.roadMat.metalness = 0.85;
+            } else if (theme === 'dirt_road') {
+                this.roadMat.color.setHex(0x78350f); // Terra avermelhada batida e cascalho
+                this.roadMat.roughness = 0.98;
+                this.roadMat.metalness = 0.02;
+            } else if (theme === 'mountain_pass') {
+                this.roadMat.color.setHex(0x1e293b); // Asfalto cinza ardósia alpino
+                this.roadMat.roughness = 0.65;
+                this.roadMat.metalness = 0.25;
+            } else if (theme === 'cyber_super_speedway') {
+                this.roadMat.color.setHex(0x090514); // Vidro obsidian holográfico espelhado
+                this.roadMat.roughness = 0.08;
+                this.roadMat.metalness = 0.95;
+            } else {
+                // sunset_bridge
+                this.roadMat.color.setHex(0x3c3945); // Asfalto clássico fosco
+                this.roadMat.roughness = 0.82;
+                this.roadMat.metalness = 0.05;
+            }
+            this.roadMat.needsUpdate = true;
+        }
+
+        // 3. Oceano / Chão abaixo da rodovia
+        if (this.oceanMat) {
+            if (theme === 'midnight_city') {
+                this.oceanMat.color.setHex(0x050814); // Baía urbana espelhada
+                this.oceanMat.roughness = 0.12;
+                this.oceanMat.metalness = 0.92;
+            } else if (theme === 'dirt_road') {
+                this.oceanMat.color.setHex(0x9a3412); // Chão de terra e cânion desértico
+                this.oceanMat.roughness = 0.96;
+                this.oceanMat.metalness = 0.0;
+            } else if (theme === 'mountain_pass') {
+                this.oceanMat.color.setHex(0x14532d); // Vale de mata alpina
+                this.oceanMat.roughness = 0.82;
+                this.oceanMat.metalness = 0.12;
+            } else if (theme === 'cyber_super_speedway') {
+                this.oceanMat.color.setHex(0x180033); // Matriz espacial holográfica
+                this.oceanMat.roughness = 0.22;
+                this.oceanMat.metalness = 0.88;
+            } else {
+                this.oceanMat.color.setHex(0x2d2440); // Oceano costeiro pôr do sol
+                this.oceanMat.roughness = 0.25;
+                this.oceanMat.metalness = 0.75;
+            }
+            this.oceanMat.needsUpdate = true;
+        }
+
+        // 4. Arquitetura da Rodovia (LED Friso, Linhas Divisórias, Calçada e Muretas)
+        let ledColor = 0xff7a36;
+        let dashColor = 0xffffff;
+        let sidewalkColor = 0x5a545e;
+        let barrierColor = 0xb5bac7;
+
+        if (theme === 'midnight_city') {
+            ledColor = 0xf43f5e;       // Magenta Neon
+            dashColor = 0x38bdf8;      // Ciano Neon
+            sidewalkColor = 0x1f2937;  // Calçada urbana escura
+            barrierColor = 0x06b6d4;   // Mureta ciano metálica
+        } else if (theme === 'dirt_road') {
+            ledColor = 0xf59e0b;       // Âmbar deserto
+            dashColor = 0xd97706;      // Amarelo ocre terra
+            sidewalkColor = 0x92400e;  // Barranco de terra
+            barrierColor = 0x78350f;   // Troncos / mureta rústica
+        } else if (theme === 'mountain_pass') {
+            ledColor = 0xfacc15;       // Amarelo sinalização de serra
+            dashColor = 0xfacc15;      // Linha contínua amarela
+            sidewalkColor = 0x334155;  // Mureta de pedra alpina
+            barrierColor = 0x94a3b8;   // Guard-rail de montanha
+        } else if (theme === 'cyber_super_speedway') {
+            ledColor = 0x06b6d4;       // Ciano Tron laser
+            dashColor = 0xec4899;      // Linhas neon rosa choque
+            sidewalkColor = 0x3b0764;  // Borda holográfica púrpura
+            barrierColor = 0xa855f7;   // Mureta de campo de força
+        }
+
+        if (this.roadSegments && this.roadSegments.length > 0) {
+            this.roadSegments.forEach(seg => {
+                seg.traverse(child => {
+                    if (child.isMesh && child.material) {
+                        if (child.userData.isLedStrip) child.material.color.setHex(ledColor);
+                        if (child.userData.isDash) child.material.color.setHex(dashColor);
+                        if (child.userData.isSidewalk) child.material.color.setHex(sidewalkColor);
+                        if (child.userData.isBarrier) child.material.color.setHex(barrierColor);
+                        if (child.userData.isFoundation) {
+                            if (theme === 'dirt_road') child.material.color.setHex(0x7c2d12);
+                            else if (theme === 'mountain_pass') child.material.color.setHex(0x1e293b);
+                            else if (theme === 'cyber_super_speedway') child.material.color.setHex(0x180033);
+                            else child.material.color.setHex(0x3d3845);
+                        }
+                    }
+                });
+            });
+        }
+
+        // 5. Cenário Lateral Esquerdo (Palmeiras -> Cactos, Postes Neon, Pinheiros ou Pilares Cyber)
+        let trunkColor = 0x3d271d;
+        let leafColor = 0x1f3b23;
+
+        if (theme === 'midnight_city') {
+            trunkColor = 0x0f172a; // Poste metálico de iluminação
+            leafColor = 0x06b6d4;  // Copa luminosa holográfica neon ciano
+        } else if (theme === 'dirt_road') {
+            trunkColor = 0x3f6212; // Cacto saguaro verde-oliva
+            leafColor = 0x4d7c0f;  // Ramificações de cacto
+        } else if (theme === 'mountain_pass') {
+            trunkColor = 0x29180d; // Tronco de pinheiro alpino
+            leafColor = 0x064e3b;  // Folhagem verde-musgo escura de conífera
+        } else if (theme === 'cyber_super_speedway') {
+            trunkColor = 0x2e1065; // Obelisco cyber de energia
+            leafColor = 0xf43f5e;  // Anéis laser neon magenta pulsantes
+        }
+
+        if (this.palmTrees && this.palmTrees.length > 0) {
+            this.palmTrees.forEach(palm => {
+                palm.traverse(child => {
+                    if (child.isMesh && child.material) {
+                        if (child.userData.isTrunk) child.material.color.setHex(trunkColor);
+                        if (child.userData.isLeaf) child.material.color.setHex(leafColor);
+                    }
+                });
+            });
+        }
+
+        // 6. Prédios / Skyline na Direita (Metrópole, Cânions de Rocha, Montanhas ou Matriz Tron)
+        let buildingBodyColor = 0x1e1a2b;
+        let buildingWindowColor = 0xffdf88;
+
+        if (theme === 'midnight_city') {
+            buildingBodyColor = 0x090d16;
+            buildingWindowColor = 0x38bdf8;
+        } else if (theme === 'dirt_road') {
+            buildingBodyColor = 0x7c2d12; // Formação rochosa do cânion
+            buildingWindowColor = 0xd97706; // Fissuras e estratos de arenito
+        } else if (theme === 'mountain_pass') {
+            buildingBodyColor = 0x1e293b; // Penhascos e escarpas de pedra
+            buildingWindowColor = 0xe2e8f0; // Picos com neve e reflexos
+        } else if (theme === 'cyber_super_speedway') {
+            buildingBodyColor = 0x180033; // Monólitos da matriz
+            buildingWindowColor = 0xec4899; // Circuitos neon integrados
+        }
+
+        if (this.buildings && this.buildings.length > 0) {
+            this.buildings.forEach(b => {
+                b.traverse(child => {
+                    if (child.isMesh && child.material) {
+                        if (child.userData.isBuildingBody) child.material.color.setHex(buildingBodyColor);
+                        if (child.userData.isBuildingWindow) child.material.color.setHex(buildingWindowColor);
+                    }
+                });
+            });
+        }
+
+        // 7. Corpos Celestes (Sol, Lua, Estrelas)
+        if (this.sunGroup && this.moonGroup) {
+            if (theme === 'midnight_city') {
+                this.sunGroup.visible = false;
+                this.moonGroup.visible = true;
+                this.moonGroup.position.set(45, 52, -290);
+                if (this.starField) this.starField.material.opacity = 0.95;
+            } else if (theme === 'dirt_road') {
+                this.sunGroup.visible = true;
+                this.moonGroup.visible = false;
+                this.sunGroup.position.set(-35, 45, -305);
+                if (this.starField) this.starField.material.opacity = 0.0;
+            } else if (theme === 'mountain_pass') {
+                this.sunGroup.visible = false;
+                this.moonGroup.visible = true;
+                this.moonGroup.position.set(-45, 48, -290);
+                if (this.starField) this.starField.material.opacity = 0.65;
+            } else if (theme === 'cyber_super_speedway') {
+                this.sunGroup.visible = true;
+                this.moonGroup.visible = true;
+                this.sunGroup.position.set(0, 18, -315);
+                this.moonGroup.position.set(0, 58, -290);
+                if (this.starField) this.starField.material.opacity = 1.0;
+            } else {
+                // sunset_bridge
+                this.sunGroup.visible = true;
+                this.moonGroup.visible = false;
+                this.sunGroup.position.set(-55, 18, -308);
+                if (this.starField) this.starField.material.opacity = 0.0;
+            }
+        }
+
+        // 8. Céu Gradiente (Shader Sky)
+        let topC = 0x3a2a6e, midC = 0xc76a9c, horC = 0xf2a07e;
+        let fogC = 0xf2a07e, fogDensity = 0.0052;
+        let ambC = 0xc98a9a, ambI = 0.55;
+        let sunC = 0xffb98a, sunI = 1.5;
+
+        if (theme === 'midnight_city') {
+            topC = 0x020617; midC = 0x0b1329; horC = 0x1e1b4b;
+            fogC = 0x0b0f19; fogDensity = 0.0062;
+            ambC = 0xa855f7; ambI = 0.65;
+            sunC = 0x38bdf8; sunI = 0.9;
+        } else if (theme === 'dirt_road') {
+            topC = 0x78350f; midC = 0xb45309; horC = 0xf59e0b;
+            fogC = 0xd97706; fogDensity = 0.0085; // Névoa desértica densa
+            ambC = 0xb45309; ambI = 0.85;
+            sunC = 0xf97316; sunI = 1.7;
+        } else if (theme === 'mountain_pass') {
+            topC = 0x1e1b4b; midC = 0x312e81; horC = 0x475569;
+            fogC = 0x1e1b4b; fogDensity = 0.0092; // Neblina alpina
+            ambC = 0x4338ca; ambI = 0.50;
+            sunC = 0xa5b4fc; sunI = 1.1;
+        } else if (theme === 'cyber_super_speedway') {
+            topC = 0x030014; midC = 0x180033; horC = 0x3b0764;
+            fogC = 0x14052b; fogDensity = 0.0045; // Vácuo estelar nítido
+            ambC = 0x06b6d4; ambI = 0.75;
+            sunC = 0xec4899; sunI = 1.4;
+        }
+
+        if (this.skyMaterial && this.skyMaterial.uniforms) {
+            if (this.skyMaterial.uniforms.topColor) this.skyMaterial.uniforms.topColor.value.setHex(topC);
+            if (this.skyMaterial.uniforms.midColor) this.skyMaterial.uniforms.midColor.value.setHex(midC);
+            if (this.skyMaterial.uniforms.horizonColor) this.skyMaterial.uniforms.horizonColor.value.setHex(horC);
+        }
+
+        if (this.scene && this.scene.fog) {
+            this.scene.fog.color.setHex(fogC);
+            if (typeof this.scene.fog.density === 'number') this.scene.fog.density = fogDensity;
+            this.scene.background = new THREE.Color(fogC);
+        }
+
+        if (this.ambientLight) {
+            this.ambientLight.color.setHex(ambC);
+            this.ambientLight.intensity = ambI;
+        }
+        if (this.sunLight) {
+            this.sunLight.color.setHex(sunC);
+            this.sunLight.intensity = sunI;
         }
     }
 
