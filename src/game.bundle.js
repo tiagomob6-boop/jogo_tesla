@@ -7234,9 +7234,14 @@ class PaymentSystem {
                     if (redirSec) redirSec.style.display = "block";
                 }
 
+                const fallbackPix = `00020126580014br.gov.bcb.pix0136pix-mercadopago-roadsterdash-pkg${pkg.id}520400005303986540${priceVal.toFixed(2)}5802BR5916ROADSTER DASH6009SAO PAULO`;
+                const finalPix = data.pixCode || fallbackPix;
                 if (pixBox) {
-                    const fallbackPix = `00020126580014br.gov.bcb.pix0136pix-mercadopago-roadsterdash-pkg${pkg.id}520400005303986540${priceVal.toFixed(2)}5802BR5916ROADSTER DASH6009SAO PAULO`;
-                    pixBox.textContent = data.pixCode || fallbackPix;
+                    pixBox.textContent = finalPix;
+                }
+                const qrImg = document.getElementById("pay-qr-image") || document.getElementById("mp-qr-image");
+                if (qrImg) {
+                    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=6&data=${encodeURIComponent(finalPix)}`;
                 }
 
                 // Inicia polling para detectar aprovação automática em segundo plano
@@ -7248,8 +7253,13 @@ class PaymentSystem {
             }
         } catch(err) {
             console.warn("[Payment] Falha na preferência do Mercado Pago, usando fallback seguro:", err);
+            const offlinePix = `00020126580014br.gov.bcb.pix0136pix-mercadopago-${pkg.id}520400005303986540${priceVal.toFixed(2)}5802BR5916ROADSTER DASH`;
             if (pixBox) {
-                pixBox.textContent = `00020126580014br.gov.bcb.pix0136pix-mercadopago-${pkg.id}520400005303986540${priceVal.toFixed(2)}5802BR5916ROADSTER DASH`;
+                pixBox.textContent = offlinePix;
+            }
+            const qrImgFallback = document.getElementById("pay-qr-image") || document.getElementById("mp-qr-image");
+            if (qrImgFallback) {
+                qrImgFallback.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=6&data=${encodeURIComponent(offlinePix)}`;
             }
             const checkoutLink = this.payMercadoPagoLink || document.getElementById("pay-mercadopago-link");
             if (checkoutLink) {

@@ -576,11 +576,18 @@
                 <div style="font-size: 1.8rem; font-weight: 900; color: #ffffff; letter-spacing: -0.5px;" id="pay-pkg-price">R$ 9,90</div>
                 <div style="font-size: 0.75rem; color: #38bdf8; margin-top: 4px;">Piloto: <strong id="pay-pkg-username">Piloto</strong></div>
 
-                <div id="pay-pix-section" style="margin-top: 14px; text-align: center;">
-                    <div style="font-size: 0.78rem; font-weight: 800; color: #4ade80;">⚡ PAGAMENTO VIA PIX</div>
-                    <div style="font-size: 0.7rem; color: #94a3b8; margin: 4px 0;">Copie o código Pix abaixo ou abra no app do seu banco / Mercado Pago:</div>
-                    <div class="pix-code-container" id="pix-copy-paste-box">Carregando código Pix...</div>
-                    <button class="secondary-btn" id="copy-pix-btn" style="width: 100%; font-size: 0.8rem; padding: 8px;">📋 COPIAR CÓDIGO PIX</button>
+                <div id="pay-pix-section" style="margin-top: 12px; text-align: center;">
+                    <div style="font-size: 0.82rem; font-weight: 800; color: #4ade80; text-transform: uppercase;">⚡ PAGAMENTO VIA PIX (APROVAÇÃO INSTANTÂNEA)</div>
+                    <div style="font-size: 0.72rem; color: #94a3b8; margin: 4px 0 10px 0;">Escaneie o QR Code com o aplicativo do seu banco:</div>
+
+                    <!-- QR Code Visual Escaneável -->
+                    <div id="pay-qr-wrapper" style="display: inline-block; background: #ffffff; padding: 10px; border-radius: 16px; margin-bottom: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.55); border: 2px solid rgba(56, 189, 248, 0.4);">
+                        <img id="pay-qr-image" src="" alt="QR Code Pix Mercado Pago" style="width: 175px; height: 175px; display: block; border-radius: 8px;" />
+                    </div>
+
+                    <div style="font-size: 0.72rem; color: #94a3b8; margin-bottom: 4px;">Ou copie a chave Pix Copia e Cola:</div>
+                    <div class="pix-code-container" id="pix-copy-paste-box" style="word-break: break-all; font-family: monospace; font-size: 0.72rem; max-height: 52px; overflow-y: auto;">Carregando código Pix...</div>
+                    <button class="secondary-btn" id="copy-pix-btn" style="width: 100%; font-size: 0.8rem; padding: 8px; margin-top: 6px;">📋 COPIAR CÓDIGO PIX</button>
                 </div>
 
                 <div id="pay-redirect-section" style="margin-top: 10px; display: none;">
