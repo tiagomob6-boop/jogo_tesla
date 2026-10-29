@@ -1039,6 +1039,27 @@
             100% { box-shadow: 0 0 18px rgba(16, 185, 129, 0.95), 0 0 30px rgba(6, 182, 212, 0.6); }
         }
 
+        /* Indicador de Ímã de Moedas no HUD */
+        .hud-magnet-indicator {
+            display: inline-flex;
+            flex-direction: column;
+            gap: 3px;
+            background: rgba(245, 158, 11, 0.28);
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #fbbf24;
+            text-shadow: 0 0 8px rgba(251, 191, 36, 0.85);
+            animation: magnetPulse 0.9s infinite alternate;
+        }
+
+        @keyframes magnetPulse {
+            0% { box-shadow: 0 0 6px rgba(245, 158, 11, 0.4); }
+            100% { box-shadow: 0 0 18px rgba(245, 158, 11, 0.95), 0 0 30px rgba(236, 72, 153, 0.6); }
+        }
+
         /* Estilos do Modal de Missões Diárias */
         .missions-list {
             display: flex;
@@ -1704,6 +1725,10 @@
                     <div class="hud-megaboost-indicator" id="hud-megaboost-indicator" style="display: none;">
                         <div>⚡ MEGA BOOST: <span id="hud-megaboost-timer">4.0s</span></div>
                         <div class="hud-shield-bar"><div class="hud-shield-fill" id="hud-megaboost-fill" style="background: linear-gradient(90deg, #10b981, #06b6d4);"></div></div>
+                    </div>
+                    <div class="hud-magnet-indicator" id="hud-magnet-indicator" style="display: none;">
+                        <div>🧲 ÍMÃ: <span id="hud-magnet-timer">8.0s</span></div>
+                        <div class="hud-shield-bar"><div class="hud-shield-fill" id="hud-magnet-fill" style="background: linear-gradient(90deg, #f59e0b, #ec4899);"></div></div>
                     </div>
                     <div class="hearts-box">
                         <span class="heart-badge" id="heart-1">❤️</span>
@@ -2691,6 +2716,11 @@
                 this.hudMegaBoostTimer = document.getElementById("hud-megaboost-timer");
                 this.hudMegaBoostFill = document.getElementById("hud-megaboost-fill");
 
+                // Magnet Indicator
+                this.hudMagnetIndicator = document.getElementById("hud-magnet-indicator");
+                this.hudMagnetTimer = document.getElementById("hud-magnet-timer");
+                this.hudMagnetFill = document.getElementById("hud-magnet-fill");
+
                 // Telas e Menus
                 this.startScreen = document.getElementById("start-screen");
                 this.gameoverScreen = document.getElementById("gameover-screen");
@@ -2776,6 +2806,10 @@
                 // Sistema de Mega Boost / Ar Infinito (4s)
                 this.megaBoostTimer = 0;
                 this.megaBoostMaxDuration = 4.0;
+
+                // Sistema de Ímã Magnético de Moedas (8s)
+                this.magnetTimer = 0;
+                this.magnetMaxDuration = 8.0;
 
                 // Ciclo Dia/Noite Synthwave
                 this.currentNightFactor = 0;
@@ -3923,35 +3957,6 @@
                 this.shieldBubble.visible = this.shieldTimer > 0;
                 this.truckGroup.add(this.shieldBubble);
 
-                // Faróis Dianteiros do Carro (Maiores, mais potentes e com tom âmbar/dourado clássico menos branco)
-                this.headlightBeams = [];
-                this.headlightFlares = [];
-                this.headlightsGroup = new THREE.Group();
-
-                const beamGeo = new THREE.CylinderGeometry(0.25, 4.2, 38.0, 20, 1, true);
-                beamGeo.rotateX(Math.PI / 2);
-                const beamMat = new THREE.MeshBasicMaterial({
-                    color: 0xffb834,
-                    transparent: true,
-                    opacity: 0.0,
-                    blending: THREE.AdditiveBlending,
-                    depthWrite: false,
-                    side: THREE.DoubleSide
-                });
-
-                [-0.72, 0.72].forEach(x => {
-                    const beam = new THREE.Mesh(beamGeo, beamMat.clone());
-                    beam.position.set(x, 0.52, -20.0);
-                    this.headlightsGroup.add(beam);
-                    this.headlightBeams.push(beam);
-
-                    const flare = this.makeGlow(0xffa61a, 2.8, 0.0);
-                    flare.position.set(x, 0.52, -2.35);
-                    this.headlightsGroup.add(flare);
-                    this.headlightFlares.push(flare);
-                });
-                this.truckGroup.add(this.headlightsGroup);
-
                 this.scene.add(this.truckGroup);
                 this.truckGroup.position.set(this.playerX, this.playerY, 0);
 
@@ -4410,16 +4415,21 @@
             }
 
             // =================================================================
-            // COLETÁVEIS (MOEDAS E CORAÇÕES)
+            // COLETÁVEIS (MOEDAS, ESCUDOS, ÍMÃ MAGNÉTICO E MEGA BOOST)
             // =================================================================
             spawnCollectible() {
                 const laneIndex = Math.floor(Math.random() * 3);
                 const laneX = LANES[laneIndex];
                 const spawnZ = -150 - (Math.random() * 20);
 
+                // Determina a altura: cerca de 50% dos poderes spawnam "em cima" (altura de voo FLIGHT_Y)
+                // para incentivar saltos de rampa e voos com o tanque de ar!
+                const spawnInAir = (Math.random() < 0.52) || this.isFlying;
+                const powerY = spawnInAir ? FLIGHT_Y : 1.35;
+
                 const rand = Math.random();
 
-                if (rand < 0.05 && this.lives < this.maxLives) {
+                if (rand < 0.06 && this.lives < this.maxLives) {
                     const heartGroup = new THREE.Group();
                     const heartShape = new THREE.Shape();
                     const x = 0, y = 0;
@@ -4439,13 +4449,13 @@
                     heartMesh.scale.set(1.4, 1.4, 1.4);
                     heartGroup.add(heartMesh);
 
-                    heartGroup.position.set(laneX, 1.4, spawnZ);
+                    heartGroup.position.set(laneX, powerY, spawnZ);
                     heartGroup.itemType = "heart";
                     this.scene.add(heartGroup);
                     this.collectibles.push(heartGroup);
 
-                } else if (rand >= 0.05 && rand < 0.16 && this.shieldTimer <= 0) {
-                    // Escudo Protetor Hexagonal Colmeia 3D (Textura e anéis dourados como na foto)
+                } else if (rand >= 0.06 && rand < 0.25 && this.shieldTimer <= 0) {
+                    // Escudo Protetor Hexagonal Colmeia 3D (Spawna com alta frequência no chão e em cima!)
                     const shieldGroup = new THREE.Group();
                     const shieldTex = this.getHoneycombShieldTexture();
                     
@@ -4482,13 +4492,60 @@
                     const glow = this.makeGlow(0xf59e0b, 1.4, 0.35);
                     shieldGroup.add(glow);
 
-                    shieldGroup.position.set(laneX, 1.4, spawnZ);
+                    shieldGroup.position.set(laneX, powerY, spawnZ);
                     shieldGroup.itemType = "shield";
                     this.scene.add(shieldGroup);
                     this.collectibles.push(shieldGroup);
 
-                } else if (rand >= 0.16 && rand < 0.26 && this.megaBoostTimer <= 0) {
-                    // Item Raro: Mega Boost / Ar Infinito (Cápsula de Plasma de Fusão Verde/Ciano)
+                } else if (rand >= 0.25 && rand < 0.44 && this.magnetTimer <= 0) {
+                    // Poder Magnético: Ímã de Moedas 3D (Atrai moedas em raio gigante de 18m!)
+                    const magnetGroup = new THREE.Group();
+
+                    const magnetShape = new THREE.Shape();
+                    magnetShape.absarc(0, 0, 0.52, 0, Math.PI, false);
+                    magnetShape.lineTo(-0.52, -0.55);
+                    magnetShape.lineTo(-0.24, -0.55);
+                    magnetShape.lineTo(-0.24, 0);
+                    magnetShape.absarc(0, 0, 0.24, Math.PI, 0, true);
+                    magnetShape.lineTo(0.24, -0.55);
+                    magnetShape.lineTo(0.52, -0.55);
+                    magnetShape.closePath();
+
+                    const magnetGeo = new THREE.ExtrudeGeometry(magnetShape, { depth: 0.2, bevelEnabled: true, bevelThickness: 0.04, bevelSize: 0.03 });
+                    magnetGeo.center();
+                    const redMat = new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0xb91c1c, emissiveIntensity: 0.5, metalness: 0.8, roughness: 0.2 });
+                    const magnetMesh = new THREE.Mesh(magnetGeo, redMat);
+                    magnetGroup.add(magnetMesh);
+
+                    // Polos prateados das pontas
+                    const tipGeo = new THREE.BoxGeometry(0.3, 0.22, 0.24);
+                    const tipMat = new THREE.MeshStandardMaterial({ color: 0xdce2ec, metalness: 0.95, roughness: 0.1 });
+                    const tipL = new THREE.Mesh(tipGeo, tipMat);
+                    tipL.position.set(-0.38, -0.42, 0);
+                    magnetGroup.add(tipL);
+
+                    const tipR = new THREE.Mesh(tipGeo, tipMat);
+                    tipR.position.set(0.38, -0.42, 0);
+                    magnetGroup.add(tipR);
+
+                    // Anéis de fluxo magnético rotativo
+                    const fluxGeo = new THREE.TorusGeometry(0.82, 0.035, 8, 24);
+                    const fluxMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+                    const fluxRing = new THREE.Mesh(fluxGeo, fluxMat);
+                    fluxRing.rotation.x = Math.PI / 2;
+                    magnetGroup.add(fluxRing);
+                    magnetGroup.fluxRing = fluxRing;
+
+                    const magGlow = this.makeGlow(0xfbbf24, 1.5, 0.45);
+                    magnetGroup.add(magGlow);
+
+                    magnetGroup.position.set(laneX, powerY, spawnZ);
+                    magnetGroup.itemType = "magnet";
+                    this.scene.add(magnetGroup);
+                    this.collectibles.push(magnetGroup);
+
+                } else if (rand >= 0.44 && rand < 0.56 && this.megaBoostTimer <= 0) {
+                    // Item Raro: Mega Boost / Ar Infinito (Cápsula de Plasma de Fusão)
                     const boostGroup = new THREE.Group();
                     const capsuleGeo = new THREE.CylinderGeometry(0.24, 0.24, 0.85, 16);
                     const capsuleMat = new THREE.MeshStandardMaterial({
@@ -4524,14 +4581,14 @@
                     const glow = this.makeGlow(0x10b981, 1.5, 0.42);
                     boostGroup.add(glow);
 
-                    boostGroup.position.set(laneX, 1.4, spawnZ);
+                    boostGroup.position.set(laneX, powerY, spawnZ);
                     boostGroup.itemType = "megaboost";
                     this.scene.add(boostGroup);
                     this.collectibles.push(boostGroup);
 
                 } else {
                     const count = 4;
-                    const coinY = this.isFlying ? FLIGHT_Y : 1.25;
+                    const coinY = spawnInAir ? FLIGHT_Y : 1.25;
 
                     // Aro externo dourado metálico nítido (sem ofuscar)
                     const rimGeo = new THREE.CylinderGeometry(0.44, 0.44, 0.09, 24).rotateX(Math.PI / 2);
@@ -5213,33 +5270,6 @@
                 this.mpRivalTag = this.createNameTagSprite(nickname, accentHex);
                 G.add(this.mpRivalTag);
 
-                // Faróis Noturnos do Rival (Maiores e com tom âmbar/dourado)
-                this.mpRivalHeadlightBeams = [];
-                this.mpRivalHeadlightFlares = [];
-                const rivalHlGroup = new THREE.Group();
-                const rBeamGeo = new THREE.CylinderGeometry(0.25, 4.2, 38.0, 20, 1, true);
-                rBeamGeo.rotateX(Math.PI / 2);
-                const rBeamMat = new THREE.MeshBasicMaterial({
-                    color: 0xffb834,
-                    transparent: true,
-                    opacity: 0.0,
-                    blending: THREE.AdditiveBlending,
-                    depthWrite: false,
-                    side: THREE.DoubleSide
-                });
-                [-0.65, 0.65].forEach(x => {
-                    const beam = new THREE.Mesh(rBeamGeo, rBeamMat.clone());
-                    beam.position.set(x, 0.48, -20.0);
-                    rivalHlGroup.add(beam);
-                    this.mpRivalHeadlightBeams.push(beam);
-
-                    const flare = this.makeGlow(0xffa61a, 2.8, 0.0);
-                    flare.position.set(x, 0.48, -2.2);
-                    rivalHlGroup.add(flare);
-                    this.mpRivalHeadlightFlares.push(flare);
-                });
-                G.add(rivalHlGroup);
-
                 G.position.set(LANES[2], GROUND_Y, -2.0);
                 this.scene.add(G);
                 this.mpRivalVehicle = G;
@@ -5797,6 +5827,9 @@
 
                 this.megaBoostTimer = 0;
                 if (this.hudMegaBoostIndicator) this.hudMegaBoostIndicator.style.display = "none";
+                if (this.hudMagnetIndicator) this.hudMagnetIndicator.style.display = "none";
+                this.magnetTimer = 0;
+                if (this.hudMagnetIndicator) this.hudMagnetIndicator.style.display = "none";
                 this.initDailyMissions();
 
                 // Carrega perks do piloto ativo
@@ -5939,6 +5972,7 @@
                     this.speakAnnouncer("Game Over!", true);
                 }
                 if (this.hudMegaBoostIndicator) this.hudMegaBoostIndicator.style.display = "none";
+                if (this.hudMagnetIndicator) this.hudMagnetIndicator.style.display = "none";
 
                 this.goReason.textContent = reason;
                 this.goScore.textContent = finalScore.toLocaleString();
@@ -6522,6 +6556,20 @@
                 this.triggerActionPopup(`⚡ MEGA BOOST: AR INFINITO (${duration}s)!`);
             }
 
+            activateMagnet(duration = 8.0) {
+                this.magnetMaxDuration = duration;
+                this.magnetTimer = duration;
+                if (this.hudMagnetIndicator) {
+                    this.hudMagnetIndicator.style.display = "inline-flex";
+                    if (this.hudMagnetTimer) this.hudMagnetTimer.textContent = `${duration.toFixed(1)}s`;
+                    if (this.hudMagnetFill) this.hudMagnetFill.style.width = "100%";
+                }
+                this.sound.playMissionComplete();
+                this.speakAnnouncer("Coin Magnet Online!", true);
+                this.triggerHaptic("megaboost");
+                this.triggerActionPopup(`🧲 ÍMÃ DE MOEDAS ATIVO (${duration}s)!`);
+            }
+
             // =================================================================
             // FEEDBACK HÁPTICO (VIBRAÇÃO EM SMARTPHONES VIA WEB VIBRATION API)
             // =================================================================
@@ -6760,20 +6808,6 @@
                     this.ambientLight.intensity = THREE.MathUtils.lerp(0.55, 0.38, nf);
                     this.ambientLight.color.lerpColors(new THREE.Color(0xc98a9a), new THREE.Color(0x581c87), nf);
                 }
-
-                // Faróis Dianteiros do Carro Ligados Automaticamente à Noite
-                if (this.headlightBeams && this.headlightBeams.length > 0) {
-                    const hlFactor = THREE.MathUtils.clamp((nf - 0.08) / 0.42, 0, 1);
-                    const beamOpacity = hlFactor * 0.72;
-                    this.headlightBeams.forEach(b => b.material.opacity = beamOpacity);
-                    this.headlightFlares.forEach(f => f.material.opacity = hlFactor * 0.95);
-                }
-                if (this.mpRivalHeadlightBeams && this.mpRivalHeadlightBeams.length > 0) {
-                    const hlFactor = THREE.MathUtils.clamp((nf - 0.08) / 0.42, 0, 1);
-                    const beamOpacity = hlFactor * 0.72;
-                    this.mpRivalHeadlightBeams.forEach(b => b.material.opacity = beamOpacity);
-                    this.mpRivalHeadlightFlares.forEach(f => f.material.opacity = hlFactor * 0.95);
-                }
             }
 
             smashTrafficCar(car) {
@@ -6977,6 +7011,24 @@
                     if (this.megaBoostTimer <= 0) {
                         this.megaBoostTimer = 0;
                         if (this.hudMegaBoostIndicator) this.hudMegaBoostIndicator.style.display = "none";
+                if (this.hudMagnetIndicator) this.hudMagnetIndicator.style.display = "none";
+                    }
+                }
+
+                // Gerenciamento do Ímã Magnético de Moedas Ativo (8s)
+                if (this.magnetTimer > 0) {
+                    this.magnetTimer -= delta;
+                    if (this.hudMagnetIndicator) {
+                        this.hudMagnetIndicator.style.display = "inline-flex";
+                        if (this.hudMagnetTimer) this.hudMagnetTimer.textContent = `${this.magnetTimer.toFixed(1)}s`;
+                        if (this.hudMagnetFill) {
+                            const pct = Math.max(0, (this.magnetTimer / this.magnetMaxDuration) * 100);
+                            this.hudMagnetFill.style.width = `${pct}%`;
+                        }
+                    }
+                    if (this.magnetTimer <= 0) {
+                        this.magnetTimer = 0;
+                        if (this.hudMagnetIndicator) this.hudMagnetIndicator.style.display = "none";
                     }
                 }
 
@@ -7267,7 +7319,7 @@
                 this.collectibleSpawnTimer -= delta;
                 if (this.collectibleSpawnTimer <= 0) {
                     this.spawnCollectible();
-                    this.collectibleSpawnTimer = 1.2;
+                    this.collectibleSpawnTimer = 0.85;
                 }
 
                 // 8. Atualizar Tráfego Terrestre
@@ -7403,13 +7455,17 @@
                     const item = this.collectibles[i];
                     item.position.z += this.currentSpeed * delta;
 
-                    // Ímã Magnético de Moedas (Habilidade da Pilota Luna)
-                    if (this.activePilotPerks && this.activePilotPerks.coinMagnetRange && item.itemType === "coin") {
+                    // Ímã Magnético de Moedas (Pelo item coletado ou habilidade passiva da pilota Luna)
+                    const isMagnetActive = (this.magnetTimer > 0);
+                    const lunaMagnetRange = (this.activePilotPerks && this.activePilotPerks.coinMagnetRange);
+                    if ((isMagnetActive || lunaMagnetRange) && item.itemType === "coin") {
+                        const magRange = isMagnetActive ? 18.0 : (lunaMagnetRange || 8.5);
                         const pPos = this.truckGroup.position;
                         const d3 = pPos.distanceTo(item.position);
-                        if (d3 < this.activePilotPerks.coinMagnetRange) {
-                            item.position.x += (pPos.x - item.position.x) * Math.min(1.0, 7.8 * delta);
-                            item.position.y += (pPos.y - item.position.y) * Math.min(1.0, 7.8 * delta);
+                        if (d3 < magRange) {
+                            item.position.x += (pPos.x - item.position.x) * Math.min(1.0, 10.5 * delta);
+                            item.position.y += (pPos.y - item.position.y) * Math.min(1.0, 10.5 * delta);
+                            item.position.z += (pPos.z - item.position.z) * Math.min(1.0, 10.5 * delta);
                         }
                     }
 
@@ -7430,6 +7486,12 @@
                     } else if (item.itemType === "shield") {
                         item.rotation.y += 2.8 * delta;
                         if (item.ring) item.ring.rotation.z += 3.2 * delta;
+                    } else if (item.itemType === "magnet") {
+                        item.rotation.y += 3.2 * delta;
+                        if (item.fluxRing) {
+                            item.fluxRing.rotation.z += 4.5 * delta;
+                            item.fluxRing.rotation.x += 2.0 * delta;
+                        }
                     } else if (item.itemType === "megaboost") {
                         item.rotation.y += 2.8 * delta;
                         if (item.ring1) item.ring1.rotation.x += 3.5 * delta;
@@ -7439,7 +7501,7 @@
                     }
 
                     const dist = this.truckGroup.position.distanceTo(item.position);
-                    if (dist < 2.2) {
+                    if (dist < 2.4) {
                         if (item.itemType === "coin") {
                             const bonus = (this.activePilotPerks && this.activePilotPerks.coinBonusMult) || 1.0;
                             const coinEarned = Math.max(1, Math.round(1 * bonus));
@@ -7454,6 +7516,9 @@
                         } else if (item.itemType === "shield") {
                             this.activateShield(5.0);
                             this.addScoreEvent("SHIELD ONLINE", 250);
+                        } else if (item.itemType === "magnet") {
+                            this.activateMagnet(8.0);
+                            this.addScoreEvent("MAGNET ONLINE", 300, true);
                         } else if (item.itemType === "megaboost") {
                             this.activateMegaBoost(4.0);
                             this.addScoreEvent("MEGA BOOST", 350, true);
