@@ -1179,6 +1179,7 @@ export const UIManager = (Base) => class extends Base {
         const garageCoins = document.getElementById("garage-coins");
         if (garageCoins) garageCoins.textContent = this.totalCoins.toLocaleString();
     }
+    }
 
 
 };

@@ -1657,13 +1657,13 @@ class SnapshotInterpolator {
 
             // Se o jogador estiver com Escudo Ativo: DESTRÓI E ARREMESSA O CARRO DO TRÂNSITO!
             if (this.shieldTimer > 0) {
-                if (distToCarX < 2.0 && distToCarZ < 3.8) {
+                if (distToCarX < 2.2 && distToCarZ < 5.2) {
                     this.smashTrafficCar(car);
                     continue;
                 }
             } else if (this.invulnerableTimer <= 0 && this.playerY < car.boxHeight) {
                 // Se estiver em salto alto de rampa ou voando, o carro pula por cima do tráfego sem colidir!
-                if (distToCarX < 1.7 && distToCarZ < 3.4) {
+                if (distToCarX < 1.85 && distToCarZ < 4.85) {
                     this.takeDamage("COLISÃO COM VEÍCULO NO TRÁFEGO");
                 }
             }
@@ -1705,14 +1705,17 @@ class SnapshotInterpolator {
                 const distY = Math.abs(this.playerY - sky.position.y);
                 
                 if (sky.obstacleType === "powerlines") {
-                    if (distZ < 1.2 && distY < 1.2) {
+                    if (distZ < 2.2 && distY < 1.8) {
                         this.sound.playZap();
                         this.takeDamage("CHOQUE NOS FIOS DE ALTA TENSÃO");
                     }
                 } else {
                     const distX = Math.abs(this.truckGroup.position.x - sky.position.x);
-                    const hitDistX = sky.obstacleType === "plane" ? 3.0 : 1.5;
-                    if (distX < hitDistX && distZ < 2.5 && distY < 1.6) {
+                    const isPlane = sky.obstacleType === "plane";
+                    const hitDistX = isPlane ? 3.6 : 1.8;
+                    const hitDistZ = isPlane ? 4.8 : 2.8;
+                    const hitDistY = isPlane ? 2.4 : 1.8;
+                    if (distX < hitDistX && distZ < hitDistZ && distY < hitDistY) {
                         const reason = sky.obstacleType === "plane" ? "COLISÃO COM AERONAVE NO CÉU" : "COLISÃO COM BANDO DE PÁSSAROS";
                         this.takeDamage(reason);
                     }
@@ -4439,8 +4442,9 @@ class SnapshotInterpolator {
         this.p2.isFlying = false;
         this.p2.dist = 0;
         this.p2.speed = 78;
-        this.p2.lives = 3;
+        this.p2.lives = (this.lives || 1);
         this.p2.crashed = false;
+        this.p2.invulnTimer = 0;
         this.p2.shieldTimer = 0;
 
         // Configuração Rival Online / IA
@@ -4528,31 +4532,44 @@ class SnapshotInterpolator {
                 const relativeZ = this.truckGroup.position.z + (this.p2.dist - this.scoreDistance);
                 this.mpRivalVehicle.position.set(this.p2.x, this.p2.y, relativeZ);
 
-                // Colisão do P2 com tráfego
+                // Temporizador de invulnerabilidade do P2
+                if (this.p2.invulnTimer > 0) this.p2.invulnTimer -= delta;
+
+                // Colisão responsiva e instantânea do P2 com tráfego
                 for (let i = 0; i < this.trafficCars.length; i++) {
                     const car = this.trafficCars[i];
                     if (car.isSmashed) continue;
                     const dX = Math.abs(this.p2.x - car.position.x);
                     const dZ = Math.abs(relativeZ - car.position.z);
-                    if (dX < 1.6 && dZ < 3.2 && this.p2.y < car.boxHeight) {
-                        this.p2.lives--;
-                        this.sound.playCrash();
-                        if (this.p2.lives <= 0) {
-                            this.p2.crashed = true;
-                            this.p2.finalDist = Math.max(1, Math.floor(this.p2.dist));
-                            if (this.mpNameP2) {
-                                this.mpNameP2.textContent = `P2 💥 (${this.p2.finalDist}m)`;
-                            }
-                            if (this.p1Crashed) {
-                                this.finishDuel();
-                                return;
-                            } else {
-                                this.triggerActionPopup(`⚡ PILOTO 2 BATEU AOS ${this.p2.finalDist}m! PILOTO 1 CONTINUA!`);
-                                this.speakAnnouncer("Player 2 Down! Keep Going!", true);
+                    const carHeight = car.boxHeight || 1.6;
+                    if (dX < 1.85 && dZ < 4.85 && this.p2.y < carHeight) {
+                        if (this.p2.invulnTimer <= 0) {
+                            this.p2.lives--;
+                            this.sound.playCrash();
+                            this.p2.invulnTimer = 1.5;
+                            if (this.p2.lives <= 0) {
+                                this.p2.crashed = true;
+                                this.p2.finalDist = Math.max(1, Math.floor(this.p2.dist));
+                                if (this.mpNameP2) {
+                                    this.mpNameP2.textContent = `P2 💥 (${this.p2.finalDist}m)`;
+                                }
+                                if (this.p1Crashed) {
+                                    this.finishDuel();
+                                    return;
+                                } else {
+                                    this.triggerActionPopup(`⚡ PILOTO 2 BATEU AOS ${this.p2.finalDist}m! PILOTO 1 CONTINUA!`);
+                                    this.speakAnnouncer("Player 2 Down! Keep Going!", true);
+                                }
                             }
                         }
                     }
                 }
+            } else {
+                // P2 BATEU: carro fica fixado na distância de batida e recua na pista conforme P1 segue
+                const relativeZ = this.truckGroup.position.z + (this.p2.finalDist - this.scoreDistance);
+                this.mpRivalVehicle.position.set(this.p2.x, GROUND_Y, relativeZ);
+                this.mpRivalVehicle.rotation.z = 0.85; // Tomba lataria para o lado
+                this.mpRivalVehicle.rotation.y = 0.35;
             }
             rivalDist = this.p2.crashed ? this.p2.finalDist : this.p2.dist;
         }
@@ -5919,9 +5936,6 @@ class SnapshotInterpolator {
         const garageCoins = document.getElementById("garage-coins");
         if (garageCoins) garageCoins.textContent = this.totalCoins.toLocaleString();
     }
-
-
-
     }
 
     window.RoadsterDashGame = RoadsterDashGame;

@@ -1117,13 +1117,13 @@ class CoreGame {
 
             // Se o jogador estiver com Escudo Ativo: DESTRÓI E ARREMESSA O CARRO DO TRÂNSITO!
             if (this.shieldTimer > 0) {
-                if (distToCarX < 2.0 && distToCarZ < 3.8) {
+                if (distToCarX < 2.2 && distToCarZ < 5.2) {
                     this.smashTrafficCar(car);
                     continue;
                 }
             } else if (this.invulnerableTimer <= 0 && this.playerY < car.boxHeight) {
                 // Se estiver em salto alto de rampa ou voando, o carro pula por cima do tráfego sem colidir!
-                if (distToCarX < 1.7 && distToCarZ < 3.4) {
+                if (distToCarX < 1.85 && distToCarZ < 4.85) {
                     this.takeDamage("COLISÃO COM VEÍCULO NO TRÁFEGO");
                 }
             }
@@ -1165,14 +1165,17 @@ class CoreGame {
                 const distY = Math.abs(this.playerY - sky.position.y);
                 
                 if (sky.obstacleType === "powerlines") {
-                    if (distZ < 1.2 && distY < 1.2) {
+                    if (distZ < 2.2 && distY < 1.8) {
                         this.sound.playZap();
                         this.takeDamage("CHOQUE NOS FIOS DE ALTA TENSÃO");
                     }
                 } else {
                     const distX = Math.abs(this.truckGroup.position.x - sky.position.x);
-                    const hitDistX = sky.obstacleType === "plane" ? 3.0 : 1.5;
-                    if (distX < hitDistX && distZ < 2.5 && distY < 1.6) {
+                    const isPlane = sky.obstacleType === "plane";
+                    const hitDistX = isPlane ? 3.6 : 1.8;
+                    const hitDistZ = isPlane ? 4.8 : 2.8;
+                    const hitDistY = isPlane ? 2.4 : 1.8;
+                    if (distX < hitDistX && distZ < hitDistZ && distY < hitDistY) {
                         const reason = sky.obstacleType === "plane" ? "COLISÃO COM AERONAVE NO CÉU" : "COLISÃO COM BANDO DE PÁSSAROS";
                         this.takeDamage(reason);
                     }
@@ -1363,7 +1366,7 @@ class CoreGame {
 
 }
 
-// Composição de Classes Mixin
+// ComposiÃ§Ã£o de Classes Mixin
 export class RoadsterDashGame extends UIManager(
     MultiplayerManager(
         ControlsManager(

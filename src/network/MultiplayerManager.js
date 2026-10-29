@@ -374,8 +374,9 @@ export const MultiplayerManager = (Base) => class extends Base {
         this.p2.isFlying = false;
         this.p2.dist = 0;
         this.p2.speed = 78;
-        this.p2.lives = 3;
+        this.p2.lives = (this.lives || 1);
         this.p2.crashed = false;
+        this.p2.invulnTimer = 0;
         this.p2.shieldTimer = 0;
 
         // Configuração Rival Online / IA
@@ -463,31 +464,44 @@ export const MultiplayerManager = (Base) => class extends Base {
                 const relativeZ = this.truckGroup.position.z + (this.p2.dist - this.scoreDistance);
                 this.mpRivalVehicle.position.set(this.p2.x, this.p2.y, relativeZ);
 
-                // Colisão do P2 com tráfego
+                // Temporizador de invulnerabilidade do P2
+                if (this.p2.invulnTimer > 0) this.p2.invulnTimer -= delta;
+
+                // Colisão responsiva e instantânea do P2 com tráfego
                 for (let i = 0; i < this.trafficCars.length; i++) {
                     const car = this.trafficCars[i];
                     if (car.isSmashed) continue;
                     const dX = Math.abs(this.p2.x - car.position.x);
                     const dZ = Math.abs(relativeZ - car.position.z);
-                    if (dX < 1.6 && dZ < 3.2 && this.p2.y < car.boxHeight) {
-                        this.p2.lives--;
-                        this.sound.playCrash();
-                        if (this.p2.lives <= 0) {
-                            this.p2.crashed = true;
-                            this.p2.finalDist = Math.max(1, Math.floor(this.p2.dist));
-                            if (this.mpNameP2) {
-                                this.mpNameP2.textContent = `P2 💥 (${this.p2.finalDist}m)`;
-                            }
-                            if (this.p1Crashed) {
-                                this.finishDuel();
-                                return;
-                            } else {
-                                this.triggerActionPopup(`⚡ PILOTO 2 BATEU AOS ${this.p2.finalDist}m! PILOTO 1 CONTINUA!`);
-                                this.speakAnnouncer("Player 2 Down! Keep Going!", true);
+                    const carHeight = car.boxHeight || 1.6;
+                    if (dX < 1.85 && dZ < 4.85 && this.p2.y < carHeight) {
+                        if (this.p2.invulnTimer <= 0) {
+                            this.p2.lives--;
+                            this.sound.playCrash();
+                            this.p2.invulnTimer = 1.5;
+                            if (this.p2.lives <= 0) {
+                                this.p2.crashed = true;
+                                this.p2.finalDist = Math.max(1, Math.floor(this.p2.dist));
+                                if (this.mpNameP2) {
+                                    this.mpNameP2.textContent = `P2 💥 (${this.p2.finalDist}m)`;
+                                }
+                                if (this.p1Crashed) {
+                                    this.finishDuel();
+                                    return;
+                                } else {
+                                    this.triggerActionPopup(`⚡ PILOTO 2 BATEU AOS ${this.p2.finalDist}m! PILOTO 1 CONTINUA!`);
+                                    this.speakAnnouncer("Player 2 Down! Keep Going!", true);
+                                }
                             }
                         }
                     }
                 }
+            } else {
+                // P2 BATEU: carro fica fixado na distância de batida e recua na pista conforme P1 segue
+                const relativeZ = this.truckGroup.position.z + (this.p2.finalDist - this.scoreDistance);
+                this.mpRivalVehicle.position.set(this.p2.x, GROUND_Y, relativeZ);
+                this.mpRivalVehicle.rotation.z = 0.85; // Tomba lataria para o lado
+                this.mpRivalVehicle.rotation.y = 0.35;
             }
             rivalDist = this.p2.crashed ? this.p2.finalDist : this.p2.dist;
         }
