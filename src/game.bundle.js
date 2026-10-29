@@ -845,6 +845,7 @@ function calculateMapScoreBonus(baseDeltaScore, activeMap) {
 }
 
 
+
 /**
  * controls.js - Gerenciamento de Controles, Teclado e HUD Touch Customizável
  * Implementa reposicionamento livre (drag-and-drop) dos botões touch com persistência no LocalStorage,
@@ -1087,6 +1088,7 @@ class ControlsSystem {
 }
 
 
+
 /**
  * auth.js - Mini-Sistema de Autenticação e Perfil de Jogador
  * Gerencia credenciais, moedas, garagem, mapas desbloqueados e persistência segura.
@@ -1249,6 +1251,7 @@ class AuthSystem {
 }
 
 
+
 /**
  * payment.js - Módulo Transacional e Gateway de Checkout Seguro
  * Gerencia a compra exclusiva em Dinheiro Real (R$ 10,90) da Pista Premium Cyber Super-Speedway
@@ -1406,6 +1409,7 @@ class PaymentSystem {
         if (modal) modal.classList.remove("active");
     }
 }
+
 
 
     window.ControlsSystem = ControlsSystem;
@@ -1754,6 +1758,7 @@ class PaymentSystem {
         this.collectibleSpawnTimer = 0;
 
         this.initDailyMissions();
+        setTimeout(() => { if (typeof this.updateMapBadge === "function") this.updateMapBadge(); }, 100);
         this.initThree();
         this.buildAtmosphericWorld();
         this.buildPlayerVehicle(this.selectedCar);
@@ -1799,6 +1804,7 @@ class PaymentSystem {
         this.magnetTimer = 0;
         if (this.hudMagnetIndicator) this.hudMagnetIndicator.style.display = "none";
         this.initDailyMissions();
+        setTimeout(() => { if (typeof this.updateMapBadge === "function") this.updateMapBadge(); }, 100);
 
         // Carrega perks do piloto ativo
         this.activePilotPerks = (PILOT_CATALOG[this.selectedPilot] && PILOT_CATALOG[this.selectedPilot].perk) || PILOT_CATALOG.aria.perk;
@@ -6015,6 +6021,28 @@ class PaymentSystem {
             this.garageModal.classList.remove("active");
         });
 
+        // Botões de Pistas & Mapas (5 Circuitos)
+        const openMaps = () => {
+            this.sound.init();
+            this.renderMapsCards();
+            const modal = document.getElementById("maps-modal");
+            if (modal) modal.classList.add("active");
+            const userCoins = document.getElementById("maps-user-coins");
+            if (userCoins) userCoins.textContent = (this.totalCoins || 0).toLocaleString();
+        };
+
+        const openMapsBtn = document.getElementById("open-maps-btn");
+        if (openMapsBtn) openMapsBtn.addEventListener("click", openMaps);
+
+        const menuMapBadge = document.getElementById("menu-map-badge");
+        if (menuMapBadge) menuMapBadge.addEventListener("click", openMaps);
+
+        const closeMapsBtn = document.getElementById("close-maps-btn");
+        if (closeMapsBtn) closeMapsBtn.addEventListener("click", () => {
+            const modal = document.getElementById("maps-modal");
+            if (modal) modal.classList.remove("active");
+        });
+
         // Botões de Ranking Global
         const openLeaderboard = () => {
             this.sound.init();
@@ -7064,6 +7092,137 @@ class PaymentSystem {
     }
 
 
+
+    
+    updateMapBadge() {
+        if (!this.selectedMap) this.selectedMap = "rodovia_dupla";
+        const map = (typeof MAPS_CATALOG !== "undefined" && MAPS_CATALOG[this.selectedMap]) || { name: "Rodovia Dupla" };
+        const badge = document.getElementById("menu-map-name");
+        if (badge) {
+            badge.textContent = map.name;
+        }
+    }
+
+    renderMapsCards() {
+        const grid = document.getElementById("maps-grid-container");
+        if (!grid) return;
+        grid.innerHTML = "";
+
+        if (!this.unlockedMaps || !Array.isArray(this.unlockedMaps)) {
+            this.unlockedMaps = ["rodovia_dupla"];
+        }
+        if (!this.unlockedMaps.includes("rodovia_dupla")) {
+            this.unlockedMaps.push("rodovia_dupla");
+        }
+
+        const mapsList = Object.values(typeof MAPS_CATALOG !== "undefined" ? MAPS_CATALOG : {});
+        mapsList.forEach(map => {
+            const isUnlocked = this.unlockedMaps.includes(map.id);
+            const isSelected = (this.selectedMap === map.id);
+            const isPremium = (map.unlockType === "real_money");
+
+            const card = document.createElement("div");
+            card.className = `map-card ${isSelected ? "selected" : ""} ${isPremium ? "premium-card" : ""}`;
+
+            let actionBtnHTML = "";
+            if (isSelected) {
+                actionBtnHTML = `<button class="primary-btn" style="width: 100%; padding: 8px; font-size: 0.82rem;" disabled>✓ EQUIPADO</button>`;
+            } else if (isUnlocked) {
+                actionBtnHTML = `<button class="primary-btn" style="width: 100%; padding: 8px; font-size: 0.82rem;" onclick="window.game.selectMap('${map.id}')">SELECIONAR PISTA</button>`;
+            } else if (isPremium) {
+                actionBtnHTML = `<button class="action-btn" style="width: 100%; padding: 8px; font-size: 0.82rem; background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);" onclick="window.game.buyPremiumMapRealMoney('${map.id}')">COMPRAR POR R$ 10,90 ⚡</button>`;
+            } else {
+                const canAfford = (this.totalCoins || 0) >= map.cost;
+                const btnStyle = canAfford ? "" : "opacity: 0.5; filter: grayscale(1);";
+                actionBtnHTML = `<button class="primary-btn" style="width: 100%; padding: 8px; font-size: 0.82rem; ${btnStyle}" onclick="window.game.buyMapWithCoins('${map.id}')">DESBLOQUEAR (${map.cost} 🪙)</button>`;
+            }
+
+            card.innerHTML = `
+                <div>
+                    <div class="map-header-row">
+                        <span class="map-icon">${map.icon}</span>
+                        <span class="map-badge ${isPremium ? "gold" : ""}">${map.badge}</span>
+                    </div>
+                    <div class="map-title">${map.name}</div>
+                    <div class="map-subtitle">${map.subtitle}</div>
+                    <div class="map-desc">${map.desc}</div>
+                    <div class="map-perks-box">
+                        <div class="map-perk-item">
+                            <span class="map-perk-label">Bônus de Pontos:</span>
+                            <span class="map-perk-val ${map.scoreMultiplier > 1 ? "gold" : ""}">x${map.scoreMultiplier.toFixed(2)}</span>
+                        </div>
+                        <div class="map-perk-item">
+                            <span class="map-perk-label">Bônus de Moedas:</span>
+                            <span class="map-perk-val ${map.coinMultiplier > 1 ? "gold" : ""}">x${map.coinMultiplier.toFixed(1)}</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 6px;">
+                    ${actionBtnHTML}
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    selectMap(mapId) {
+        if (!this.unlockedMaps.includes(mapId)) return;
+        this.selectedMap = mapId;
+        localStorage.setItem("roadster_selected_map", mapId);
+        this.updateMapBadge();
+        this.renderMapsCards();
+        if (typeof this.applyMapEnvironment === "function") {
+            this.applyMapEnvironment(mapId);
+        }
+        const mapName = (typeof MAPS_CATALOG !== "undefined" && MAPS_CATALOG[mapId]) ? MAPS_CATALOG[mapId].name : mapId;
+        this.triggerActionPopup(`🗺️ Pista Ativada: ${mapName}!`);
+        if (this.sound) this.sound.playSpeedUp();
+    }
+
+    buyMapWithCoins(mapId) {
+        const map = (typeof MAPS_CATALOG !== "undefined") ? MAPS_CATALOG[mapId] : null;
+        if (!map) return;
+        if ((this.totalCoins || 0) < map.cost) {
+            this.triggerActionPopup("❌ Moedas insuficientes para desbloquear este circuito!");
+            return;
+        }
+
+        this.totalCoins -= map.cost;
+        localStorage.setItem("roadster_coins", this.totalCoins.toString());
+        if (!this.unlockedMaps.includes(mapId)) {
+            this.unlockedMaps.push(mapId);
+            localStorage.setItem("roadster_unlocked_maps", JSON.stringify(this.unlockedMaps));
+        }
+
+        this.updateUserCoinsEverywhere();
+        this.selectMap(mapId);
+        this.triggerActionPopup(`🎉 Pista Desbloqueada: ${map.name}!`);
+        this.speakAnnouncer("New Track Unlocked!", true);
+    }
+
+    buyPremiumMapRealMoney(mapId) {
+        this.sound.init();
+        const modal = document.getElementById("maps-modal");
+        if (modal) modal.classList.remove("active");
+
+        if (typeof window.PaymentSystem !== "undefined") {
+            const ps = new window.PaymentSystem(typeof API_URL !== "undefined" ? API_URL : "");
+            ps.checkoutPremiumMap(this.currentUser, () => {
+                if (!this.unlockedMaps.includes("pista_premium")) {
+                    this.unlockedMaps.push("pista_premium");
+                    localStorage.setItem("roadster_unlocked_maps", JSON.stringify(this.unlockedMaps));
+                }
+                this.selectMap("pista_premium");
+                this.triggerActionPopup("💎 PISTA PREMIUM DESBLOQUEADA COM SUCESSO!");
+                this.speakAnnouncer("Super Speedway Unlocked!", true);
+            }, (errMsg) => {
+                this.triggerActionPopup(`⚠️ Falha no checkout: ${errMsg}`);
+            });
+        } else {
+            this.openCoinShop();
+            this.triggerActionPopup("⚡ Selecione o Pacote de R$ 10,90 para desbloquear a Pista Premium!");
+        }
+    }
 
     updateUserCoinsEverywhere() {
         if (this.hudCoins) this.hudCoins.textContent = (this.totalCoins + this.coinsEarnedThisRun).toLocaleString();

@@ -347,6 +347,7 @@ class CoreGame {
         this.collectibleSpawnTimer = 0;
 
         this.initDailyMissions();
+        setTimeout(() => { if (typeof this.updateMapBadge === "function") this.updateMapBadge(); }, 100);
         this.initThree();
         this.buildAtmosphericWorld();
         this.buildPlayerVehicle(this.selectedCar);
@@ -392,6 +393,7 @@ class CoreGame {
         this.magnetTimer = 0;
         if (this.hudMagnetIndicator) this.hudMagnetIndicator.style.display = "none";
         this.initDailyMissions();
+        setTimeout(() => { if (typeof this.updateMapBadge === "function") this.updateMapBadge(); }, 100);
 
         // Carrega perks do piloto ativo
         this.activePilotPerks = (PILOT_CATALOG[this.selectedPilot] && PILOT_CATALOG[this.selectedPilot].perk) || PILOT_CATALOG.aria.perk;
