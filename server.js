@@ -217,6 +217,14 @@ async function initDatabase() {
                 ALTER TABLE users ADD COLUMN IF NOT EXISTS password_salt VARCHAR(255) DEFAULT '';
                 ALTER TABLE users ADD COLUMN IF NOT EXISTS unlocked_maps TEXT[] DEFAULT ARRAY['rodovia_dupla'];
                 ALTER TABLE users ADD COLUMN IF NOT EXISTS selected_map VARCHAR(50) DEFAULT 'rodovia_dupla';
+
+                CREATE TABLE IF NOT EXISTS processed_payments (
+                    payment_id VARCHAR(100) PRIMARY KEY,
+                    order_id VARCHAR(100),
+                    username VARCHAR(50),
+                    package_id VARCHAR(50),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
             `);
             console.log('✅ Banco de Dados Neon Postgres inicializado com sucesso (tabelas users e scores prontas).');
         } finally {
@@ -1148,13 +1156,50 @@ app.post('/api/payment/create-preference', async (req, res) => {
 // Cache de pagamentos processados para controle de idempotência (evita crédito duplicado)
 const processedPayments = new Set();
 
-// 3. Verificação de Status com Consulta Ativa no Mercado Pago (Polling do Cliente)
+// Registro persistente de pagamentos processados
+async function isPaymentAlreadyProcessed(paymentId, orderId) {
+    if (!paymentId && !orderId) return false;
+    if (paymentId && processedPayments.has(String(paymentId))) return true;
+    if (orderId && processedPayments.has(String(orderId))) return true;
+
+    if (useDb && pool) {
+        try {
+            const res = await pool.query(
+                'SELECT 1 FROM processed_payments WHERE payment_id = $1 OR order_id = $2',
+                [paymentId ? String(paymentId) : '', orderId ? String(orderId) : '']
+            );
+            if (res.rows.length > 0) return true;
+        } catch (e) {}
+    }
+    return false;
+}
+
+async function markPaymentAsProcessed(paymentId, orderId, username, packageId) {
+    if (paymentId) processedPayments.add(String(paymentId));
+    if (orderId) processedPayments.add(String(orderId));
+
+    if (useDb && pool && paymentId) {
+        try {
+            await pool.query(`
+                INSERT INTO processed_payments (payment_id, order_id, username, package_id)
+                VALUES ($1, $2, $3, $4)
+                ON CONFLICT (payment_id) DO NOTHING
+            `, [String(paymentId), orderId ? String(orderId) : null, username || null, packageId || null]);
+        } catch (e) {}
+    }
+}
+
+
+// 3. Verificação de Status com Consulta Estrita ao Mercado Pago (Exclusivamente por orderId do pedido atual)
 app.get('/api/payment/check-status', async (req, res) => {
     const { orderId, username } = req.query;
     if (!orderId) return res.json({ success: true, approved: false });
 
-    const safeOrderId = String(orderId);
-    if (processedPayments.has(safeOrderId)) {
+    const safeOrderId = String(orderId).trim();
+
+    // Se este pedido específico já foi validado e creditado
+    const alreadyProcessed = await isPaymentAlreadyProcessed(null, safeOrderId);
+    if (alreadyProcessed) {
         return res.json({ success: true, approved: true, orderId: safeOrderId });
     }
 
@@ -1165,34 +1210,44 @@ app.get('/api/payment/check-status', async (req, res) => {
                 options: {
                     sort: 'date_created',
                     criteria: 'desc',
-                    limit: 30
+                    limit: 25
                 }
             });
 
             const results = (searchRes && searchRes.results) || [];
+            
+            // Procura estritamente o pagamento correspondente a este orderId específico
             const approved = results.find(p => {
-                if (p.status !== 'approved') return false;
-                if (!p.external_reference) return false;
-                return p.external_reference.includes(safeOrderId) || (username && p.external_reference.toLowerCase().includes(String(username).toLowerCase()));
+                if (p.status !== 'approved' || !p.external_reference) return false;
+                try {
+                    const ext = JSON.parse(p.external_reference);
+                    return ext && ext.orderId === safeOrderId;
+                } catch (e) {
+                    return p.external_reference.includes(`"orderId":"${safeOrderId}"`);
+                }
             });
 
             if (approved) {
-                processedPayments.add(String(approved.id));
-                processedPayments.add(safeOrderId);
+                const paymentId = String(approved.id);
+                const wasDone = await isPaymentAlreadyProcessed(paymentId, safeOrderId);
 
                 let extRef = {};
                 try { extRef = JSON.parse(approved.external_reference); } catch(e) {}
                 const userToCredit = extRef.username || (username || 'Piloto').trim();
 
-                if (extRef.packageId === 'map_cyber_premium' || extRef.packageId === 'pista_premium') {
-                    await unlockUserMap(userToCredit, 'pista_premium');
-                    console.log(`⚡ [API MP Check] Pista Premium desbloqueada com sucesso para ${userToCredit} (ID: ${approved.id})`);
-                } else if (extRef.coins) {
-                    await creditUserCoins(userToCredit, extRef.coins);
-                    console.log(`💰 [API MP Check] Moedas creditadas com sucesso para ${userToCredit}: +${extRef.coins} (ID: ${approved.id})`);
+                if (!wasDone) {
+                    await markPaymentAsProcessed(paymentId, safeOrderId, userToCredit, extRef.packageId);
+
+                    if (extRef.packageId === 'map_cyber_premium' || extRef.packageId === 'pista_premium') {
+                        await unlockUserMap(userToCredit, 'pista_premium');
+                        console.log(`⚡ [MP Check] Pista Premium liberada com sucesso para ${userToCredit} (Pedido: ${safeOrderId}, ID: ${paymentId})`);
+                    } else if (extRef.coins) {
+                        await creditUserCoins(userToCredit, extRef.coins);
+                        console.log(`💰 [MP Check] +${extRef.coins} moedas creditadas para ${userToCredit} (Pedido: ${safeOrderId}, ID: ${paymentId})`);
+                    }
                 }
 
-                return res.json({ success: true, approved: true, orderId: safeOrderId, paymentId: approved.id });
+                return res.json({ success: true, approved: true, orderId: safeOrderId, paymentId });
             }
         } catch (e) {
             console.warn('Erro ao consultar Mercado Pago:', e.message);
@@ -1200,75 +1255,6 @@ app.get('/api/payment/check-status', async (req, res) => {
     }
 
     return res.json({ success: true, approved: false, orderId: safeOrderId });
-});
-
-// 3.1 Reconciliação Automática de Pagamentos Aprovados por Usuário
-app.all(['/api/payment/reconcile', '/api/payment/reconcile/:username'], async (req, res) => {
-    const userTarget = (req.params.username || req.body.username || req.query.username || '').trim();
-    if (!userTarget) return res.status(400).json({ success: false, error: 'Informe o nome de usuário' });
-
-    if (!mpClient) return res.json({ success: false, message: 'Mercado Pago não conectado' });
-
-    try {
-        const payment = new Payment(mpClient);
-        const searchRes = await payment.search({
-            options: {
-                sort: 'date_created',
-                criteria: 'desc',
-                limit: 40
-            }
-        });
-
-        const results = (searchRes && searchRes.results) || [];
-        let creditedItems = [];
-
-        for (const p of results) {
-            if (p.status === 'approved' && p.external_reference) {
-                try {
-                    const ext = typeof p.external_reference === 'string' && p.external_reference.startsWith('{')
-                        ? JSON.parse(p.external_reference)
-                        : null;
-
-                    if (ext && ext.username && ext.username.toLowerCase() === userTarget.toLowerCase()) {
-                        const paymentKey = `reconciled_${p.id}`;
-                        if (!processedPayments.has(String(p.id)) && !processedPayments.has(paymentKey)) {
-                            processedPayments.add(String(p.id));
-                            processedPayments.add(paymentKey);
-                            if (ext.orderId) processedPayments.add(String(ext.orderId));
-
-                            if (ext.packageId === 'map_cyber_premium' || ext.packageId === 'pista_premium') {
-                                await unlockUserMap(ext.username, 'pista_premium');
-                                creditedItems.push({ type: 'map', id: 'pista_premium', paymentId: p.id });
-                                console.log(`⚡ [Reconcile] Pista Premium liberada para ${ext.username} (Pagamento: ${p.id})`);
-                            } else if (ext.coins) {
-                                const updated = await creditUserCoins(ext.username, ext.coins);
-                                creditedItems.push({ type: 'coins', amount: ext.coins, totalCoins: updated ? updated.coins : null, paymentId: p.id });
-                                console.log(`💰 [Reconcile] +${ext.coins} moedas creditadas para ${ext.username} (Pagamento: ${p.id})`);
-                            }
-                        }
-                    }
-                } catch (e) {}
-            }
-        }
-
-        let currentProfile = null;
-        if (useDb && pool) {
-            const uRes = await pool.query('SELECT username, coins, unlocked_cars, unlocked_maps FROM users WHERE LOWER(username) = LOWER($1)', [userTarget]);
-            if (uRes.rows.length > 0) currentProfile = uRes.rows[0];
-        } else {
-            currentProfile = memoryStore.users.get(userTarget);
-        }
-
-        return res.json({
-            success: true,
-            reconciled: creditedItems.length > 0,
-            creditedItems,
-            user: currentProfile
-        });
-    } catch (err) {
-        console.error('Erro na reconciliação de pagamentos:', err);
-        return res.status(500).json({ success: false, error: err.message });
-    }
 });
 
 // 3.1 Confirmação de Retorno do Checkout (Redirecionamento do Mercado Pago para o Jogo)

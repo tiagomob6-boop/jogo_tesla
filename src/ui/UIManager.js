@@ -466,13 +466,7 @@ export const UIManager = (Base) => class extends Base {
         this.updateUserUI();
         if (!this.currentUser || this.currentUser === "Piloto") return;
 
-        try {
-            const rec = await this.apiCall(`/api/payment/reconcile/${encodeURIComponent(this.currentUser)}`);
-            if (rec && rec.reconciled) {
-                this.sound.playMissionComplete();
-                this.triggerActionPopup("🎉 PAGAMENTO DO MERCADO PAGO IDENTIFICADO E CREDITADO!");
-            }
-        } catch(e) {}
+
 
         const data = await this.apiCall(`/api/user/${encodeURIComponent(this.currentUser)}`);
         if (data && data.success && data.user) {
