@@ -50,6 +50,7 @@
     <!-- Three.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <!-- Módulos de Estilo CSS Desacoplados (Fase 1) -->
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="src/styles/style.css">
 </head>
 <body>
@@ -134,24 +135,7 @@
 
         <!-- Parte Inferior: Controles Touch Responsivos para Celular -->
         <footer class="hud-bottom">
-            <div class="touch-controls-row">
-                <!-- Polegar Esquerdo: Direcionais ◀ e ▶ -->
-                <div class="steer-btn-group">
-                    <button class="mobile-dir-btn" id="btn-left" aria-label="Esquerda">◀</button>
-                    <button class="mobile-dir-btn" id="btn-right" aria-label="Direita">▶</button>
-                </div>
-
-                <!-- Polegar Direito: Queda Rápida ⬇ e BOOST ⇪ -->
-                <div class="action-btn-group">
-                    <button class="mobile-slam-btn" id="btn-slam" aria-label="Descer Rápido">⬇</button>
-                    <button class="boost-touch-btn" id="boost-touch-btn" aria-label="Voo e Boost">
-                        <span class="boost-icon">⇪</span>
-                        <span class="boost-text">BOOST</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Barra de AR Segmentada (10 blocos) -->
+            <!-- Barra de AR Segmentada (10 blocos) posicionada ergonomicamente ACIMA dos botões -->
             <div class="air-segment-box">
                 <div class="air-meta-row">
                     <span>AIR</span>
@@ -170,6 +154,23 @@
                     <div class="air-segment"></div>
                 </div>
             </div>
+
+            <div class="touch-controls-row">
+                <!-- Polegar Esquerdo: Direcionais ◀ e ▶ -->
+                <div class="steer-btn-group">
+                    <button class="mobile-dir-btn" id="btn-left" aria-label="Esquerda">◀</button>
+                    <button class="mobile-dir-btn" id="btn-right" aria-label="Direita">▶</button>
+                </div>
+
+                <!-- Polegar Direito: Queda Rápida ⬇ e BOOST ⇪ -->
+                <div class="action-btn-group">
+                    <button class="mobile-slam-btn" id="btn-slam" aria-label="Descer Rápido">⬇</button>
+                    <button class="boost-touch-btn" id="boost-touch-btn" aria-label="Voo e Boost">
+                        <span class="boost-icon">⇪</span>
+                        <span class="boost-text">BOOST</span>
+                    </button>
+                </div>
+            </div>
         </footer>
     </div>
 
@@ -180,27 +181,27 @@
             <div class="game-subtitle">SUNSET COASTAL HIGHWAY // 2077</div>
 
             <!-- Identificação do Usuário, Saldo de Moedas e Piloto Ativo no Menu -->
-            <div style="margin-bottom: 14px; display: flex; justify-content: center; gap: 10px; align-items: center; flex-wrap: wrap;">
-                <div class="hud-coins-display" style="font-size: 1.15rem; background: rgba(0,0,0,0.3); padding: 5px 12px; border-radius: 10px; border: 1px solid rgba(251,191,36,0.3);">
+            <div class="menu-header-badges" style="margin-bottom: 12px; display: flex; justify-content: center; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <div class="hud-coins-display" style="font-size: 1.05rem; background: rgba(0,0,0,0.35); padding: 5px 12px; border-radius: 10px; border: 1px solid rgba(251,191,36,0.35);">
                     🪙 <span id="menu-coins">0</span>
                 </div>
-                <div class="user-badge" id="menu-user-badge" style="font-size: 0.85rem; padding: 6px 14px;" title="Clique para alterar seu Nickname">
+                <div class="user-badge" id="menu-user-badge" style="font-size: 0.82rem; padding: 5px 12px;" title="Clique para alterar seu Nickname">
                     👤 <span id="menu-username">Piloto</span> ✏️
                 </div>
-                <div class="user-badge" id="menu-pilot-badge" style="font-size: 0.85rem; padding: 6px 14px; background: rgba(56, 189, 248, 0.2); border-color: rgba(56, 189, 248, 0.45); cursor: pointer;" title="Clique para escolher seu Piloto">
+                <div class="user-badge" id="menu-pilot-badge" style="font-size: 0.82rem; padding: 5px 12px; background: rgba(56, 189, 248, 0.2); border-color: rgba(56, 189, 248, 0.45); cursor: pointer;" title="Clique para escolher seu Piloto">
                     🧑‍🚀 <span id="menu-pilot-name">Aria Vortex</span>
                 </div>
-                <div class="user-badge" id="menu-map-badge" style="font-size: 0.85rem; padding: 6px 14px; background: rgba(14, 165, 233, 0.25); border-color: rgba(14, 165, 233, 0.6); cursor: pointer;" title="Clique para escolher a Pista">
+                <div class="user-badge" id="menu-map-badge" style="font-size: 0.82rem; padding: 5px 12px; background: rgba(14, 165, 233, 0.25); border-color: rgba(14, 165, 233, 0.6); cursor: pointer;" title="Clique para escolher a Pista">
                     🗺️ <span id="menu-map-name">Rodovia Dupla</span>
                 </div>
             </div>
 
             <div class="controls-guide">
-                <div>📱 <strong>No Celular:</strong> Use os botões ◀ ▶ para virar, ⇪ BOOST para voar e ⬇ para descer rápido (ou arraste os dedos)!</div>
-                <div>💻 <strong>No PC:</strong> Setas / A D para virar, ESPAÇO / W para voar e S para descer.</div>
-                <div>🛡️ <strong>Escudos Protetores:</strong> Colete os escudos na pista para ficar invulnerável por 5s e atropelar o tráfego!</div>
-                <div>🧑‍🚀 <strong>Pilotos com Habilidades:</strong> Escolha seu piloto com bônus de turbo, super escudo, ímã de moedas ou hiper-reflexos!</div>
-                <div>🛹 <strong>Rampas de Salto:</strong> Pule sobre o trânsito com acrobacias (Barrel Roll) para ganhar bônus de ar e moedas!</div>
+                <div>📱 <strong>No Celular:</strong> Use os botões ◀ ▶ ou arraste para virar • ⇪ BOOST para voar • ⬇ descer rápido!</div>
+                <div class="pc-only">💻 <strong>No PC:</strong> Setas / A D para virar, ESPAÇO / W para voar e S para descer.</div>
+                <div class="desktop-tip">🛡️ <strong>Escudos Protetores:</strong> Invulnerável por 5s ao coletar na pista.</div>
+                <div class="desktop-tip">🧑‍🚀 <strong>Pilotos:</strong> Bônus de turbo, super escudo e ímã de moedas.</div>
+                <div class="desktop-tip">🛹 <strong>Rampas:</strong> Salte e faça acrobacias para ganhar ar e moedas!</div>
             </div>
 
             <button class="action-btn" id="start-btn" style="width: 100%;">INICIAR CORRIDA</button>
@@ -213,7 +214,7 @@
                 <button class="secondary-btn" id="open-pilot-btn">🧑‍🚀 Pilotos</button>
                 <button class="secondary-btn" id="open-missions-btn">📜 Missões</button>
                 <button class="secondary-btn" id="open-leaderboard-btn">🏆 Ranking</button>
-                <button class="secondary-btn" id="open-settings-btn">⚙️ Ajustes</button>
+                <button class="secondary-btn" id="open-settings-btn" style="grid-column: span 2;">⚙️ Ajustes de Áudio & Controles</button>
             </div>
         </div>
     </div>

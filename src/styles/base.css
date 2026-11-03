@@ -1,37 +1,42 @@
 :root {
-            --air-cyan: #22d3ee;
-            --sunset-peach: #f97316;
-            --sunset-pink: #ec4899;
-            --glass-card: rgba(18, 12, 28, 0.55);
-            --font-main: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
+    --air-cyan: #22d3ee;
+    --sunset-peach: #f97316;
+    --sunset-pink: #ec4899;
+    --glass-card: rgba(18, 12, 28, 0.55);
+    --font-main: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-        }
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+}
 
-        body, html {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: linear-gradient(180deg, #2b1136 0%, #7e2a52 35%, #cf635a 68%, #f89e78 100%);
-            font-family: var(--font-main);
-            color: #ffffff;
-            touch-action: none; /* Bloqueia zoom e rolagem acidental no celular */
-        }
+body, html {
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    min-height: -webkit-fill-available;
+    overflow: hidden;
+    overscroll-behavior: none;
+    background: linear-gradient(180deg, #2b1136 0%, #7e2a52 35%, #cf635a 68%, #f89e78 100%);
+    font-family: var(--font-main);
+    color: #ffffff;
+    touch-action: none; /* Bloqueia zoom e rolagem acidental no celular */
+}
 
-        #game-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            display: block;
-            z-index: 1;
-            touch-action: none;
-        }
+#game-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    display: block;
+    z-index: 1;
+    touch-action: none;
+}

@@ -86,11 +86,19 @@ export const ControlsManager = (Base) => class extends Base {
             }
         });
 
-        // Botões Touchscreen na tela para celular
+        // Previne zoom acidental por gestos de pinça no iOS Safari
+        document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
+        document.addEventListener("gesturechange", (e) => e.preventDefault(), { passive: false });
+        document.addEventListener("gestureend", (e) => e.preventDefault(), { passive: false });
+
+        // Botões Touchscreen na tela para celular com resposta tátil instantânea
         const bindTouchBtn = (element, action) => {
             if (!element) return;
             element.addEventListener("touchstart", (e) => {
                 e.preventDefault();
+                if (navigator.vibrate) {
+                    try { navigator.vibrate(15); } catch(err) {}
+                }
                 action();
             }, { passive: false });
             element.addEventListener("click", (e) => {
