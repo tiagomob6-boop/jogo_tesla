@@ -352,6 +352,7 @@ class CoreGame {
         this.buildAtmosphericWorld();
         this.buildPlayerVehicle(this.selectedCar);
         this.initControls();
+        this.initTouchCustomizer();
         this.initEventListeners();
         this.renderPilotCards();
         this.renderMissions();

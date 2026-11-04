@@ -1809,6 +1809,7 @@ class PaymentSystem {
         this.buildAtmosphericWorld();
         this.buildPlayerVehicle(this.selectedCar);
         this.initControls();
+        this.initTouchCustomizer();
         this.initEventListeners();
         this.renderPilotCards();
         this.renderMissions();
@@ -5371,10 +5372,14 @@ class PaymentSystem {
                 };
                 Object.keys(savedLayout).forEach(k => {
                     const btn = btnMap[k];
-                    if (btn && savedLayout[k]) {
+                    if (btn && savedLayout[k] && typeof savedLayout[k].left === 'number') {
                         btn.style.position = "fixed";
-                        btn.style.left = savedLayout[k].left + "px";
-                        btn.style.top = savedLayout[k].top + "px";
+                        const maxW = Math.max(300, window.innerWidth - (btn.offsetWidth || 60));
+                        const maxH = Math.max(400, window.innerHeight - (btn.offsetHeight || 60));
+                        const posX = Math.max(10, Math.min(maxW - 10, savedLayout[k].left));
+                        const posY = Math.max(40, Math.min(maxH - 10, savedLayout[k].top));
+                        btn.style.left = posX + "px";
+                        btn.style.top = posY + "px";
                         btn.style.bottom = "auto";
                         btn.style.right = "auto";
                         btn.style.zIndex = "99";
@@ -5390,10 +5395,11 @@ class PaymentSystem {
             banner.id = "touch-edit-banner";
             banner.className = "touch-edit-banner";
             banner.innerHTML = `
-                <span style="color: #f59e0b; font-weight: bold; font-size: 0.95rem;">🎮 MODO DE EDIÇÃO: Arraste os botões para onde quiser!</span>
+                <div style="color: #f59e0b; font-weight: 900; font-size: 0.95rem; letter-spacing: 1px;">🎮 MODO DE EDIÇÃO TOUCH</div>
+                <div style="color: #cbd5e1; font-size: 0.76rem;">Toque e arraste qualquer botão para onde desejar!</div>
                 <div class="touch-edit-btn-row">
-                    <button id="save-touch-layout-btn" class="primary-btn" style="padding: 6px 14px; font-size: 0.85rem;">✅ Salvar Posições</button>
-                    <button id="reset-touch-layout-btn" class="secondary-btn" style="padding: 6px 14px; font-size: 0.85rem;">🔄 Redefinir Padrão</button>
+                    <button id="save-touch-layout-btn" class="action-btn" style="padding: 7px 16px; font-size: 0.78rem; background: linear-gradient(135deg, #10b981, #06b6d4); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">✅ Concluir & Salvar</button>
+                    <button id="reset-touch-layout-btn" class="secondary-btn" style="padding: 7px 12px; font-size: 0.78rem; border-color: #ef4444; color: #f87171;">🔄 Redefinir</button>
                 </div>
             `;
             document.body.appendChild(banner);
@@ -5418,49 +5424,86 @@ class PaymentSystem {
             });
         }
 
-        // Suporte a Arrastar (Drag and Drop Touch) em cada botão
+        // Suporte robusto a Arrastar (Mouse & Touch) em cada botão
         const setupDraggableBtn = (btn, key) => {
             if (!btn) return;
             let isDragging = false;
-            let offsetLeft = 0;
-            let offsetTop = 0;
+            let startClientX = 0;
+            let startClientY = 0;
+            let initialLeft = 0;
+            let initialTop = 0;
 
-            btn.addEventListener("touchstart", (e) => {
-                if (!document.body.classList.contains("touch-edit-active")) return;
+            const onStart = (clientX, clientY) => {
+                if (!document.body.classList.contains("touch-edit-active")) return false;
                 isDragging = true;
-                const touch = e.touches[0];
                 const rect = btn.getBoundingClientRect();
-                offsetLeft = touch.clientX - rect.left;
-                offsetTop = touch.clientY - rect.top;
+                initialLeft = rect.left;
+                initialTop = rect.top;
+                startClientX = clientX;
+                startClientY = clientY;
                 btn.style.position = "fixed";
-                btn.style.zIndex = "101";
-                e.preventDefault();
-            }, { passive: false });
-
-            btn.addEventListener("touchmove", (e) => {
-                if (!isDragging || !document.body.classList.contains("touch-edit-active")) return;
-                const touch = e.touches[0];
-                const newX = Math.max(10, Math.min(window.innerWidth - 70, touch.clientX - offsetLeft));
-                const newY = Math.max(50, Math.min(window.innerHeight - 70, touch.clientY - offsetTop));
-                btn.style.left = newX + "px";
-                btn.style.top = newY + "px";
+                btn.style.left = initialLeft + "px";
+                btn.style.top = initialTop + "px";
                 btn.style.bottom = "auto";
                 btn.style.right = "auto";
-                e.preventDefault();
+                btn.style.zIndex = "999";
+                return true;
+            };
+
+            const onMove = (clientX, clientY) => {
+                if (!isDragging || !document.body.classList.contains("touch-edit-active")) return;
+                const deltaX = clientX - startClientX;
+                const deltaY = clientY - startClientY;
+                const maxW = Math.max(300, window.innerWidth - (btn.offsetWidth || 60));
+                const maxH = Math.max(400, window.innerHeight - (btn.offsetHeight || 60));
+                const newX = Math.max(10, Math.min(maxW - 10, initialLeft + deltaX));
+                const newY = Math.max(25, Math.min(maxH - 10, initialTop + deltaY));
+                btn.style.left = newX + "px";
+                btn.style.top = newY + "px";
+            };
+
+            const onEnd = () => {
+                if (!isDragging) return;
+                isDragging = false;
+                try {
+                    const saved = JSON.parse(localStorage.getItem("roadster_touch_layout") || "{}");
+                    const rect = btn.getBoundingClientRect();
+                    saved[key] = { left: Math.round(rect.left), top: Math.round(rect.top) };
+                    localStorage.setItem("roadster_touch_layout", JSON.stringify(saved));
+                } catch(e) {}
+            };
+
+            // Touch (iPhone / Android)
+            btn.addEventListener("touchstart", (e) => {
+                if (onStart(e.touches[0].clientX, e.touches[0].clientY)) {
+                    e.preventDefault();
+                }
             }, { passive: false });
 
-            btn.addEventListener("touchend", () => {
+            window.addEventListener("touchmove", (e) => {
                 if (isDragging) {
-                    isDragging = false;
-                    // Salva posição individual
-                    try {
-                        const saved = JSON.parse(localStorage.getItem("roadster_touch_layout") || "{}");
-                        const rect = btn.getBoundingClientRect();
-                        saved[key] = { left: Math.round(rect.left), top: Math.round(rect.top) };
-                        localStorage.setItem("roadster_touch_layout", JSON.stringify(saved));
-                    } catch(e) {}
+                    onMove(e.touches[0].clientX, e.touches[0].clientY);
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            window.addEventListener("touchend", onEnd);
+
+            // Mouse (Desktop / Emuladores)
+            btn.addEventListener("mousedown", (e) => {
+                if (onStart(e.clientX, e.clientY)) {
+                    e.preventDefault();
                 }
             });
+
+            window.addEventListener("mousemove", (e) => {
+                if (isDragging) {
+                    onMove(e.clientX, e.clientY);
+                    e.preventDefault();
+                }
+            });
+
+            window.addEventListener("mouseup", onEnd);
         };
 
         setupDraggableBtn(this.btnLeft, "left");
@@ -5477,11 +5520,34 @@ class PaymentSystem {
         if (active) {
             body.classList.add("touch-edit-active");
             if (banner) banner.classList.add("active");
-            this.triggerActionPopup("🎮 Arraste os botões para onde preferir na tela!");
+
+            // Se o jogo está no menu inicial, oculta temporariamente a tela para ver os botões
+            if (this.startScreen && this.startScreen.classList.contains("active")) {
+                this.editingFromMenu = true;
+                this.startScreen.classList.remove("active");
+            } else {
+                this.editingFromMenu = false;
+            }
+
+            if (this.pauseSettingsModal) {
+                this.pauseSettingsModal.classList.remove("active");
+            }
+
+            this.triggerActionPopup("🎮 ARRASTE OS BOTÕES PARA ONDE PREFERIR!");
         } else {
             body.classList.remove("touch-edit-active");
             if (banner) banner.classList.remove("active");
             this.triggerActionPopup("✅ Layout de Controles Salvo!");
+
+            // Retorna ao Menu ou à tela de Pausa
+            if (this.editingFromMenu) {
+                if (this.startScreen) this.startScreen.classList.add("active");
+                this.editingFromMenu = false;
+            } else if (this.isRunning) {
+                if (this.pauseSettingsModal) this.pauseSettingsModal.classList.add("active");
+            } else {
+                if (this.startScreen) this.startScreen.classList.add("active");
+            }
         }
     }
 
@@ -6298,10 +6364,43 @@ class PaymentSystem {
         const customTouchBtn = document.getElementById("custom-touch-btn");
         if (customTouchBtn) {
             customTouchBtn.addEventListener("click", () => {
-                this.togglePause(false);
+                this.sound.init();
                 if (typeof this.toggleTouchEditMode === "function") {
                     this.toggleTouchEditMode(true);
                 }
+            });
+        }
+
+        const menuEditTouchBtn = document.getElementById("menu-edit-touch-btn");
+        if (menuEditTouchBtn) {
+            menuEditTouchBtn.addEventListener("click", () => {
+                this.sound.init();
+                if (typeof this.toggleTouchEditMode === "function") {
+                    this.toggleTouchEditMode(true);
+                }
+            });
+        }
+
+        const goMenuBtn = document.getElementById("go-menu-btn");
+        if (goMenuBtn) {
+            goMenuBtn.addEventListener("click", () => {
+                this.sound.init();
+                if (this.gameoverScreen) this.gameoverScreen.classList.remove("active");
+                this.isRunning = false;
+                this.isPaused = false;
+                if (this.startScreen) this.startScreen.classList.add("active");
+            });
+        }
+
+        const hudMenuBtn = document.getElementById("hud-menu-btn");
+        if (hudMenuBtn) {
+            hudMenuBtn.addEventListener("click", () => {
+                this.sound.init();
+                this.isRunning = false;
+                this.isPaused = false;
+                if (this.pauseSettingsModal) this.pauseSettingsModal.classList.remove("active");
+                if (this.gameoverScreen) this.gameoverScreen.classList.remove("active");
+                if (this.startScreen) this.startScreen.classList.add("active");
             });
         }
         if (this.restartFromPauseBtn) {
