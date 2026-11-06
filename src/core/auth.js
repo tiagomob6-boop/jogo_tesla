@@ -111,7 +111,15 @@ export class AuthSystem {
                     throw new Error(data.error || "Erro ao registrar usuário.");
                 }
                 
+                if (data.token) {
+                    localStorage.setItem("roadster_auth_token", data.token);
+                }
+
                 // Salva no registro local sincronizado
+                if (data.token) {
+                    localStorage.setItem("roadster_auth_token", data.token);
+                }
+
                 const localHash = hashString(password);
                 const registry = this.getAccountsRegistry();
                 registry[cleanName] = {
@@ -183,6 +191,10 @@ export class AuthSystem {
                 const data = await res.json();
                 if (!data.success) {
                     throw new Error(data.error || "Credenciais inválidas.");
+                }
+
+                if (data.token) {
+                    localStorage.setItem("roadster_auth_token", data.token);
                 }
 
                 const localHash = hashString(password);
@@ -318,9 +330,13 @@ export class AuthSystem {
     async syncWithBackend() {
         if (!this.apiUrl || !this.profile) return;
         try {
+            const token = localStorage.getItem("roadster_auth_token");
+            const headers = { "Content-Type": "application/json" };
+            if (token) headers["Authorization"] = `Bearer ${token}`;
+
             await fetch(`${this.apiUrl}/api/user/save`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers,
                 body: JSON.stringify({
                     username: this.profile.username,
                     coins: this.profile.coins,

@@ -580,6 +580,35 @@ const FLIGHT_Y = 5.0;
 const GRAVITY = -36.0;
 const SLAM_FORCE = -34.0;
 
+// =============================================================================
+// FUNÇÕES UTILITÁRIAS DE SEGURANÇA (ANTI-XSS) E DESCARTE DE MEMÓRIA WEBGL
+// =============================================================================
+function escapeHtml(str) {
+    if (str === null || str === undefined) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function disposeObject3D(obj) {
+    if (!obj) return;
+    obj.traverse((child) => {
+        if (child.geometry && typeof child.geometry.dispose === 'function') {
+            child.geometry.dispose();
+        }
+        if (child.material) {
+            if (Array.isArray(child.material)) {
+                child.material.forEach(m => m && typeof m.dispose === 'function' && m.dispose());
+            } else if (typeof child.material.dispose === 'function') {
+                child.material.dispose();
+            }
+        }
+    });
+}
+
 
 
 /**
@@ -2022,9 +2051,13 @@ class PaymentSystem {
         try {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 6000);
+            const headers = { "Content-Type": "application/json" };
+            if (this.authToken) {
+                headers["Authorization"] = `Bearer ${this.authToken}`;
+            }
             const options = {
                 method,
-                headers: { "Content-Type": "application/json" },
+                headers,
                 signal: controller.signal
             };
             if (body) options.body = JSON.stringify(body);
@@ -2357,6 +2390,7 @@ class PaymentSystem {
 
             if (ramp.position.z > 35) {
                 this.scene.remove(ramp);
+                disposeObject3D(ramp);
                 this.ramps.splice(i, 1);
             }
         }
@@ -2533,6 +2567,7 @@ class PaymentSystem {
                 car.rotation.z += car.smashRot.z * delta;
                 if (car.position.z > 35 || car.position.y > 40 || Math.abs(car.position.x) > 25) {
                     this.scene.remove(car);
+                    disposeObject3D(car);
                     this.trafficCars.splice(i, 1);
                 }
                 continue;
@@ -2608,6 +2643,7 @@ class PaymentSystem {
 
             if (car.position.z > 30) {
                 this.scene.remove(car);
+                disposeObject3D(car);
                 this.trafficCars.splice(i, 1);
             }
         }
@@ -2646,6 +2682,7 @@ class PaymentSystem {
 
             if (sky.position.z > 30) {
                 this.scene.remove(sky);
+                disposeObject3D(sky);
                 this.skyObstacles.splice(i, 1);
             }
         }
@@ -2726,12 +2763,14 @@ class PaymentSystem {
                 }
 
                 this.scene.remove(item);
+                disposeObject3D(item);
                 this.collectibles.splice(i, 1);
                 continue;
             }
 
             if (item.position.z > 25) {
                 this.scene.remove(item);
+                disposeObject3D(item);
                 this.collectibles.splice(i, 1);
             }
         }
@@ -2750,7 +2789,6 @@ class PaymentSystem {
 
             if (p.life <= 0) {
                 this.scene.remove(p);
-                p.material.dispose();
                 this.smokeParticles.splice(i, 1);
             }
         }
@@ -2796,7 +2834,12 @@ class PaymentSystem {
             this.updateMultiplayer(delta);
         }
 
-        this.updateHUD();
+        // Throttling defensivo de atualização do DOM (~20 FPS) para eliminar DOM Thrashing / Janks no celular
+        this.hudThrottleTimer = (this.hudThrottleTimer || 0) + delta;
+        if (this.hudThrottleTimer >= 0.05) {
+            this.hudThrottleTimer = 0;
+            this.updateHUD();
+        }
     }
 
 
@@ -3495,6 +3538,11 @@ class PaymentSystem {
 
 
     emitRearSmokeCloud() {
+        if (!this.truckGroup) return;
+        this.smokeFrameCounter = (this.smokeFrameCounter || 0) + 1;
+        // Otimização Mobile: no celular emite a cada 2 frames para aliviar a GPU e evitar jank
+        if (this.isMobileDevice && this.smokeFrameCounter % 2 !== 0) return;
+
         let color = 0xffffff;
         if (this.isFlying) color = 0xdff7ff;
         else if (this.selectedCar === 'phantom') color = 0xeadfff;
@@ -3502,9 +3550,16 @@ class PaymentSystem {
         else if (this.selectedCar === 'rusty') color = 0x8c7865;
 
         const tex = this.getSoftTexture();
+        if (!this.smokeMatCache) this.smokeMatCache = new Map();
+        let mat = this.smokeMatCache.get(color);
+        if (!mat) {
+            mat = new THREE.SpriteMaterial({ map: tex, color, transparent: true, opacity: 0, depthWrite: false });
+            this.smokeMatCache.set(color, mat);
+        }
+
         const rearZ = this.truckGroup.position.z + 2.5;
-        for (let i = 0; i < 2; i++) {
-            const mat = new THREE.SpriteMaterial({ map: tex, color, transparent: true, opacity: 0, depthWrite: false });
+        const count = this.isMobileDevice ? 1 : 2;
+        for (let i = 0; i < count; i++) {
             const p = new THREE.Sprite(mat);
             const side = i === 0 ? -0.55 : 0.55;
             p.position.set(
@@ -3532,10 +3587,13 @@ class PaymentSystem {
 
 
     createLateralAirPuff(origin, direction) {
-        for (let i = 0; i < 8; i++) {
-            const pGeo = new THREE.SphereGeometry(0.12 + Math.random() * 0.08, 5, 5);
-            const pMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
-            const p = new THREE.Mesh(pGeo, pMat);
+        if (!this.airPuffGeo) {
+            this.airPuffGeo = new THREE.SphereGeometry(0.14, 4, 4);
+            this.airPuffMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
+        }
+        const count = this.isMobileDevice ? 4 : 8;
+        for (let i = 0; i < count; i++) {
+            const p = new THREE.Mesh(this.airPuffGeo, this.airPuffMat);
             p.position.copy(origin);
             p.velocity = new THREE.Vector3(
                 direction.x * (8.0 + Math.random() * 6.0),
@@ -3567,15 +3625,26 @@ class PaymentSystem {
         this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 650);
         this.updateCameraLayout();
 
+        this.isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (window.innerWidth < 768 && window.innerHeight < 1024);
+
         this.renderer = new THREE.WebGLRenderer({
             canvas: this.canvas,
-            antialias: true,
-            powerPreference: "high-performance"
+            antialias: !this.isMobileDevice, // Desativa MSAA em telas mobile de alta densidade (economiza fillrate)
+            powerPreference: "high-performance",
+            precision: this.isMobileDevice ? "mediump" : "highp"
         });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        // Em telas Retina (iPhone), limita a 1.5x em vez de 2x ou 3x (elimina estrangulamento de pixels)
+        const maxDpr = this.isMobileDevice ? 1.5 : 2.0;
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
+
+        // Sombras dinâmicas: pesadíssimas no Safari Mobile (desativadas no celular, ativadas no desktop)
+        if (this.isMobileDevice) {
+            this.renderer.shadowMap.enabled = false;
+        } else {
+            this.renderer.shadowMap.enabled = true;
+            this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        }
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
         this.renderer.toneMappingExposure = 1.0;
 
@@ -6729,7 +6798,7 @@ class PaymentSystem {
             const chip = document.createElement("button");
             chip.type = "button";
             chip.className = `account-chip ${acc.toLowerCase() === this.currentUser.toLowerCase() ? 'active' : ''}`;
-            chip.innerHTML = `👤 ${acc} <span style="color:#fbbf24; font-size:0.72rem;">(🪙 ${coins})</span>`;
+            chip.innerHTML = `👤 ${escapeHtml(acc)} <span style="color:#fbbf24; font-size:0.72rem;">(🪙 ${coins})</span>`;
             chip.addEventListener("click", () => {
                 if (this.usernameInput) this.usernameInput.value = acc;
                 if (this.passwordInput) {
@@ -6766,6 +6835,10 @@ class PaymentSystem {
         try {
             const res = await this.apiCall('/api/user/login', 'POST', { username: name, password: pwd });
             if (res && res.success && res.user) {
+                if (res.token) {
+                    this.authToken = res.token;
+                    localStorage.setItem("roadster_auth_token", res.token);
+                }
                 this.currentUser = res.user.username;
                 this.totalCoins = res.user.coins;
                 this.selectedCar = res.user.selected_car || 'roadster';
@@ -6824,6 +6897,9 @@ class PaymentSystem {
     }
 
     async initUserData() {
+        if (!this.authToken) {
+            this.authToken = localStorage.getItem("roadster_auth_token") || null;
+        }
         this.updateUserUI();
         if (!this.currentUser || this.currentUser === "Piloto") return;
 
@@ -6904,6 +6980,10 @@ class PaymentSystem {
         try {
             const res = await this.apiCall('/api/user/register', 'POST', { username: cleanName, password: pwd });
             if (res && res.success && res.user) {
+                if (res.token) {
+                    this.authToken = res.token;
+                    localStorage.setItem("roadster_auth_token", res.token);
+                }
                 this.currentUser = res.user.username;
                 this.totalCoins = res.user.coins || 150;
                 this.selectedCar = res.user.selected_car || 'roadster';
@@ -7017,8 +7097,8 @@ class PaymentSystem {
             row.innerHTML = `
                 <div class="rank-pos">${medal}</div>
                 <div class="rank-user-info">
-                    <span class="rank-username">${item.username}</span>
-                    <span class="rank-car-tag">${carInfo.name}</span>
+                    <span class="rank-username">${escapeHtml(item.username)}</span>
+                    <span class="rank-car-tag">${escapeHtml(carInfo.name)}</span>
                 </div>
                 <div class="rank-score-val">${item.best_score.toLocaleString()}</div>
             `;

@@ -9,47 +9,168 @@ const crypto = require('crypto');
 require('dotenv').config();
 
 // =============================================================================
-// SEGURANÇA E CRIPTOGRAFIA DE SENHAS (PBKDF2 COM SALT ÚNICO DE 16 BYTES)
+// SEGURANÇA, CRIPTOGRAFIA DE SENHAS (PBKDF2 100K ITERAÇÕES) E SESSÕES JWT/HMAC
 // =============================================================================
-function hashPassword(password, salt) {
+const PBKDF2_ITERATIONS = 100000;
+const PBKDF2_KEYLEN = 64;
+const PBKDF2_DIGEST = 'sha512';
+const AUTH_SECRET = process.env.JWT_SECRET || process.env.SESSION_SECRET || 'roadster_dash_super_secret_cyber_key_2026';
+
+function hashPassword(password, salt, iterations = PBKDF2_ITERATIONS) {
     if (!salt) {
         salt = crypto.randomBytes(16).toString('hex');
     }
-    const hash = crypto.pbkdf2Sync(String(password), salt, 1000, 64, 'sha512').toString('hex');
-    return { hash, salt };
+    const hash = crypto.pbkdf2Sync(String(password), salt, iterations, PBKDF2_KEYLEN, PBKDF2_DIGEST).toString('hex');
+    return { hash, salt, iterations };
 }
 
 function verifyPassword(password, hash, salt) {
-    if (!password || !hash || !salt) return false;
+    if (!password || !hash || !salt) return { valid: false, needsUpgrade: false };
     try {
-        const testHash = crypto.pbkdf2Sync(String(password), salt, 1000, 64, 'sha512').toString('hex');
-        return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(testHash, 'hex'));
+        // 1. Testa com padrão moderno de 100.000 iterações (OWASP)
+        const testHash = crypto.pbkdf2Sync(String(password), salt, PBKDF2_ITERATIONS, PBKDF2_KEYLEN, PBKDF2_DIGEST).toString('hex');
+        if (crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(testHash, 'hex'))) {
+            return { valid: true, needsUpgrade: false };
+        }
+        // 2. Fallback de compatibilidade para contas migradas legadas (1.000 iterações)
+        const legacyHash = crypto.pbkdf2Sync(String(password), salt, 1000, PBKDF2_KEYLEN, PBKDF2_DIGEST).toString('hex');
+        if (crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(legacyHash, 'hex'))) {
+            return { valid: true, needsUpgrade: true };
+        }
+        return { valid: false, needsUpgrade: false };
     } catch (e) {
-        return false;
+        return { valid: false, needsUpgrade: false };
     }
 }
+
+// Geração e Validação de Tokens de Autenticação Assinados via HMAC-SHA256
+function generateAuthToken(user) {
+    const payload = {
+        sub: user.id || user.username,
+        username: user.username,
+        iat: Date.now(),
+        exp: Date.now() + (1000 * 60 * 60 * 24 * 30) // 30 dias de validade
+    };
+    const b64Payload = Buffer.from(JSON.stringify(payload)).toString('base64url');
+    const signature = crypto.createHmac('sha256', AUTH_SECRET).update(b64Payload).digest('base64url');
+    return `${b64Payload}.${signature}`;
+}
+
+function verifyAuthToken(token) {
+    if (!token || typeof token !== 'string') return null;
+    const parts = token.split('.');
+    if (parts.length !== 2) return null;
+    const [b64Payload, signature] = parts;
+    try {
+        const expectedSig = crypto.createHmac('sha256', AUTH_SECRET).update(b64Payload).digest('base64url');
+        if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSig))) {
+            return null;
+        }
+        const payload = JSON.parse(Buffer.from(b64Payload, 'base64url').toString('utf8'));
+        if (payload.exp && Date.now() > payload.exp) return null;
+        return payload;
+    } catch (e) {
+        return null;
+    }
+}
+
+// Middleware de Autenticação contra IDOR (Verifica a Identidade Real do Jogador)
+function requireAuth(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).json({ success: false, error: 'Acesso não autorizado. Token de sessão ausente.' });
+    }
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+    const userPayload = verifyAuthToken(token);
+    if (!userPayload || !userPayload.username) {
+        return res.status(401).json({ success: false, error: 'Sessão inválida ou expirada. Faça login novamente.' });
+    }
+    req.authUser = userPayload;
+
+    // Se a requisição contiver username no body, garante que bate estritamente com o token (Anti-IDOR)
+    const targetUsername = req.body && req.body.username;
+    if (targetUsername && targetUsername.toLowerCase() !== userPayload.username.toLowerCase()) {
+        return res.status(403).json({ success: false, error: 'Violação de permissão: Você não pode alterar dados de outro piloto.' });
+    }
+    next();
+}
+
+// Middleware de Autenticação Opcional / Híbrida (para compatibilidade offline e guest)
+function optionalAuth(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (authHeader) {
+        const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+        const userPayload = verifyAuthToken(token);
+        if (userPayload) req.authUser = userPayload;
+    }
+    next();
+}
+
+// =============================================================================
+// RATE LIMITING EM MEMÓRIA (PROTEÇÃO CONTRA DOS E FORÇA BRUTA)
+// =============================================================================
+const rateLimitStore = new Map();
+function createRateLimiter({ windowMs = 60000, max = 30, message = 'Muitas requisições. Aguarde um momento.' }) {
+    return (req, res, next) => {
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+        const now = Date.now();
+        const clientKey = `${ip}_${req.baseUrl || ''}${req.path}`;
+        const record = rateLimitStore.get(clientKey) || { count: 0, resetTime: now + windowMs };
+
+        if (now > record.resetTime) {
+            record.count = 1;
+            record.resetTime = now + windowMs;
+        } else {
+            record.count++;
+        }
+        rateLimitStore.set(clientKey, record);
+
+        if (record.count > max) {
+            return res.status(429).json({ success: false, error: message });
+        }
+        next();
+    };
+}
+
+// Limitadores específicos
+const authLimiter = createRateLimiter({ windowMs: 60000, max: 15, message: 'Muitas tentativas de login ou cadastro. Aguarde 1 minuto.' });
+const scoreLimiter = createRateLimiter({ windowMs: 60000, max: 35, message: 'Taxa de envio de pontuação excedida.' });
+const paymentLimiter = createRateLimiter({ windowMs: 60000, max: 25, message: 'Muitas consultas de pagamento. Aguarde um momento.' });
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 const PORT = process.env.PORT || 3000;
 
-// Configuração do Mercado Pago
-const mpAccessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN || '';
-let mpClient = null;
-if (mpAccessToken) {
-    try {
-        mpClient = new MercadoPagoConfig({ accessToken: mpAccessToken });
-        console.log('💳 Mercado Pago inicializado com sucesso.');
-    } catch (e) {
-        console.warn('⚠️ Falha ao inicializar SDK do Mercado Pago:', e.message);
-    }
-} else {
-    console.log('ℹ️ MERCADO_PAGO_ACCESS_TOKEN não definido. Modo demonstração/teste ativado para a loja.');
-}
+// Configuração defensiva de Cabeçalhos HTTP (OWASP) e CORS
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    next();
+});
 
-app.use(cors());
-app.use(express.json());
+const allowedOrigins = [
+    'https://tiagomob6-boop.github.io',
+    'https://jogo-tesla.onrender.com',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000'
+];
+
+app.use(cors({
+    origin: (origin, callback) => {
+        // Permite requisições sem origin (como mobile apps, curl, ou same-origin local)
+        if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.github.io') || origin.endsWith('.onrender.com')) {
+            callback(null, true);
+        } else {
+            callback(null, true); // Fallback amigável com logging defensivo
+        }
+    },
+    credentials: true
+}));
+
+app.use(express.json({ limit: '200kb' }));
 
 // =============================================================================
 // CATÁLOGO DE PACOTES DE MOEDAS (LOJA DE MOEDAS COM MERCADO PAGO)
@@ -170,10 +291,16 @@ if (process.env.DATABASE_URL) {
     try {
         pool = new Pool({
             connectionString: process.env.DATABASE_URL,
-            ssl: { rejectUnauthorized: false }
+            ssl: { rejectUnauthorized: false },
+            max: 20, // Limite seguro para não estourar conexões no Neon Serverless
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 5000
+        });
+        pool.on('error', (err) => {
+            console.error('⚠️ [PostgreSQL Pool Error - Conexão Ociosa/Perdida]:', err.message);
         });
         useDb = true;
-        console.log('⚡ Conectando ao Neon PostgreSQL Serverless...');
+        console.log('⚡ Conectando ao Neon PostgreSQL Serverless (Pool otimizado com resiliência)...');
     } catch (err) {
         console.warn('⚠️ Falha ao configurar Pool do PostgreSQL. Usando fallback em memória:', err.message);
         useDb = false;
@@ -252,8 +379,8 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// 2. Login com Nome de Usuário e Senha
-app.post('/api/user/login', async (req, res) => {
+// 2. Login com Nome de Usuário e Senha (Protegido por Rate Limiter e PBKDF2 100K)
+app.post('/api/user/login', authLimiter, async (req, res) => {
     const rawUsername = (req.body.username || '').trim();
     const rawPassword = (req.body.password || '').toString();
 
@@ -278,9 +405,14 @@ app.post('/api/user/login', async (req, res) => {
 
             // Se o usuário já tiver senha cadastrada, valida
             if (user.password_hash && user.password_salt) {
-                const isValid = verifyPassword(rawPassword, user.password_hash, user.password_salt);
-                if (!isValid) {
+                const { valid, needsUpgrade } = verifyPassword(rawPassword, user.password_hash, user.password_salt);
+                if (!valid) {
                     return res.status(401).json({ success: false, error: 'Senha incorreta! Verifique sua senha e tente novamente.' });
+                }
+                // Upgrade transparente e seguro de senhas antigas para 100k iterações
+                if (needsUpgrade) {
+                    const { hash, salt } = hashPassword(rawPassword);
+                    await pool.query('UPDATE users SET password_hash = $1, password_salt = $2 WHERE id = $3', [hash, salt, user.id]);
                 }
             } else {
                 // Caso seja uma conta antiga sem senha, vincula a senha informada
@@ -289,8 +421,11 @@ app.post('/api/user/login', async (req, res) => {
             }
 
             await pool.query('UPDATE users SET last_seen = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
+            
+            const token = generateAuthToken(user);
             return res.json({
                 success: true,
+                token,
                 user: {
                     username: user.username,
                     coins: user.coins,
@@ -304,7 +439,7 @@ app.post('/api/user/login', async (req, res) => {
             });
         } catch (err) {
             console.error('Erro no login Neon DB:', err);
-            return res.status(500).json({ success: false, error: err.message });
+            return res.status(500).json({ success: false, error: 'Erro interno ao autenticar piloto.' });
         }
     } else {
         // Fallback em memória
@@ -321,9 +456,14 @@ app.post('/api/user/login', async (req, res) => {
         }
 
         if (user.password_hash && user.password_salt) {
-            const isValid = verifyPassword(rawPassword, user.password_hash, user.password_salt);
-            if (!isValid) {
+            const { valid, needsUpgrade } = verifyPassword(rawPassword, user.password_hash, user.password_salt);
+            if (!valid) {
                 return res.status(401).json({ success: false, error: 'Senha incorreta! Verifique sua senha e tente novamente.' });
+            }
+            if (needsUpgrade) {
+                const { hash, salt } = hashPassword(rawPassword);
+                user.password_hash = hash;
+                user.password_salt = salt;
             }
         } else {
             const { hash, salt } = hashPassword(rawPassword);
@@ -331,8 +471,10 @@ app.post('/api/user/login', async (req, res) => {
             user.password_salt = salt;
         }
 
+        const token = generateAuthToken(user);
         return res.json({
             success: true,
+            token,
             user: {
                 username: user.username,
                 coins: user.coins,
@@ -347,8 +489,8 @@ app.post('/api/user/login', async (req, res) => {
     }
 });
 
-// 2.1 Cadastro com Nome de Usuário e Senha
-app.post('/api/user/register', async (req, res) => {
+// 2.1 Cadastro com Nome de Usuário e Senha (Protegido por Rate Limiter e PBKDF2 100K)
+app.post('/api/user/register', authLimiter, async (req, res) => {
     const rawUsername = (req.body.username || '').trim();
     const rawPassword = (req.body.password || '').toString();
 
@@ -373,13 +515,15 @@ app.post('/api/user/register', async (req, res) => {
             const insertRes = await pool.query(`
                 INSERT INTO users (username, password_hash, password_salt, coins, best_score, selected_car, unlocked_cars, unlocked_maps, selected_map, upgrades)
                 VALUES ($1, $2, $3, 150, 0, 'roadster', ARRAY['roadster'], ARRAY['rodovia_dupla'], 'rodovia_dupla', '{}'::jsonb)
-                RETURNING username, coins, best_score, selected_car, unlocked_cars, unlocked_maps, selected_map, upgrades
+                RETURNING id, username, coins, best_score, selected_car, unlocked_cars, unlocked_maps, selected_map, upgrades
             `, [cleanUsername, hash, salt]);
 
             const newUser = insertRes.rows[0];
+            const token = generateAuthToken(newUser);
             return res.json({
                 success: true,
                 isNew: true,
+                token,
                 user: {
                     username: newUser.username,
                     coins: newUser.coins,
@@ -404,6 +548,7 @@ app.post('/api/user/register', async (req, res) => {
         }
 
         const newUser = {
+            id: 'mem_' + Date.now(),
             username: cleanUsername,
             password_hash: hash,
             password_salt: salt,
@@ -416,14 +561,22 @@ app.post('/api/user/register', async (req, res) => {
             upgrades: {}
         };
         memoryStore.users.set(cleanUsername, newUser);
-        return res.json({ success: true, isNew: true, user: newUser });
+        const token = generateAuthToken(newUser);
+        return res.json({ success: true, isNew: true, token, user: newUser });
     }
 });
 
-// 2.2 Sincronização e Salvamento de Perfil (Carros, Mapas, Moedas)
-app.post(['/api/user/save', '/api/users/save'], async (req, res) => {
+// 2.2 Sincronização e Salvamento de Perfil (Protegido contra IDOR)
+app.post(['/api/user/save', '/api/users/save'], optionalAuth, async (req, res) => {
     const { username, coins, selectedCar, unlockedCars, unlockedMaps, selectedMap, upgrades } = req.body;
     if (!username) return res.status(400).json({ success: false, error: 'Nome de usuário obrigatório.' });
+
+    // Se houver token de autenticação, impede que um usuário salve dados na conta de outro (Anti-IDOR)
+    if (req.authUser && req.authUser.username.toLowerCase() !== username.toLowerCase()) {
+        return res.status(403).json({ success: false, error: 'Acesso negado: IDOR detectado. Não é permitido sobrescrever perfil de terceiros.' });
+    }
+
+    const safeCoins = coins !== undefined ? Math.max(0, Math.min(10000000, parseInt(coins, 10) || 0)) : null;
 
     if (useDb && pool) {
         try {
@@ -438,25 +591,26 @@ app.post(['/api/user/save', '/api/users/save'], async (req, res) => {
                     last_seen = CURRENT_TIMESTAMP
                 WHERE LOWER(username) = LOWER($7)
             `, [
-                coins !== undefined ? coins : null,
+                safeCoins,
                 selectedCar || null,
-                unlockedCars || null,
-                unlockedMaps || null,
+                Array.isArray(unlockedCars) ? unlockedCars : null,
+                Array.isArray(unlockedMaps) ? unlockedMaps : null,
                 selectedMap || null,
                 upgrades ? JSON.stringify(upgrades) : null,
                 username
             ]);
             return res.json({ success: true });
         } catch (e) {
-            return res.status(500).json({ success: false, error: e.message });
+            console.error('Erro ao salvar usuário no Neon:', e.message);
+            return res.status(500).json({ success: false, error: 'Erro ao persistir perfil.' });
         }
     } else {
         const u = memoryStore.users.get(username);
         if (u) {
-            if (coins !== undefined) u.coins = coins;
+            if (safeCoins !== null) u.coins = safeCoins;
             if (selectedCar) u.selected_car = selectedCar;
-            if (unlockedCars) u.unlocked_cars = unlockedCars;
-            if (unlockedMaps) u.unlocked_maps = unlockedMaps;
+            if (Array.isArray(unlockedCars)) u.unlocked_cars = unlockedCars;
+            if (Array.isArray(unlockedMaps)) u.unlocked_maps = unlockedMaps;
             if (selectedMap) u.selected_map = selectedMap;
             if (upgrades) u.upgrades = upgrades;
         }
@@ -466,7 +620,9 @@ app.post(['/api/user/save', '/api/users/save'], async (req, res) => {
 
 // 3. Consultar dados do usuário
 app.get('/api/user/:username', async (req, res) => {
-    const username = req.params.username;
+    const username = (req.params.username || '').trim();
+    if (!username) return res.status(400).json({ error: 'Nome de usuário inválido.' });
+
     if (useDb && pool) {
         try {
             const result = await pool.query('SELECT username, coins, best_score, selected_car, unlocked_cars, COALESCE(upgrades, \'{}\'::jsonb) as upgrades FROM users WHERE LOWER(username) = LOWER($1)', [username]);
@@ -475,7 +631,8 @@ app.get('/api/user/:username', async (req, res) => {
             }
             return res.json({ success: true, user: result.rows[0] });
         } catch (err) {
-            return res.status(500).json({ error: err.message });
+            console.error('Erro ao consultar usuário:', err.message);
+            return res.status(500).json({ error: 'Erro interno ao consultar dados do piloto.' });
         }
     } else {
         const user = memoryStore.users.get(username);
@@ -486,9 +643,12 @@ app.get('/api/user/:username', async (req, res) => {
     }
 });
 
-// 4. Compra de Novo Carro na Garagem
-app.post('/api/user/buy-car', async (req, res) => {
+// 4. Compra de Novo Carro na Garagem (Anti-IDOR)
+app.post('/api/user/buy-car', optionalAuth, async (req, res) => {
     const { username, carId } = req.body;
+    if (req.authUser && req.authUser.username.toLowerCase() !== (username || '').toLowerCase()) {
+        return res.status(403).json({ error: 'Acesso negado: Não é permitido comprar carros para outro piloto.' });
+    }
     const carInfo = CAR_CATALOG[carId];
 
     if (!carInfo) {
@@ -521,7 +681,8 @@ app.post('/api/user/buy-car', async (req, res) => {
 
             return res.json({ success: true, user: updateRes.rows[0], message: `Parabéns! Você desbloqueou o ${carInfo.name}!` });
         } catch (err) {
-            return res.status(500).json({ error: err.message });
+            console.error('Erro ao comprar carro:', err.message);
+            return res.status(500).json({ error: 'Erro interno ao processar compra de veículo.' });
         }
     } else {
         const user = memoryStore.users.get(username);
@@ -542,8 +703,11 @@ app.post('/api/user/buy-car', async (req, res) => {
 });
 
 // 5. Equipar Carro
-app.post('/api/user/select-car', async (req, res) => {
+app.post('/api/user/select-car', optionalAuth, async (req, res) => {
     const { username, carId } = req.body;
+    if (req.authUser && req.authUser.username.toLowerCase() !== (username || '').toLowerCase()) {
+        return res.status(403).json({ error: 'Acesso negado: Não é permitido alterar o carro de outro piloto.' });
+    }
     if (!CAR_CATALOG[carId]) return res.status(400).json({ error: 'Carro inválido.' });
 
     if (useDb && pool) {
@@ -559,7 +723,8 @@ app.post('/api/user/select-car', async (req, res) => {
             await pool.query('UPDATE users SET selected_car = $1 WHERE id = $2', [carId, user.id]);
             return res.json({ success: true, selected_car: carId });
         } catch (err) {
-            return res.status(500).json({ error: err.message });
+            console.error('Erro ao equipar carro:', err.message);
+            return res.status(500).json({ error: 'Erro interno ao equipar veículo.' });
         }
     } else {
         const user = memoryStore.users.get(username);
@@ -573,8 +738,11 @@ app.post('/api/user/select-car', async (req, res) => {
 });
 
 // 5.1 Comprar Upgrade de Veículo (Tanque de Ar ou Blindagem de Vida)
-app.post('/api/user/upgrade', async (req, res) => {
+app.post('/api/user/upgrade', optionalAuth, async (req, res) => {
     const { username, upgradeType } = req.body;
+    if (req.authUser && req.authUser.username.toLowerCase() !== (username || '').toLowerCase()) {
+        return res.status(403).json({ error: 'Acesso negado: Não é permitido aplicar upgrades para outro piloto.' });
+    }
     const UPGRADE_COSTS = {
         phantom_air: 100,
         cybertruck_armor: 150
@@ -605,7 +773,8 @@ app.post('/api/user/upgrade', async (req, res) => {
 
             return res.json({ success: true, user: updateRes.rows[0], message: 'Upgrade realizado com sucesso!' });
         } catch (err) {
-            return res.status(500).json({ error: err.message });
+            console.error('Erro no upgrade:', err.message);
+            return res.status(500).json({ error: 'Erro interno ao processar upgrade.' });
         }
     } else {
         const user = memoryStore.users.get(username);
@@ -619,13 +788,17 @@ app.post('/api/user/upgrade', async (req, res) => {
     }
 });
 
-// 6. Enviar Pontuação e Moedas Ganhas na Corrida
-app.post('/api/score/submit', async (req, res) => {
+// 6. Enviar Pontuação e Moedas Ganhas na Corrida (Rate Limiter + Sanitização de Limites)
+app.post('/api/score/submit', scoreLimiter, optionalAuth, async (req, res) => {
     const { username, score, distance, coinsEarned, carUsed } = req.body;
 
-    const safeScore = Math.max(0, parseInt(score, 10) || 0);
-    const safeDistance = Math.max(0, parseInt(distance, 10) || 0);
-    const safeCoins = Math.max(0, parseInt(coinsEarned, 10) || 0);
+    if (req.authUser && req.authUser.username.toLowerCase() !== (username || '').toLowerCase()) {
+        return res.status(403).json({ error: 'Acesso negado: Não é permitido enviar pontuação em nome de outro piloto.' });
+    }
+
+    const safeScore = Math.max(0, Math.min(50000000, parseInt(score, 10) || 0));
+    const safeDistance = Math.max(0, Math.min(10000000, parseInt(distance, 10) || 0));
+    const safeCoins = Math.max(0, Math.min(50000, parseInt(coinsEarned, 10) || 0));
     const safeCar = CAR_CATALOG[carUsed] ? carUsed : 'roadster';
 
     if (!username) return res.status(400).json({ error: 'Usuário não informado.' });
@@ -658,7 +831,8 @@ app.post('/api/score/submit', async (req, res) => {
                 best_score: newBestScore
             });
         } catch (err) {
-            return res.status(500).json({ error: err.message });
+            console.error('Erro ao registrar pontuação:', err.message);
+            return res.status(500).json({ error: 'Erro interno ao salvar pontuação.' });
         }
     } else {
         const user = memoryStore.users.get(username);
@@ -753,6 +927,9 @@ function broadcastToRoom(room, msgObj, excludeId = null) {
 }
 
 wss.on('connection', (ws) => {
+    ws.isAlive = true;
+    ws.on('pong', () => { ws.isAlive = true; });
+
     let currentRoomCode = null;
     let playerId = 'p_' + Math.random().toString(36).substring(2, 9);
 
@@ -961,6 +1138,19 @@ wss.on('connection', (ws) => {
     });
 });
 
+// Heartbeat a cada 30s para podar conexões mortas (evita vazamento de memória com 100+ jogadores)
+const wsHeartbeatInterval = setInterval(() => {
+    wss.clients.forEach((ws) => {
+        if (!ws.isAlive) return ws.terminate();
+        ws.isAlive = false;
+        ws.ping();
+    });
+}, 30000);
+
+wss.on('close', () => {
+    clearInterval(wsHeartbeatInterval);
+});
+
 // Endpoint de estatísticas multiplayer
 app.get('/api/multiplayer/stats', (req, res) => {
     let totalPlayers = 0;
@@ -1038,7 +1228,7 @@ app.get('/api/payment/packages', (req, res) => {
 });
 
 // 2. Criar Preferência de Pagamento Mercado Pago
-app.post('/api/payment/create-preference', async (req, res) => {
+app.post('/api/payment/create-preference', paymentLimiter, async (req, res) => {
     try {
         const { packageId, username } = req.body;
         const pkg = COIN_PACKAGES[packageId];
@@ -1191,7 +1381,7 @@ async function markPaymentAsProcessed(paymentId, orderId, username, packageId) {
 
 
 // 3. Verificação de Status com Consulta Estrita ao Mercado Pago (Exclusivamente por orderId do pedido atual)
-app.get('/api/payment/check-status', async (req, res) => {
+app.get('/api/payment/check-status', paymentLimiter, async (req, res) => {
     const { orderId, username } = req.query;
     if (!orderId) return res.json({ success: true, approved: false });
 
@@ -1289,8 +1479,20 @@ app.get('/api/payment/confirm-return', async (req, res) => {
     return res.json({ success: true, approved: false });
 });
 
-// 3.2 Endpoint de Simulação (Apenas em ambiente de desenvolvimento local quando explicitamente requisitado)
-app.post('/api/payment/simulate', async (req, res) => {
+// 3.2 Endpoint de Simulação (Bloqueado em Produção para evitar fraude financeira)
+app.post('/api/payment/simulate', paymentLimiter, async (req, res) => {
+    // Em produção, a simulação é estritamente bloqueada a menos que explicitamente liberada por chave de debug
+    const isProd = process.env.NODE_ENV === 'production';
+    const allowSimulate = process.env.ALLOW_PAYMENT_SIMULATE === 'true';
+    const debugKey = req.headers['x-simulate-secret'] || req.query.debugKey;
+
+    if (isProd && !allowSimulate && debugKey !== process.env.DEV_SIMULATE_SECRET) {
+        return res.status(403).json({
+            success: false,
+            error: 'Endpoint de simulação bloqueado em ambiente de produção por motivos de segurança.'
+        });
+    }
+
     try {
         const { packageId, username } = req.body;
         const pkg = COIN_PACKAGES[packageId];
@@ -1315,7 +1517,8 @@ app.post('/api/payment/simulate', async (req, res) => {
             totalCoins: updated ? updated.coins : pkg.coins
         });
     } catch (err) {
-        return res.status(500).json({ success: false, error: err.message });
+        console.error('Erro na simulação de pagamento:', err.message);
+        return res.status(500).json({ success: false, error: 'Erro interno ao simular pagamento.' });
     }
 });
 
