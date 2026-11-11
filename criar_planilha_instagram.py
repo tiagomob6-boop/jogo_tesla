@@ -140,12 +140,13 @@ def build_excel():
         cell.border = thin_border
     ws.row_dimensions[1].height = 28
 
-    # Preenche linhas
+    # Preenche linhas com os links públicos diretos já hospedados no seu GitHub Pages
     for p in POSTS_DATA:
+        direct_url = f"https://tiagomob6-boop.github.io/jogo_tesla/instagram_videos/{p['video']}"
         row = [
             p["id"],
             p["video"],
-            "https://drive.google.com/file/d/SEU_LINK_AQUI/view?usp=sharing",
+            direct_url,
             p["hook"],
             p["legenda"],
             p["hashtags"],
@@ -199,10 +200,11 @@ def build_excel():
         writer = csv.writer(f)
         writer.writerow(headers)
         for p in POSTS_DATA:
+            direct_url = f"https://tiagomob6-boop.github.io/jogo_tesla/instagram_videos/{p['video']}"
             writer.writerow([
                 p["id"],
                 p["video"],
-                "https://drive.google.com/file/d/SEU_LINK_AQUI/view?usp=sharing",
+                direct_url,
                 p["hook"],
                 p["legenda"],
                 p["hashtags"],
