@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Roadster Dash 3D - Anúncio Interativo Instagram (Playable Ad Project IDX)</title>
+    <!-- Estilos do Anúncio Instagram e Painel IDX -->
+    <link rel="stylesheet" href="./style.css">
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <!-- Botão de alternância do Project IDX (Simulador 9:16 ou Tela Cheia) -->
+    <button id="toggle-device-view" title="Alternar entre modo smartphone Instagram e tela cheia">
+        📱 Modo Instagram 9:16
+    </button>
+
+    <!-- Container Principal da Aplicação -->
+    <div id="app-wrapper" class="phone-simulator">
+        <div id="ad-viewport">
+            
+            <!-- Canvas Three.js -->
+            <canvas id="ad-canvas"></canvas>
+
+            <!-- Barra Superior do Instagram Stories / Reels -->
+            <header class="insta-header">
+                <div class="insta-story-bar">
+                    <div class="insta-story-progress"></div>
+                </div>
+                <div class="insta-profile-row">
+                    <div class="insta-profile-info">
+                        <div class="insta-avatar">
+                            <div class="insta-avatar-inner">🏎️</div>
+                        </div>
+                        <div class="insta-username-col">
+                            <span class="insta-name">roadsterdash3d</span>
+                            <span class="insta-badge">Patrocinado • Anúncio Playable</span>
+                        </div>
+                    </div>
+                    <div style="font-size: 1.1rem; opacity: 0.85;">✕</div>
+                </div>
+            </header>
+
+            <!-- HUD de Telemetria Subway Surfers (Score, Distância, Moedas) -->
+            <div class="ad-hud-panel">
+                <div class="hud-left">
+                    <div class="hud-score-box" id="hud-score">0</div>
+                    <div class="hud-dist-box" id="hud-distance">0 m</div>
+                </div>
+                <div class="hud-coins-badge">
+                    <span>🪙</span>
+                    <span id="hud-coins">0</span>
+                </div>
+            </div>
+
+            <!-- Indicador do Escudo Protetor Ativo -->
+            <div class="shield-bar-wrapper" id="shield-bar-wrapper">
+                <div class="shield-label">🛡️ ESCUDO ATIVO</div>
+                <div class="shield-bar-track">
+                    <div class="shield-bar-fill" id="shield-bar-fill"></div>
+                </div>
+            </div>
+
+            <!-- Popup de Ações (Near Miss, Rampa, Escudo Smash) -->
+            <div class="action-popup" id="action-popup">🛹 SALTO ACROBÁTICO!</div>
+
+            <!-- Mãozinha Animada de Tutorial (Deslize para desviar) -->
+            <div class="tutorial-hand-overlay" id="tutorial-hand">
+                <div class="swipe-hand-icon">👆</div>
+                <div class="swipe-text">DESLIZE PARA DESVIAR ⬅️ ➡️</div>
+            </div>
+
+            <!-- Botão de Ação / Conversão Inferior (CTA Instagram) -->
+            <div class="insta-bottom-cta">
+                <button class="cta-button" id="ad-cta-btn">
+                    JOGAR AGORA GRÁTIS ➔
+                </button>
+                <span class="cta-subtext">Sem downloads • Direto no navegador</span>
+            </div>
+
+            <!-- Card Final de Game Over / Vitória (End Card Playable Ad) -->
+            <div class="ad-endcard" id="ad-endcard">
+                <div class="endcard-title">FIM DE CORRIDA!</div>
+                <div class="endcard-subtitle">Excelente performance na Sunset Highway!</div>
+                <div class="endcard-stars">⭐⭐⭐</div>
+
+                <div class="endcard-stats-box">
+                    <div class="stat-row">
+                        <span class="stat-label">PONTUAÇÃO FINAL</span>
+                        <span class="stat-value" id="end-score-val">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">DISTÂNCIA PERCORRIDA</span>
+                        <span class="stat-value" id="end-dist-val">0m</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">MOEDAS COLETADAS</span>
+                        <span class="stat-value" id="end-coins-val">0 🪙</span>
+                    </div>
+                </div>
+
+                <div class="endcard-buttons">
+                    <button class="cta-button" id="end-cta-btn">
+                        INSTALAR JOGO COMPLETO ⚡
+                    </button>
+                    <button class="secondary-btn" id="end-replay-btn">
+                        🔄 JOGAR NOVAMENTE
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Script Modular Principal ES6 -->
+    <script type="module" src="./src/main.js"></script>
+</body>
+</html>

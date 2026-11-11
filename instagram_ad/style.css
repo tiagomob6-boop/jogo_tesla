@@ -1,0 +1,564 @@
+/* Reset e Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    background: #0f1015;
+    color: #ffffff;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Wrapper Geral (Suporta Modo Tela Cheia ou Simulador de Celular 9:16) */
+#app-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Modo Simulador de Smartphone Instagram (9:16) no Project IDX */
+#app-wrapper.phone-simulator #ad-viewport {
+    width: 390px;
+    height: 844px;
+    border-radius: 44px;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.8), 0 0 0 10px #1e2028;
+    overflow: hidden;
+}
+
+/* Viewport do Anúncio */
+#ad-viewport {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #000000;
+}
+
+#ad-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Barra Superior de Histórias do Instagram */
+.insta-header {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+}
+
+/* Barra de Progresso do Anúncio (15s Story Timer) */
+.insta-story-bar {
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.insta-story-progress {
+    height: 100%;
+    width: 45%;
+    background: #ffffff;
+    animation: storyTimer 15s linear infinite;
+}
+
+@keyframes storyTimer {
+    0% { width: 0%; }
+    100% { width: 100%; }
+}
+
+.insta-profile-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.insta-profile-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.insta-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.insta-avatar-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.insta-username-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.insta-name {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+}
+
+.insta-badge {
+    font-size: 0.68rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* HUD Subway Surfers (Score, Distância, Moedas) */
+.ad-hud-panel {
+    position: absolute;
+    top: 75px;
+    left: 14px;
+    right: 14px;
+    z-index: 15;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    pointer-events: none;
+}
+
+.hud-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.hud-score-box {
+    font-size: 1.85rem;
+    font-weight: 900;
+    color: #ffffff;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+    letter-spacing: -0.5px;
+}
+
+.hud-dist-box {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #ffd000;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+}
+
+.hud-coins-badge {
+    background: rgba(18, 20, 28, 0.75);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 215, 0, 0.35);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #ffd700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+/* Barra do Escudo Protetor */
+.shield-bar-wrapper {
+    position: absolute;
+    top: 135px;
+    left: 14px;
+    width: 140px;
+    background: rgba(0, 0, 0, 0.65);
+    border: 1px solid #00f7ff;
+    border-radius: 8px;
+    padding: 3px 6px;
+    display: none;
+    z-index: 15;
+}
+
+.shield-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #00f7ff;
+    margin-bottom: 2px;
+}
+
+.shield-bar-track {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.shield-bar-fill {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #00f7ff, #0088ff);
+    border-radius: 4px;
+    transition: width 0.1s linear;
+}
+
+/* Indicador de Tutorial (Mão animada de Swipe) */
+.tutorial-hand-overlay {
+    position: absolute;
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 18;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+.tutorial-hand-overlay.hidden {
+    opacity: 0;
+}
+
+.swipe-hand-icon {
+    font-size: 2.8rem;
+    animation: swipeAnim 1.6s ease-in-out infinite;
+}
+
+.swipe-text {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #ffffff;
+    background: rgba(0, 0, 0, 0.65);
+    padding: 6px 16px;
+    border-radius: 20px;
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+    letter-spacing: 0.5px;
+}
+
+@keyframes swipeAnim {
+    0%, 100% { transform: translateX(0); }
+    30% { transform: translateX(-40px); }
+    70% { transform: translateX(40px); }
+}
+
+/* Popup de Ação na Tela */
+.action-popup {
+    position: absolute;
+    top: 38%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.6);
+    background: rgba(15, 17, 26, 0.9);
+    border: 2px solid #ffd700;
+    color: #ffd700;
+    padding: 10px 22px;
+    border-radius: 24px;
+    font-size: 1.15rem;
+    font-weight: 900;
+    z-index: 25;
+    pointer-events: none;
+    opacity: 0;
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.action-popup.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
+/* Botão de Call-To-Action (CTA) Inferior do Instagram */
+.insta-bottom-cta {
+    position: absolute;
+    bottom: 22px;
+    left: 16px;
+    right: 16px;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.cta-button {
+    width: 100%;
+    padding: 15px 0;
+    border: none;
+    border-radius: 30px;
+    background: linear-gradient(90deg, #ff0055, #ff5500, #ffaa00);
+    background-size: 200% auto;
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: 900;
+    letter-spacing: 0.6px;
+    cursor: pointer;
+    box-shadow: 0 8px 30px rgba(255, 85, 0, 0.6);
+    animation: ctaGlow 2.5s infinite linear;
+    transition: transform 0.15s ease;
+}
+
+.cta-button:active {
+    transform: scale(0.97);
+}
+
+@keyframes ctaGlow {
+    0% { background-position: 0% center; }
+    100% { background-position: 200% center; }
+}
+
+.cta-subtext {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Card Final de Vitória / Fim de Corrida */
+.ad-endcard {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 11, 18, 0.88);
+    backdrop-filter: blur(12px);
+    z-index: 30;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+}
+
+.ad-endcard.active {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.endcard-title {
+    font-size: 1.85rem;
+    font-weight: 900;
+    color: #ffd000;
+    margin-bottom: 4px;
+}
+
+.endcard-subtitle {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin-bottom: 20px;
+}
+
+.endcard-stars {
+    font-size: 2.2rem;
+    margin-bottom: 18px;
+    letter-spacing: 6px;
+}
+
+.endcard-stats-box {
+    width: 100%;
+    max-width: 290px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 14px;
+    margin-bottom: 24px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 0.9rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.stat-row:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    color: #94a3b8;
+}
+
+.stat-value {
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.endcard-buttons {
+    width: 100%;
+    max-width: 290px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.secondary-btn {
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 24px;
+    color: #ffffff;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* Botão de Alternar Modo de Visualização do Project IDX */
+#toggle-device-view {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 100;
+    background: #1e2028;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* ========================================================================= */
+/* PAINEL DE AJUSTES EM TEMPO REAL PROJECT IDX                               */
+/* ========================================================================= */
+#idx-tweak-panel {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    width: 290px;
+    background: rgba(18, 20, 29, 0.94);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(0, 247, 255, 0.4);
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
+    z-index: 100;
+    overflow: hidden;
+    font-size: 0.8rem;
+}
+
+.idx-panel-header {
+    background: linear-gradient(90deg, #1f2334, #2c324b);
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 800;
+    font-size: 0.72rem;
+    color: #00f7ff;
+    letter-spacing: 0.5px;
+}
+
+#idx-toggle-btn {
+    background: none;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.idx-panel-content {
+    padding: 12px 14px;
+    max-height: 78vh;
+    overflow-y: auto;
+}
+
+.idx-section-title {
+    font-weight: 800;
+    color: #ffd000;
+    font-size: 0.72rem;
+    margin: 10px 0 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 2px;
+}
+
+.idx-section-title:first-child {
+    margin-top: 0;
+}
+
+.idx-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 7px;
+}
+
+.idx-row label {
+    width: 90px;
+    font-size: 0.72rem;
+    color: #cbd5e1;
+}
+
+.idx-row input[type="range"] {
+    flex: 1;
+    accent-color: #00f7ff;
+}
+
+.idx-row span {
+    width: 45px;
+    text-align: right;
+    font-family: monospace;
+    font-size: 0.72rem;
+    color: #00f7ff;
+}
+
+.idx-row input[type="color"] {
+    border: none;
+    background: none;
+    width: 28px;
+    height: 24px;
+    cursor: pointer;
+}
+
+.idx-btn-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.idx-preset-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    padding: 7px;
+    border-radius: 8px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.idx-preset-btn:hover {
+    background: rgba(0, 247, 255, 0.2);
+    border-color: #00f7ff;
+}
